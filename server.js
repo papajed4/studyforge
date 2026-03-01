@@ -14,6 +14,7 @@ const officeParser = require('officeparser');
 const { YoutubeTranscript } = require('youtube-transcript');
 const axios = require('axios');
 const https = require('https');
+const crypto = require('crypto');
 
 // ============================================
 // CONFIGURATION
@@ -56,7 +57,14 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2
 // MIDDLEWARE
 // ============================================
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+        if (req.originalUrl === '/api/paystack-webhook') {
+            req.rawBody = buf.toString();
+        }
+    }
+}));
 app.use(express.static('.'));
 
 // Rate Limiter
@@ -801,6 +809,69 @@ app.get('/api/list-models', async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// PAYSTACK WEBHOOK
+// ============================================
+
+app.post('/api/paystack-webhook', async (req, res) => {
+    try {
+
+        const hash = crypto
+            .createHmac('sha512', process.env.PAYSTACK_SECRET)
+            .update(req.rawBody)
+            .digest('hex');
+
+        if (hash !== req.headers['x-paystack-signature']) {
+            console.log("❌ Invalid Paystack signature");
+            return res.sendStatus(401);
+        }
+
+        const event = req.body;
+
+        if (event.event === "charge.success") {
+
+            const data = event.data;
+            const reference = data.reference;
+            const userId = data.metadata?.user_id;
+
+            if (!userId) return res.sendStatus(200);
+
+            const { data: existing } = await supabaseAdmin
+                .from('transactions')
+                .select('id')
+                .eq('reference', reference)
+                .maybeSingle();
+
+            if (existing) return res.sendStatus(200);
+
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+
+            await supabaseAdmin.from('transactions').insert([{
+                user_id: userId,
+                reference: reference,
+                amount: data.amount,
+                currency: data.currency,
+                status: "success",
+                created_at: new Date().toISOString()
+            }]);
+
+            await supabaseAdmin.from('profiles').update({
+                plan: "pro",
+                pro_expires_at: expiryDate.toISOString()
+            }).eq('id', userId);
+
+            console.log(`✅ Webhook upgraded user ${userId}`);
+        }
+
+        res.sendStatus(200);
+
+    } catch (err) {
+        console.error("Webhook error:", err.message);
+        res.sendStatus(500);
     }
 });
 
