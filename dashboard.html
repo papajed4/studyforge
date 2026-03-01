@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>StudyForge | Dashboard</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- HTML2PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Paystack -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+
+    <!-- ================= MAIN LAYOUT ================= -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- ================= MOBILE SIDEBAR OVERLAY ================= -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 hidden z-40 md:hidden" onclick="toggleSidebar()">
+        </div>
+
+        <!-- ================= MODERN LIGHT SIDEBAR ================= -->
+        <aside id="sidebar"
+            class="fixed md:static z-50 inset-y-0 left-0 w-64 bg-white border-r border-slate-200 p-6 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+
+            <!-- Top Logo -->
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 mb-10">
+                    Study<span class="text-indigo-600">Forge</span>
+                </h2>
+
+                <!-- Navigation -->
+                <nav class="space-y-2 text-sm">
+
+                    <!-- Generate -->
+                    <button id="navGenerate" onclick="showSection('generate')"
+                        class="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition">
+                        ⚡ Generate
+                    </button>
+
+                    <!-- Saved -->
+                    <button id="navSaved" onclick="showSection('saved')"
+                        class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        📚 My Study Guides
+                    </button>
+
+                    <!-- Account -->
+                    <button id="navAccount" onclick="showSection('account')"
+                        class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        👤 Account
+                    </button>
+
+                </nav>
+            </div>
+
+            <!-- Bottom Profile -->
+            <div class="border-t border-slate-200 pt-6">
+
+                <div class="flex items-center gap-3 mb-4">
+                    <div id="userAvatar"
+                        class="h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
+                        SF
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-900 font-medium">Your Dashboard</p>
+                        <p class="text-xs text-slate-500">Study Mode</p>
+                    </div>
+                </div>
+
+                <button onclick="logoutUser()" class="w-full text-left text-red-500 hover:text-red-600 text-sm">
+                    Logout
+                </button>
+
+            </div>
+        </aside>
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+
+            <!-- Mobile Top Bar -->
+            <div class="md:hidden p-4 bg-white border-b border-slate-200 flex justify-between items-center">
+                <button onclick="toggleSidebar()" class="text-slate-600 text-xl">
+                    ☰
+                </button>
+                <span class="font-semibold">Dashboard</span>
+            </div>
+
+            <main class="p-6 md:p-10 space-y-8">
+
+                <!-- ===================================================== -->
+                <!-- ================= GENERATE SECTION ================== -->
+                <!-- ===================================================== -->
+                <div id="generateSection" class="space-y-8">
+                    <h2 id="welcomeText" class="text-2xl font-bold text-slate-900 mb-6">
+                        Loading...
+                    </h2>
+
+                    <div id="profileNameSection" class="mb-6 hidden">
+                        <input type="text" id="updateNameInput" placeholder="Enter your name"
+                            class="border border-slate-300 px-4 py-2 rounded-lg mr-2">
+
+                        <button onclick="saveName()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">
+                            Save
+                        </button>
+                    </div>
+
+                    <!-- INPUT CARD -->
+                    <div class="glass-panel rounded-2xl p-2 shadow-xl transform transition-all hover:shadow-2xl">
+
+                        <div class="bg-white/50 rounded-xl p-4 md:p-6">
+
+                            <!-- TEXTAREA -->
+                            <textarea id="courseInput" rows="6"
+                                class="w-full bg-transparent border-0 focus:ring-0 text-slate-700 placeholder:text-slate-400 text-lg resize-none"
+                                placeholder="Paste your lecture notes, transcript, or course material here..."></textarea>
+
+                            <!-- YOUTUBE + FILE -->
+                            <div class="flex flex-col md:flex-row gap-4 mt-4 border-t border-slate-200/60 pt-4">
+
+                                <div class="flex-1 relative protected-feature">
+                                    <i class="fa-brands fa-youtube absolute left-3 top-3.5 text-slate-400"></i>
+                                    <input type="text" id="youtubeInput"
+                                        placeholder="Paste YouTube lecture link (Optional)"
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                </div>
+
+                                <div class="md:w-auto relative cursor-pointer protected-feature">
+                                    <input type="file" id="fileUpload" accept=".pdf,.docx,.pptx" class="hidden">
+                                    <label for="fileUpload"
+                                        class="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer w-full">
+                                        Upload PDF/DOCX/PPTX
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- GENERATE BUTTON -->
+                        <div class="p-2">
+                            <button id="condenseBtn" onclick="initiateCondense()"
+                                class="protected-feature w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl text-lg font-bold shadow-lg transition-all">
+                                Forge Study Guide
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LOADING -->
+                    <div id="loadingSection" class="hidden text-center py-20">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2">
+                            Processing...
+                        </h3>
+                    </div>
+
+                    <!-- RESULT SECTION -->
+                    <div id="resultSection" class="hidden">
+
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-end items-center mb-8">
+                            <div>
+                                <h2 class="text-3xl font-bold text-slate-900 mb-2">
+                                    StudyForge Analysis
+                                </h2>
+                            </div>
+
+                            <div class="flex gap-3 mt-4 md:mt-0">
+
+                                <button onclick="exportToNotion()"
+                                    class="px-4 py-2 bg-slate-200 rounded-lg text-sm font-semibold">
+                                    Copy
+                                </button>
+
+                                <button onclick="exportToPDF()"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">
+                                    Export PDF
+                                </button>
+
+                                <button onclick="generateExamMode()"
+                                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold">
+                                    Exam Mode
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <!-- AI CONTENT -->
+                        <div id="exportContainer" class="space-y-6"></div>
+                    </div>
+
+                    <!-- CHAT -->
+                    <div id="chatSection"
+                        class="hidden mt-12 bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200">
+                            <h3 class="font-bold text-slate-800">
+                                Chat with Your Course
+                            </h3>
+                        </div>
+
+                        <div id="chatHistory" class="p-6 h-80 overflow-y-auto space-y-4 bg-slate-50">
+                            <!-- Chat messages will appear here -->
+                        </div>
+
+                        <div class="p-4 border-t border-slate-200">
+                            <div class="flex gap-2">
+                                <input type="text" id="chatInput"
+                                    placeholder="Ask a question about your course material..."
+                                    class="flex-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                <button onclick="sendChatMessage()"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span class="hidden sm:inline">Send</span>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2">Press Enter to send, or click the Send button</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================================================== -->
+                <!-- ================= SAVED SECTION ===================== -->
+                <!-- ===================================================== -->
+                <div id="savedSection" class="hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h2 class="text-xl font-bold text-slate-800 mb-4">
+                            My Study Guides
+                        </h2>
+
+                        <div id="savedGuidesList">
+                            <p class="text-slate-500 text-sm">
+                                No saved guides yet.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================================================== -->
+                <!-- ================= ACCOUNT SECTION =================== -->
+                <!-- ===================================================== -->
+                <div id="accountSection" class="hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h2 class="text-xl font-bold text-slate-800 mb-4">
+                            Account Information
+                        </h2>
+
+                        <p class="text-slate-600">
+                            Plan: <span id="accountPlanDashboard">Free</span>
+                        </p>
+
+                        <p class="text-slate-600 mt-2">
+                            Expires: <span id="accountExpiryDashboard">—</span>
+                        </p>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ================= UPGRADE MODAL ================= -->
+    <div id="upgradeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
+
+            <!-- X Close Button -->
+            <button onclick="toggleUpgradeModal()"
+                class="absolute top-4 right-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all z-10">
+                <i class="fa-solid fa-times text-lg"></i>
+            </button>
+
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">
+                    Upgrade to Pro 🚀
+                </h2>
+            </div>
+
+            <!-- Current Plan Info -->
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
+                <p class="text-sm text-indigo-700 font-medium mb-1">Your Current Plan: <span class="font-bold"
+                        id="upgradeCurrentPlan">Free</span></p>
+                <p class="text-xs text-indigo-600">5 generations per day • Basic features</p>
+            </div>
+
+            <!-- Pro Plan Details -->
+            <div class="mb-6">
+                <h3 class="font-bold text-slate-800 mb-3">Pro Plan Includes:</h3>
+                <ul class="space-y-3 text-sm text-slate-700">
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 font-bold">✓</span>
+                        <span><span class="font-semibold">Unlimited</span> AI study generations</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 font-bold">✓</span>
+                        <span><span class="font-semibold">Unlimited</span> exam mode</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 font-bold">✓</span>
+                        <span><span class="font-semibold">Unlimited</span> AI chat</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 font-bold">✓</span>
+                        <span>Priority processing (faster responses)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500 font-bold">✓</span>
+                        <span>Save unlimited study guides</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Plan Selection Toggle -->
+            <div class="flex items-center justify-center gap-4 mb-6">
+                <span id="modalMonthlyLabel" class="text-sm font-semibold text-slate-900">Monthly</span>
+
+                <button id="modalBillingToggle" onclick="toggleModalBilling()"
+                    class="relative inline-flex h-6 w-11 items-center rounded-full bg-indigo-600 transition">
+                    <span id="modalToggleCircle"
+                        class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1"></span>
+                </button>
+
+                <span id="modalYearlyLabel" class="text-sm font-semibold text-slate-500">
+                    Yearly
+                    <span class="ml-1 text-indigo-600 font-bold text-xs">Save 20%</span>
+                </span>
+            </div>
+
+            <!-- Pricing Display -->
+            <div class="bg-slate-50 rounded-xl p-6 mb-6 text-center">
+                <p class="text-sm text-slate-500 mb-1">Pro Plan</p>
+                <p class="text-4xl font-bold text-slate-900" id="modalPrice">$8.99</p>
+                <p class="text-sm text-slate-500 mt-1" id="modalBillingPeriod">per month</p>
+                <p class="text-xs text-slate-400 mt-2" id="modalPerDay">≈ $0.24 per day</p>
+            </div>
+
+            <!-- Upgrade Button -->
+            <button onclick="handleModalUpgrade()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all">
+                Upgrade Now
+            </button>
+
+            <p class="text-xs text-slate-400 text-center mt-4">
+                You'll be redirected to Paystack for secure payment • Cancel anytime
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="errorToast"
+        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden opacity-0 translate-y-10">
+        <i class="fa-solid fa-circle-exclamation text-red-400"></i>
+        <span id="errorMsg" class="text-sm font-medium">An error occurred</span>
+    </div>
+
+    <audio id="successSound" src="success.mp3" preload="auto"></audio>
+
+    <!-- Scripts - Order matters! -->
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

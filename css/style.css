@@ -1,0 +1,206 @@
+/* ============================================
+   STYLE.CSS - Main Stylesheet
+   ============================================ */
+
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --primary-indigo: #6366f1;
+}
+
+/* Base Styles */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f3f4f6;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+}
+
+/* Glass Panel Effect */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Accordion Styles */
+.accordion-content {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+
+/* Markdown Body Styles */
+.markdown-body ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-body ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-body strong {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.markdown-body p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.markdown-body h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Loader Animation */
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #e2e8f0;
+    border-bottom-color: #6366f1;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Shake Animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.shake {
+    animation: shake 0.4s ease;
+}
+
+/* Modal Animations */
+.modal-overlay {
+    transition: opacity 0.3s ease;
+}
+
+.modal-content {
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-content.show {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.modal-content.slide-up {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.modal-content.slide-up.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* Upgrade Modal */
+#upgradeModal {
+    transition: opacity 0.3s ease;
+}
+
+#upgradeModal:not(.hidden) .bg-white {
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    0% {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .glass-panel {
+        background: white !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    #exportContainer {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .accordion-content {
+        height: auto !important;
+    }
+
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+
+    .markdown-body {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+}

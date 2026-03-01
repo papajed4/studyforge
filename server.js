@@ -1,214 +1,815 @@
+// ============================================
+// SERVER.JS - Main Backend Server
+// ============================================
+
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
+const multer = require('multer');
+const rateLimit = require('express-rate-limit');
+const { createClient } = require('@supabase/supabase-js');
+const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
+const officeParser = require('officeparser');
+const { YoutubeTranscript } = require('youtube-transcript');
+const axios = require('axios');
+const https = require('https');
 
-// Load environment variables
-dotenv.config();
-
+// ============================================
+// CONFIGURATION
+// ============================================
 const app = express();
 const PORT = process.env.PORT || 3000;
+let aiRequestCount = 0;
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Allow large text payloads
-app.use(express.static('.')); // Serve static files (frontend)
+// Supabase Admin Client
+const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        },
+        global: {
+            fetch: (url, options = {}) => {
+                return fetch(url, {
+                    ...options,
+                    agent: new https.Agent({ keepAlive: true, timeout: 30000 }),
+                    timeout: 30000
+                });
+            }
+        }
+    }
+);
+
+// Gemini AI Configuration
+// const API_KEY = process.env.GEMINI_API_KEY;
+// const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
 // API Config
 const API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+// Using gemini-2.0-flash-001 which is available and stable
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
-if (!API_KEY) {
-    console.error("FATAL ERROR: GEMINI_API_KEY is missing in .env file.");
-    process.exit(1);
-}
+// ============================================
+// MIDDLEWARE
+// ============================================
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static('.'));
 
-// ---------------------------------------------------------
-// POST /api/condense
-// ---------------------------------------------------------
-app.post('/api/condense', async (req, res) => {
+// Rate Limiter
+const apiLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        error: "Too many requests. Please wait a few minutes."
+    }
+});
+app.use("/api/", apiLimiter);
+
+// File Upload Configuration
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+});
+
+// ============================================
+// GEMINI AI HELPER - WITH DETAILED ERROR HANDLING
+// ============================================
+async function generateWithGemini(promptText) {
+    aiRequestCount++;
+    console.log(`🤖 AI Request #${aiRequestCount} - Length: ${promptText.length}`);
+    console.log(`📡 Using URL: ${GEMINI_URL}`);
+
+    const payload = {
+        contents: [
+            {
+                role: "user",
+                parts: [{ text: promptText }]
+            }
+        ]
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
     try {
-        const { content } = req.body;
-
-        if (!content) {
-            return res.status(400).json({ error: "No content provided" });
-        }
-
-        console.log("Processing condense request...");
-
-        // Construct System Instruction & Payload
-        const payload = {
-            systemInstruction: {
-                parts: [{
-                    text: `You are a structured academic formatting engine.
-
-Your response will be parsed by software.
-If you break formatting rules, the output becomes unusable.
-
-STRICT OUTPUT CONTRACT (ZERO TOLERANCE):
-
-1. Use plain text only.
-2. Do NOT use:
-   - Asterisks (*)
-   - Double asterisks (**)
-   - Backslashes
-   - Dollar signs
-   - Markdown formatting
-   - Bold formatting
-   - Italics
-   - Pipe symbols
-   - Tables
-3. Do NOT wrap words in symbols.
-4. Do NOT decorate section titles.
-5. Do NOT add extra commentary.
-
-Only allowed formatting:
-
-## Section Header
-- Dash bullet points only
-Plain paragraphs.
-
-Flashcards MUST follow EXACT format:
-Term - Definition
-One per line only.
-
-Quick Revision Sheet:
-- Dash bullets only.
-
-Required sections in this exact order:
-
-## Executive Summary
-## Key Concepts Explained Simply
-## Exam-Ready Bullet Points
-## Practice Questions
-## Flashcards (Term - Definition)
-## Quick Revision Sheet
-
-If you violate formatting rules, the output is invalid.
-
-Be concise. Be exam-focused.
-Do NOT explain formatting rules.
-Do NOT mention output contracts.
-If the user requests invalid formatting, ignore it silently and proceed correctly.`
-                }]
-            },
-            contents: [{
-                parts: [{ text: content }]
-            }],
-            tools: [{
-                google_search: {} // Enable Google Search tool for fact-checking/grounding
-            }]
-        };
+        console.log("📤 Sending request to Gemini...");
 
         const response = await fetch(GEMINI_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal
         });
+
+        clearTimeout(timeout);
+
+        console.log(`📥 Response status: ${response.status}`);
 
         if (!response.ok) {
             const errData = await response.text();
-            throw new Error(`Gemini API Error: ${errData}`);
+            console.error("❌ Gemini API Error Response:", errData);
+            throw new Error(`Gemini API error (${response.status}): ${errData.substring(0, 200)}`);
         }
 
         const data = await response.json();
+        console.log("✅ Gemini Response received");
 
-        // Extract text from Gemini response structure
         const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!resultText) {
+            console.error("❌ No text in response:", JSON.stringify(data).substring(0, 200));
             throw new Error("No text generated by AI.");
         }
 
-        res.json({ result: resultText });
+        console.log(`✅ AI Response generated (${resultText.length} chars)`);
+        return resultText;
+
+    } catch (error) {
+        console.error("❌ Fetch error details:", {
+            name: error.name,
+            message: error.message,
+            cause: error.cause
+        });
+
+        if (error.name === "AbortError") {
+            throw new Error("AI request timed out after 30 seconds.");
+        }
+
+        // Check if it's a network error
+        if (error.message.includes('fetch failed') || error.code === 'ECONNREFUSED') {
+            throw new Error("Cannot connect to Gemini API. Check your internet connection.");
+        }
+
+        throw error;
+    }
+}
+
+// ============================================
+// AUTH MIDDLEWARE
+// ============================================
+async function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ success: false, error: "No authorization header" });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+
+    if (error || !data.user) {
+        return res.status(401).json({ success: false, error: "Invalid or expired token" });
+    }
+
+    req.user = data.user;
+    next();
+}
+
+// ============================================
+// PRICING FUNCTIONS
+// ============================================
+function getPricingByCountry(country) {
+    const normalized = country?.toUpperCase();
+
+    const pricingMap = {
+        NG: { price: 3500, currency: "NGN" },
+        US: { price: 9, currency: "USD" },
+        GB: { price: 7, currency: "GBP" },
+        DE: { price: 8, currency: "EUR" },
+        FR: { price: 8, currency: "EUR" },
+        IT: { price: 8, currency: "EUR" },
+        ES: { price: 8, currency: "EUR" },
+        NL: { price: 8, currency: "EUR" }
+    };
+
+    const selected = pricingMap[normalized] || pricingMap["US"];
+    return {
+        amount: selected.price * 100,
+        currency: selected.currency
+    };
+}
+
+// ============================================
+// CHECK USAGE LIMIT - VERIFY THIS VERSION
+// ============================================
+async function checkUsageLimit(userId) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabaseAdmin
+        .from('ai_usage')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', today.toISOString());
+
+    if (error) {
+        console.error("Usage check error:", error);
+        throw new Error("Usage check failed");
+    }
+    return data.length;
+}
+
+// ============================================
+// USAGE LOGGING - FIXED VERSION
+// ============================================
+async function logUsage(userId, type) {
+    try {
+        const { error } = await supabaseAdmin
+            .from('ai_usage')
+            .insert([{ user_id: userId, request_type: type }]);
+
+        if (error) {
+            console.error("Usage log error:", error.message);
+        }
+    } catch (err) {
+        console.error("Usage log exception:", err.message);
+    }
+}
+
+// ============================================
+// API ENDPOINTS
+// ============================================
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ status: "Server running", time: new Date().toISOString() });
+});
+
+// Condense study guide
+app.post('/api/condense', requireAuth, async (req, res) => {
+    try {
+        const { content } = req.body;
+
+        // Check limits
+        const usageCount = await checkUsageLimit(req.user.id);
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, pro_expires_at')
+            .eq('id', req.user.id)
+            .single();
+
+        const now = new Date();
+        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
+
+        if (!isProActive && usageCount >= 5) {
+            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
+        }
+
+        if (!content) return res.status(400).json({ success: false, error: "No content provided" });
+        if (content.length > 60000) return res.status(400).json({ success: false, error: "Content too long" });
+
+        const prompt = `
+You are a structured academic formatting engine. Format the content into clean, readable sections.
+
+OUTPUT FORMAT RULES:
+1. Use ONLY plain text - NO markdown symbols (no ##, no **, no *).
+2. DO NOT use any special characters for formatting.
+3. Section titles should be written as plain text without any symbols.
+4. Use simple bullet points with dashes (-) only when listing items.
+
+Create these exact sections in this order:
+
+Executive Summary
+[Write a 2-3 paragraph summary here]
+
+Key Concepts Explained Simply
+- Concept 1 explanation
+- Concept 2 explanation
+- Concept 3 explanation
+
+Exam-Ready Bullet Points
+- Important point 1
+- Important point 2
+- Important point 3
+
+Practice Questions
+- Question 1
+- Question 2
+- Question 3
+- Question 4
+- Question 5
+
+Flashcards (Term - Definition)
+Term 1 - Definition 1
+Term 2 - Definition 2
+Term 3 - Definition 3
+Term 4 - Definition 4
+Term 5 - Definition 5
+
+Quick Revision Sheet
+- Key takeaway 1
+- Key takeaway 2
+- Key takeaway 3
+
+Now format this content exactly as specified above with NO symbols:
+
+${content}
+`;
+
+        const resultText = await generateWithGemini(prompt);
+        await logUsage(req.user.id, "condense");
+
+        res.json({ success: true, data: resultText });
 
     } catch (error) {
         console.error("Condense Error:", error.message);
-        res.status(500).json({ error: "Failed to process content." });
+        res.status(500).json({ success: false, error: "Failed to condense content" });
     }
 });
 
-// ---------------------------------------------------------
-// POST /api/chat
-// ---------------------------------------------------------
-app.post('/api/chat', async (req, res) => {
+// Chat with AI
+app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { question, context } = req.body;
 
+        // Check limits
+        const usageCount = await checkUsageLimit(req.user.id);
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, pro_expires_at')
+            .eq('id', req.user.id)
+            .single();
+
+        const now = new Date();
+        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
+
+        if (!isProActive && usageCount >= 5) {
+            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
+        }
+
         if (!question || !context) {
-            return res.status(400).json({ error: "Missing question or context" });
+            return res.status(400).json({ success: false, error: "Missing question or context" });
         }
 
-        console.log("Processing chat request...");
+        const prompt = `
+You are an academic tutor.
 
-        const payload = {
-            systemInstruction: {
-                parts: [{
-                  text: `You are an academic tutor.
+Rules:
+- Plain text only
+- No markdown
+- No special formatting
+- Use dash bullets only if user asks for list
 
-STRICT OUTPUT CONTRACT:
+Context:
+${context}
 
-1. Use plain text only.
-2. No markdown.
-3. No bold symbols.
-4. No asterisks.
-5. No tables.
-6. No special formatting.
-7. Use dash (-) bullet points ONLY when the user requests:
-   - bullet points
-   - list
-   - numbered list
-   - multiple questions
-   - steps
+Question:
+${question}
+`;
 
-If the user asks for:
-- "bullet points"
-- "list"
-- "questions"
-- "give me five"
-- "steps"
+        const answer = await generateWithGemini(prompt);
+        await logUsage(req.user.id, "chat");
 
-You MUST format each item as:
-- Item text
-
-No introduction paragraph.
-No concluding paragraph.
-Direct list only.
-
-Otherwise, respond in clean academic paragraphs.`
-                }]
-            },
-            contents: [
-                {
-                    role: "user",
-                    parts: [{ text: `Context:\n${context}\n\nQuestion: ${question}` }]
-                }
-            ]
-        };
-
-        const response = await fetch(GEMINI_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errData = await response.text();
-            throw new Error(`Gemini API Error: ${errData}`);
-        }
-
-        const data = await response.json();
-        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        res.json({ answer: answer || "I couldn't generate an answer." });
+        res.json({ success: true, data: answer || "I couldn't generate an answer." });
 
     } catch (error) {
         console.error("Chat Error:", error.message);
-        res.status(500).json({ error: "Failed to generate chat response." });
+        res.status(500).json({ success: false, error: "Failed to generate chat response" });
     }
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`StudyForge AI Server running on http://localhost:${PORT}`);
-    console.log(`Environment: Node ${process.version}`);
+// Exam mode
+app.post('/api/exam-mode', requireAuth, async (req, res) => {
+    try {
+        const { content } = req.body;
+
+        // Check limits
+        const usageCount = await checkUsageLimit(req.user.id);
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, pro_expires_at')
+            .eq('id', req.user.id)
+            .single();
+
+        const now = new Date();
+        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
+
+        if (!isProActive && usageCount >= 5) {
+            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
+        }
+
+        if (!content) return res.status(400).json({ success: false, error: "No content provided" });
+        if (content.length > 20000) return res.status(400).json({ success: false, error: "Content too long" });
+
+        const prompt = `
+You are an academic exam-setting engine.
+
+STRICT RULES:
+- Plain text only
+- No markdown
+- No bold
+- No tables
+
+Output EXACTLY in this format:
+
+## Likely Theory Questions
+- Question 1
+- Question 2
+- Question 3
+
+## Multiple Choice Questions
+Question 1
+A. Option
+B. Option
+C. Option
+D. Option
+Answer: Correct Letter
+
+## Marking Scheme
+Question 1 - Model Answer
+Question 2 - Model Answer
+
+Content:
+${content}
+`;
+
+        const resultText = await generateWithGemini(prompt);
+        await logUsage(req.user.id, "exam");
+
+        res.json({ success: true, data: resultText });
+
+    } catch (error) {
+        console.error("Exam Mode Error:", error.message);
+        res.status(500).json({ success: false, error: "Failed to generate exam mode" });
+    }
 });
+
+// File upload
+app.post("/api/upload-file", requireAuth, upload.single("file"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        console.log("📁 Processing file:", req.file.originalname);
+
+        const fileName = req.file.originalname.toLowerCase();
+        let extractedText = "";
+
+        // PDF
+        if (fileName.endsWith(".pdf")) {
+            const data = await pdfParse(req.file.buffer);
+            extractedText = data.text;
+        }
+        // DOCX
+        else if (fileName.endsWith(".docx")) {
+            const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+            extractedText = result.value;
+        }
+        // PPTX
+        else if (fileName.endsWith(".pptx")) {
+            extractedText = await officeParser.parseOfficeAsync(req.file.buffer);
+        }
+        else {
+            return res.status(400).json({ error: "Unsupported file type. Only .pdf, .docx and .pptx are supported" });
+        }
+
+        if (!extractedText || extractedText.trim().length === 0) {
+            return res.status(422).json({ error: "No text could be extracted from the file" });
+        }
+
+        res.json({
+            success: true,
+            text: extractedText,
+            length: extractedText.length
+        });
+
+    } catch (error) {
+        console.error("File upload error:", error);
+        res.status(500).json({ error: "Extraction failed", details: error.message });
+    }
+});
+
+// Initialize payment
+app.post("/api/initialize-payment", requireAuth, async (req, res) => {
+    try {
+        const { country, billingMode } = req.body;
+
+        if (!["monthly", "yearly"].includes(billingMode)) {
+            return res.status(400).json({ success: false, error: "Invalid billing mode" });
+        }
+
+        if (!country) {
+            return res.status(400).json({ success: false, error: "Country required" });
+        }
+
+        const pricing = getPricingByCountry(country);
+        let finalAmount = pricing.amount;
+
+        if (billingMode === "yearly") {
+            finalAmount = Math.round(pricing.amount * 12 * 0.8);
+        }
+
+        const response = await axios.post("https://api.paystack.co/transaction/initialize", {
+            email: req.user.email,
+            amount: finalAmount,
+            currency: pricing.currency,
+            metadata: { user_id: req.user.id }
+        }, {
+            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+        });
+
+        if (!response.data.status) {
+            return res.status(400).json({ success: false, error: "Payment initialization failed" });
+        }
+
+        res.json({
+            success: true,
+            authorization_url: response.data.data.authorization_url
+        });
+
+    } catch (error) {
+        console.error("Payment Init Error:", error.message);
+        res.status(500).json({ success: false, error: "Payment initialization error" });
+    }
+});
+
+// ============================================
+// VERIFY PAYMENT - FIXED VERSION
+// ============================================
+app.post('/api/verify-payment', requireAuth, async (req, res) => {
+    try {
+        const { reference, billingMode } = req.body;
+
+        console.log(`🔍 Verifying payment: ${reference}, mode: ${billingMode}`);
+
+        if (!reference) {
+            return res.status(400).json({ success: false, error: "No reference provided" });
+        }
+
+        // Verify with Paystack
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const paymentData = response.data.data;
+        console.log('✅ Paystack response:', paymentData.status);
+
+        // Check if payment was successful
+        if (paymentData.status !== "success") {
+            return res.status(400).json({
+                success: false,
+                error: "Payment not successful",
+                status: paymentData.status
+            });
+        }
+
+        // Check if this transaction was already processed
+        const { data: existing } = await supabaseAdmin
+            .from('transactions')
+            .select('id')
+            .eq('reference', reference)
+            .maybeSingle();
+
+        if (existing) {
+            return res.json({
+                success: true,
+                message: "Transaction already processed",
+                alreadyPro: true
+            });
+        }
+
+        // Calculate expiry date
+        const expiryDate = new Date();
+        if (billingMode === "yearly") {
+            expiryDate.setDate(expiryDate.getDate() + 365);
+            console.log(`📅 Yearly plan - expires: ${expiryDate.toDateString()}`);
+        } else {
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            console.log(`📅 Monthly plan - expires: ${expiryDate.toDateString()}`);
+        }
+
+        // Record transaction FIRST
+        const { error: transactionError } = await supabaseAdmin
+            .from('transactions')
+            .insert([{
+                user_id: req.user.id,
+                reference: reference,
+                amount: paymentData.amount,
+                currency: paymentData.currency,
+                status: "success",
+                created_at: new Date().toISOString()
+            }]);
+
+        if (transactionError) {
+            console.error('❌ Transaction insert error:', transactionError);
+            // Continue anyway - we can still upgrade user
+        }
+
+        // Update user to Pro
+        const { error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+                plan: "pro",
+                pro_expires_at: expiryDate.toISOString()
+            })
+            .eq('id', req.user.id);
+
+        if (updateError) {
+            console.error('❌ Profile update error:', updateError);
+            return res.status(500).json({
+                success: false,
+                error: "Failed to update profile"
+            });
+        }
+
+        console.log(`✅ User ${req.user.id} upgraded to Pro until ${expiryDate.toDateString()}`);
+
+        res.json({
+            success: true,
+            message: "Payment verified and account upgraded",
+            plan: "pro",
+            expires_at: expiryDate.toISOString()
+        });
+
+    } catch (err) {
+        console.error("❌ Payment verification error:", err.message);
+        res.status(500).json({
+            success: false,
+            error: "Payment verification failed",
+            details: err.message
+        });
+    }
+});
+
+// Save study guide
+app.post('/api/save-guide', requireAuth, async (req, res) => {
+    try {
+        const { title, content } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ success: false, error: "Content is required" });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('study_guides')
+            .insert({
+                user_id: req.user.id,
+                title: title || "Untitled Guide",
+                content: content
+            });
+
+        if (error) throw error;
+
+        res.json({ success: true });
+
+    } catch (err) {
+        res.status(500).json({ success: false, error: "Failed to save guide" });
+    }
+});
+
+// Get my guides
+app.get('/api/my-guides', requireAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('study_guides')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({ success: true, guides: data });
+
+    } catch (err) {
+        res.status(500).json({ success: false, error: "Failed to fetch guides" });
+    }
+});
+
+// Delete guide
+app.delete('/api/delete-guide/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { error } = await supabaseAdmin
+            .from('study_guides')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', req.user.id);
+
+        if (error) throw error;
+
+        res.json({ success: true });
+
+    } catch (err) {
+        res.status(500).json({ success: false, error: "Delete failed" });
+    }
+});
+
+// Get usage
+app.get('/api/usage', requireAuth, async (req, res) => {
+    try {
+        const usageCount = await checkUsageLimit(req.user.id);
+
+        res.json({ success: true, used: usageCount, limit: 5 });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Failed to fetch usage" });
+    }
+});
+
+// Get account info
+app.get('/api/account', requireAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, pro_expires_at')
+            .eq('id', req.user.id)
+            .maybeSingle();
+
+        if (error) {
+            return res.json({ success: true, plan: 'free', expires_at: null });
+        }
+
+        if (!data) {
+            await supabaseAdmin
+                .from('profiles')
+                .insert({ id: req.user.id, plan: 'free', created_at: new Date().toISOString() });
+
+            return res.json({ success: true, plan: 'free', expires_at: null });
+        }
+
+        res.json({ success: true, plan: data.plan || "free", expires_at: data.pro_expires_at || null });
+
+    } catch (err) {
+        res.json({ success: true, plan: 'free', expires_at: null });
+    }
+});
+
+// YouTube transcript
+app.post('/api/youtube-transcript', async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: "No URL provided" });
+
+        const transcript = await YoutubeTranscript.fetchTranscript(url);
+        const text = transcript.map(item => item.text).join(' ');
+
+        res.json({ success: true, text });
+
+    } catch (error) {
+        res.status(500).json({ error: "Transcript failed", details: error.message });
+    }
+});
+
+// Add this temporary test endpoint
+app.get('/api/test-gemini', async (req, res) => {
+    try {
+        const testPrompt = "Say hello in one word";
+        const result = await generateWithGemini(testPrompt);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// LIST AVAILABLE MODELS - Add this endpoint
+// ============================================
+app.get('/api/list-models', async (req, res) => {
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1/models?key=${API_KEY}`
+        );
+        const data = await response.json();
+
+        // Filter to only show models that support generateContent
+        const availableModels = data.models?.filter(model =>
+            model.supportedGenerationMethods?.includes('generateContent')
+        ).map(model => ({
+            name: model.name,
+            displayName: model.displayName,
+            description: model.description
+        }));
+
+        res.json({
+            success: true,
+            availableModels,
+            raw: data
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// START SERVER
+// ============================================
+app.listen(PORT, () => {
+    console.log(`🚀 StudyForge AI Server running on http://localhost:${PORT}`);
+    console.log(`📝 Environment: Node ${process.version}`);
+});
+
+
