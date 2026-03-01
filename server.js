@@ -521,7 +521,10 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
             email: req.user.email,
             amount: finalAmount,
             currency: pricing.currency,
-            metadata: { user_id: req.user.id }
+            metadata: {
+                user_id: req.user.id,
+                billing_mode: billingMode
+            }
         }, {
             headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
         });
@@ -848,7 +851,16 @@ app.post('/api/paystack-webhook', async (req, res) => {
             if (existing) return res.sendStatus(200);
 
             const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
+
+            const billingMode = data.metadata?.billing_mode;
+
+            if (billingMode === "yearly") {
+                expiryDate.setDate(expiryDate.getDate() + 365);
+                console.log("📅 Yearly plan via webhook");
+            } else {
+                expiryDate.setDate(expiryDate.getDate() + 30);
+                console.log("📅 Monthly plan via webhook");
+            }
 
             await supabaseAdmin.from('transactions').insert([{
                 user_id: userId,
