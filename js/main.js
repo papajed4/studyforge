@@ -196,26 +196,48 @@ window.toggleModalBilling = function () {
 };
 
 // ============================================
-// HANDLE UPGRADE CLICK - 
+// HANDLE UPGRADE CLICK 
 // ============================================
-window.handleUpgradeClick = async function() {
-    if (!userCountry) {
-        await detectCountry();
-    }
-
+window.handleUpgradeClick = async function () {
+    // First check if user is already on Pro plan
     const token = await window.getAuthToken?.();
     if (!token) {
         window.showToast?.("Please sign in first.");
         return;
     }
 
-    // Store billing mode
-    localStorage.setItem("billingMode", billingMode);
-
     try {
+        // Check current plan
+        const response = await fetch("/api/account", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const accountData = await response.json();
+
+        // If user is already on Pro plan, show message and don't proceed
+        if (accountData.success && accountData.plan === "pro") {
+            const expiryDate = accountData.expires_at ? new Date(accountData.expires_at).toLocaleDateString() : 'N/A';
+            window.showToast?.(`✅ You are already on Pro plan! Expires: ${expiryDate}`, "success");
+
+            // Optional: Scroll to show they're already Pro
+            const pricingSection = document.getElementById("pricing");
+            if (pricingSection) {
+                pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        // If not on Pro, continue with normal upgrade flow
+        if (!userCountry) {
+            await detectCountry();
+        }
+
+        // Store billing mode
+        localStorage.setItem("billingMode", billingMode);
+
         window.showToast?.("Initializing payment...", "success");
-        
-        const response = await fetch("/api/initialize-payment", {
+
+        const initResponse = await fetch("/api/initialize-payment", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -227,7 +249,7 @@ window.handleUpgradeClick = async function() {
             })
         });
 
-        const data = await response.json();
+        const data = await initResponse.json();
 
         if (!data.success) {
             window.showToast?.("Payment failed to start.");
@@ -239,14 +261,48 @@ window.handleUpgradeClick = async function() {
 
         // Redirect to payment page
         window.location.href = data.authorization_url;
-        
+
     } catch (err) {
         window.showToast?.("Payment error: " + err.message);
     }
 };
 
-window.handleModalUpgrade = function () {
-    window.handleUpgradeClick();
+// ============================================
+// HANDLE MODAL UPGRADE -
+// ============================================
+window.handleModalUpgrade = async function () {
+    // First check if user is already on Pro plan
+    const token = await window.getAuthToken?.();
+    if (!token) {
+        window.showToast?.("Please sign in first.");
+        window.toggleUpgradeModal?.();
+        return;
+    }
+
+    try {
+        // Check current plan
+        const response = await fetch("/api/account", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const accountData = await response.json();
+
+        // If user is already on Pro plan, show message and close modal
+        if (accountData.success && accountData.plan === "pro") {
+            const expiryDate = accountData.expires_at ? new Date(accountData.expires_at).toLocaleDateString() : 'N/A';
+            window.showToast?.(`✅ You are already on Pro plan! Expires: ${expiryDate}`, "success");
+            window.toggleUpgradeModal?.(); // Close the modal
+            return;
+        }
+
+        // If not on Pro, close modal and proceed with upgrade
+        window.toggleUpgradeModal?.();
+        window.handleUpgradeClick();
+
+    } catch (err) {
+        window.showToast?.("Error checking plan status: " + err.message);
+        window.toggleUpgradeModal?.(); // Close modal on error
+    }
 };
 
 // ============================================
@@ -330,6 +386,20 @@ window.loadAccountInfo = async function () {
                 avatar.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-purple-600');
             }
         }
+        // Update the upgrade button on the pricing page
+        const upgradeBtn = document.querySelector('.upgrade-btn');
+        if (upgradeBtn) {
+            if (data.plan === "pro") {
+                upgradeBtn.innerText = "You're on Pro ✓";
+                upgradeBtn.disabled = true;
+                upgradeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                upgradeBtn.innerText = "Upgrade to Pro";
+                upgradeBtn.disabled = false;
+                upgradeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
     } catch (err) {
         console.log("Account info error:", err);
     }
