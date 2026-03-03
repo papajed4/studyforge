@@ -183,26 +183,31 @@ async function requireAuth(req, res, next) {
 }
 
 // ============================================
-// PRICING FUNCTIONS
+// PRICING FUNCTIONS - 
 // ============================================
 function getPricingByCountry(country) {
     const normalized = country?.toUpperCase();
 
     const pricingMap = {
-        NG: { price: 3500, currency: "NGN" },
-        US: { price: 9, currency: "USD" },
-        GB: { price: 7, currency: "GBP" },
-        DE: { price: 8, currency: "EUR" },
-        FR: { price: 8, currency: "EUR" },
-        IT: { price: 8, currency: "EUR" },
-        ES: { price: 8, currency: "EUR" },
-        NL: { price: 8, currency: "EUR" }
+        // NIGERIA - Paystack (NGN)
+        NG: { price: 3500, currency: "NGN", processor: "paystack" },
+
+        // INTERNATIONAL - Flutterwave (various currencies)
+        US: { price: 9, currency: "USD", processor: "flutterwave" },
+        GB: { price: 7, currency: "GBP", processor: "flutterwave" },
+        CA: { price: 12, currency: "CAD", processor: "flutterwave" },  // ADD CANADA
+        DE: { price: 8, currency: "EUR", processor: "flutterwave" },
+        FR: { price: 8, currency: "EUR", processor: "flutterwave" },
+        IT: { price: 8, currency: "EUR", processor: "flutterwave" },
+        ES: { price: 8, currency: "EUR", processor: "flutterwave" },
+        NL: { price: 8, currency: "EUR", processor: "flutterwave" }
     };
 
     const selected = pricingMap[normalized] || pricingMap["US"];
     return {
-        amount: selected.price * 100,
-        currency: selected.currency
+        amount: selected.price * 100, // Paystack uses kobo/cents
+        currency: selected.currency,
+        processor: selected.processor
     };
 }
 
@@ -240,6 +245,67 @@ async function logUsage(userId, type) {
         }
     } catch (err) {
         console.error("Usage log exception:", err.message);
+    }
+}
+
+// ============================================
+// FLUTTERWAVE PAYMENT INITIALIZATION - ADD THIS NEW FUNCTION
+// ============================================
+async function initializeFlutterwavePayment(user, amount, currency, billingMode) {
+    try {
+        // Generate a unique transaction reference
+        const txRef = `SF-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        
+        const payload = {
+            tx_ref: txRef,
+            amount: amount / 100, // Flutterwave expects actual amount, not in cents
+            currency: currency,
+            redirect_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html`,
+            payment_options: "card,ussd,banktransfer",
+            meta: {
+                user_id: user.id,
+                billing_mode: billingMode
+            },
+            customer: {
+                email: user.email,
+                name: user.user_metadata?.full_name || user.email.split('@')[0]
+            },
+            customizations: {
+                title: "StudyForge AI Pro Plan",
+                description: billingMode === "yearly" ? "Yearly Subscription" : "Monthly Subscription",
+                logo: "https://studyforge.ai/logo.png" // Update this with your actual logo URL
+            }
+        };
+
+        const response = await axios.post(
+            "https://api.flutterwave.com/v3/payments",
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.data.status === "success") {
+            return {
+                success: true,
+                authorization_url: response.data.data.link,
+                tx_ref: txRef
+            };
+        } else {
+            return {
+                success: false,
+                error: "Flutterwave initialization failed"
+            };
+        }
+    } catch (error) {
+        console.error("Flutterwave init error:", error.response?.data || error.message);
+        return {
+            success: false,
+            error: "Payment initialization failed"
+        };
     }
 }
 
@@ -497,7 +563,9 @@ app.post("/api/upload-file", requireAuth, upload.single("file"), async (req, res
     }
 });
 
-// Initialize payment
+// ============================================
+// INITIALIZE PAYMENT - 
+// ============================================
 app.post("/api/initialize-payment", requireAuth, async (req, res) => {
     try {
         const { country, billingMode } = req.body;
@@ -517,26 +585,66 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
             finalAmount = Math.round(pricing.amount * 12 * 0.8);
         }
 
-        const response = await axios.post("https://api.paystack.co/transaction/initialize", {
-            email: req.user.email,
-            amount: finalAmount,
-            currency: pricing.currency,
-            metadata: {
-                user_id: req.user.id,
-                billing_mode: billingMode
+        // Store billing mode for later use
+        const metadata = {
+            user_id: req.user.id,
+            billing_mode: billingMode,
+            processor: pricing.processor,
+            country: country
+        };
+
+        // CHOOSE PROCESSOR BASED ON COUNTRY
+        if (pricing.processor === "paystack") {
+            // PAYSTACK for Nigeria
+            console.log(`💰 Using Paystack for ${country}`);
+            
+            const response = await axios.post("https://api.paystack.co/transaction/initialize", {
+                email: req.user.email,
+                amount: finalAmount,
+                currency: pricing.currency,
+                metadata: metadata,
+                callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html`
+            }, {
+                headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+            });
+
+            if (!response.data.status) {
+                return res.status(400).json({ success: false, error: "Payment initialization failed" });
             }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
-        });
 
-        if (!response.data.status) {
-            return res.status(400).json({ success: false, error: "Payment initialization failed" });
+            return res.json({
+                success: true,
+                authorization_url: response.data.data.authorization_url,
+                processor: "paystack"
+            });
+            
+        } else {
+            // FLUTTERWAVE for international (including Canada)
+            console.log(`💰 Using Flutterwave for ${country}`);
+            
+            const flutterwaveResult = await initializeFlutterwavePayment(
+                req.user, 
+                finalAmount, 
+                pricing.currency, 
+                billingMode
+            );
+
+            if (!flutterwaveResult.success) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: flutterwaveResult.error 
+                });
+            }
+
+            // Store the tx_ref for verification
+            metadata.flutterwave_tx_ref = flutterwaveResult.tx_ref;
+            
+            return res.json({
+                success: true,
+                authorization_url: flutterwaveResult.authorization_url,
+                processor: "flutterwave"
+            });
         }
-
-        res.json({
-            success: true,
-            authorization_url: response.data.data.authorization_url
-        });
 
     } catch (error) {
         console.error("Payment Init Error:", error.message);
@@ -883,6 +991,76 @@ app.post('/api/paystack-webhook', async (req, res) => {
 
     } catch (err) {
         console.error("Webhook error:", err.message);
+        res.sendStatus(500);
+    }
+});
+
+// ============================================
+// FLUTTERWAVE WEBHOOK - ADD THIS NEW ENDPOINT
+// ============================================
+app.post('/api/flutterwave-webhook', async (req, res) => {
+    try {
+        // Verify webhook signature
+        const secretHash = process.env.FLUTTERWAVE_SECRET_HASH || "studyforge_secret";
+        const signature = req.headers['verif-hash'];
+        
+        if (!signature || signature !== secretHash) {
+            console.log("❌ Invalid Flutterwave signature");
+            return res.sendStatus(401);
+        }
+
+        const event = req.body;
+
+        // Handle successful payment
+        if (event.event === "charge.completed" && event.data.status === "successful") {
+            const data = event.data;
+            const txRef = data.tx_ref;
+            const userId = data.meta?.user_id;
+            const billingMode = data.meta?.billing_mode;
+
+            if (!userId) return res.sendStatus(200);
+
+            // Check if already processed
+            const { data: existing } = await supabaseAdmin
+                .from('transactions')
+                .select('id')
+                .eq('reference', txRef)
+                .maybeSingle();
+
+            if (existing) return res.sendStatus(200);
+
+            // Calculate expiry
+            const expiryDate = new Date();
+            if (billingMode === "yearly") {
+                expiryDate.setDate(expiryDate.getDate() + 365);
+            } else {
+                expiryDate.setDate(expiryDate.getDate() + 30);
+            }
+
+            // Record transaction
+            await supabaseAdmin.from('transactions').insert([{
+                user_id: userId,
+                reference: txRef,
+                amount: data.amount * 100, // Convert back to cents/kobo
+                currency: data.currency,
+                status: "success",
+                processor: "flutterwave",
+                created_at: new Date().toISOString()
+            }]);
+
+            // Update user to Pro
+            await supabaseAdmin.from('profiles').update({
+                plan: "pro",
+                pro_expires_at: expiryDate.toISOString()
+            }).eq('id', userId);
+
+            console.log(`✅ Flutterwave webhook upgraded user ${userId}`);
+        }
+
+        res.sendStatus(200);
+
+    } catch (err) {
+        console.error("Flutterwave webhook error:", err.message);
         res.sendStatus(500);
     }
 });

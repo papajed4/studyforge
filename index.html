@@ -39,6 +39,9 @@
 
     <!-- Paystack -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
+
+    <!-- Flutterwave --->
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
 </head>
 
 <body class="text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-700">
@@ -353,35 +356,38 @@
 
         </section>
 
-<!-- Feature Grid -->
-<div id="features" class="grid md:grid-cols-3 gap-6 mt-20">
-    <!-- Feature 1 -->
-    <div class="glass-panel p-6 rounded-2xl feature-card">
-        <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-            <i class="fa-solid fa-layer-group text-blue-600 text-xl"></i>
+        <!-- Feature Grid -->
+        <div id="features" class="grid md:grid-cols-3 gap-6 mt-20">
+            <!-- Feature 1 -->
+            <div class="glass-panel p-6 rounded-2xl feature-card">
+                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-layer-group text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Smart Study Sections</h3>
+                <p class="text-slate-500 text-sm">Automatically breaks down dense lectures into digestible, titled
+                    sections for easy reading.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="glass-panel p-6 rounded-2xl feature-card">
+                <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-clipboard-check text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Exam-Ready Questions</h3>
+                <p class="text-slate-500 text-sm">Generates relevant practice problems and active recall prompts based
+                    on the core material.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="glass-panel p-6 rounded-2xl feature-card">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-comments text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">AI Deep Clarification Chat</h3>
+                <p class="text-slate-500 text-sm">Don't understand a concept? Chat directly with the course material to
+                    get instant clarity.</p>
+            </div>
         </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-2">Smart Study Sections</h3>
-        <p class="text-slate-500 text-sm">Automatically breaks down dense lectures into digestible, titled sections for easy reading.</p>
-    </div>
-    
-    <!-- Feature 2 -->
-    <div class="glass-panel p-6 rounded-2xl feature-card">
-        <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center mb-4">
-            <i class="fa-solid fa-clipboard-check text-purple-600 text-xl"></i>
-        </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-2">Exam-Ready Questions</h3>
-        <p class="text-slate-500 text-sm">Generates relevant practice problems and active recall prompts based on the core material.</p>
-    </div>
-    
-    <!-- Feature 3 -->
-    <div class="glass-panel p-6 rounded-2xl feature-card">
-        <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
-            <i class="fa-solid fa-comments text-indigo-600 text-xl"></i>
-        </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-2">AI Deep Clarification Chat</h3>
-        <p class="text-slate-500 text-sm">Don't understand a concept? Chat directly with the course material to get instant clarity.</p>
-    </div>
-</div>
 
         <!-- ================= PRICING SECTION ================= -->
         <section id="pricing" class="mt-28 px-6">
@@ -777,90 +783,104 @@
 
     </section>
 
-<!-- Footer -->
-<footer class="border-t border-slate-200 bg-white/40 backdrop-blur-md mt-12">
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        
-        <!-- Main Footer Content -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            
-            <!-- Company Info -->
-            <div class="col-span-1 md:col-span-1">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-                        <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white/40 backdrop-blur-md mt-12">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+
+            <!-- Main Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+
+                <!-- Company Info -->
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                            <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                        </div>
+                        <span class="font-bold text-slate-800">StudyForge AI</span>
                     </div>
-                    <span class="font-bold text-slate-800">StudyForge AI</span>
-                </div>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Turn messy lecture notes into exam-ready study systems with AI.
-                </p>
-                <div class="flex gap-4 mt-4">
-                    <a href="https://www.instagram.com/studyforge.ai" target="_blank" class="text-slate-400 hover:text-indigo-600 transition">
-                        <i class="fa-brands fa-instagram"></i>
-                    </a>
-                    <!-- <a href="#" class="text-slate-400 hover:text-indigo-600 transition">
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Turn messy lecture notes into exam-ready study systems with AI.
+                    </p>
+                    <div class="flex gap-4 mt-4">
+                        <a href="https://www.instagram.com/studyforge.ai" target="_blank"
+                            class="text-slate-400 hover:text-indigo-600 transition">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <!-- <a href="#" class="text-slate-400 hover:text-indigo-600 transition">
                         <i class="fa-brands fa-linkedin"></i>
                     </a>
                     <a href="#" class="text-slate-400 hover:text-indigo-600 transition">
                         <i class="fa-brands fa-github"></i>
                     </a> -->
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Product Links -->
-            <div>
-                <h4 class="font-semibold text-slate-800 mb-4">Product</h4>
-                <ul class="space-y-2">
-                    <li><a href="#features" class="text-slate-500 hover:text-indigo-600 text-sm transition">Features</a></li>
-                    <li><a href="#pricing" class="text-slate-500 hover:text-indigo-600 text-sm transition">Pricing</a></li>
-                    <li><a onclick="handleDashboardClick()" class="text-slate-500 hover:text-indigo-600 text-sm transition">Dashboard</a></li>
-                    <li><a href="#" class="text-slate-500 hover:text-indigo-600 text-sm transition">Changelog</a></li>
-                </ul>
-            </div>
-            
-            <!-- Legal Pages (CRITICAL for Paystack) -->
-            <div>
-                <h4 class="font-semibold text-slate-800 mb-4">Legal</h4>
-                <ul class="space-y-2">
-                    <li><a href="/privacy.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">Privacy Policy</a></li>
-                    <li><a href="/terms.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">Terms of Service</a></li>
-                    <li><a href="/about.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">About Us</a></li>
-                    <li><a href="/contact.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">Contact</a></li>
-                </ul>
-            </div>
-            
-            <!-- Contact Info -->
-            <div>
-                <h4 class="font-semibold text-slate-800 mb-4">Contact</h4>
-                <ul class="space-y-2">
-                    <li class="flex items-start gap-2">
-                        <i class="fa-regular fa-envelope text-slate-400 mt-1 text-sm"></i>
-                        <a href="mailto:hello@studyforge.site" class="text-slate-500 hover:text-indigo-600 text-sm transition">hello@studyforge.site</a>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i class="fa-regular fa-clock text-slate-400 mt-1 text-sm"></i>
-                        <span class="text-slate-500 text-sm">Support: 24/7</span>
-                    </li>
-                    <!-- <li class="mt-4">
+
+                <!-- Product Links -->
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-4">Product</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#features"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">Features</a></li>
+                        <li><a href="#pricing"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">Pricing</a></li>
+                        <li><a onclick="handleDashboardClick()"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">Dashboard</a></li>
+                        <li><a href="#" class="text-slate-500 hover:text-indigo-600 text-sm transition">Changelog</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Legal Pages (CRITICAL for Paystack) -->
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/privacy.html"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">Privacy Policy</a></li>
+                        <li><a href="/terms.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">Terms
+                                of Service</a></li>
+                        <li><a href="/about.html" class="text-slate-500 hover:text-indigo-600 text-sm transition">About
+                                Us</a></li>
+                        <li><a href="/contact.html"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-4">Contact</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-regular fa-envelope text-slate-400 mt-1 text-sm"></i>
+                            <a href="mailto:byforgelabs@outlook.com"
+                                class="text-slate-500 hover:text-indigo-600 text-sm transition">byforgelabs@outlook.com</a>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-regular fa-clock text-slate-400 mt-1 text-sm"></i>
+                            <span class="text-slate-500 text-sm">Support: 24/7</span>
+                        </li>
+                        <!-- <li class="mt-4">
                         <span class="text-xs text-slate-400">Lagos, Nigeria</span>
                     </li> -->
-                </ul>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar with Copyright -->
+            <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-slate-500 text-sm">© 2026 StudyForge AI. Built for Serious Students.</p>
+                <div class="flex gap-6 mt-4 md:mt-0">
+                    <a href="privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition"
+                        target="_blank">Privacy</a>
+                    <a href="terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition"
+                        target="_blank">Terms</a>
+                    <a href="about.html" class="text-xs text-slate-400 hover:text-indigo-600 transition"
+                        target="_blank">About</a>
+                    <a href="contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition"
+                        target="_blank">Contact</a>
+                </div>
             </div>
         </div>
-        
-        <!-- Bottom Bar with Copyright -->
-        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p class="text-slate-500 text-sm">© 2026 StudyForge AI. Built for Serious Students.</p>
-            <div class="flex gap-6 mt-4 md:mt-0">
-                <a href="privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition" target="_blank">Privacy</a>
-                <a href="terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition" target="_blank">Terms</a>
-                <a href="about.html" class="text-xs text-slate-400 hover:text-indigo-600 transition" target="_blank">About</a>
-                <a href="contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition" target="_blank">Contact</a>
-            </div>
-        </div>
-    </div>
-</footer>
+    </footer>
 
     <!-- Toast Notification -->
     <div id="errorToast"

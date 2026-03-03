@@ -9,7 +9,8 @@ let billingMode = "monthly";
 const pricingTable = {
     NG: { symbol: "₦", monthly: 3500 },
     US: { symbol: "$", monthly: 8.99 },
-    GB: { symbol: "£", monthly: 7.99 }
+    GB: { symbol: "£", monthly: 7.99 },
+    CA: { symbol: "C$", monthly: 11.99 }  // ADD THIS LINE for Canada
 };
 
 const euroCountries = [
@@ -86,8 +87,8 @@ function updatePricingUI() {
 
     if (!priceEl) return;
 
-    let pricing = pricingTable[userCountry] || 
-                  (euroCountries.includes(userCountry) ? euroPricing : pricingTable["US"]);
+    let pricing = pricingTable[userCountry] ||
+        (euroCountries.includes(userCountry) ? euroPricing : pricingTable["US"]);
 
     const monthlyPrice = pricing.monthly;
     const symbol = pricing.symbol;
@@ -106,14 +107,14 @@ function updatePricingUI() {
 // ============================================
 // UPGRADE MODAL FUNCTIONS (Dashboard)
 // ============================================
-window.toggleUpgradeModal = function() {
+window.toggleUpgradeModal = function () {
     const modal = document.getElementById('upgradeModal');
     if (modal) {
         updateModalPricing();
         modal.classList.toggle('hidden');
-        
+
         if (window.gsap && !modal.classList.contains('hidden')) {
-            gsap.fromTo(modal, 
+            gsap.fromTo(modal,
                 { opacity: 0 },
                 { opacity: 1, duration: 0.3 }
             );
@@ -132,8 +133,8 @@ function updateModalPricing() {
 
     if (!priceEl) return;
 
-    let pricing = pricingTable[userCountry] || 
-                  (euroCountries.includes(userCountry) ? euroPricing : pricingTable["US"]);
+    let pricing = pricingTable[userCountry] ||
+        (euroCountries.includes(userCountry) ? euroPricing : pricingTable["US"]);
 
     const monthlyPrice = pricing.monthly;
     const symbol = pricing.symbol;
@@ -156,7 +157,7 @@ function updateModalPricing() {
     }
 }
 
-window.toggleModalBilling = function() {
+window.toggleModalBilling = function () {
     const circle = document.getElementById('modalToggleCircle');
     const monthlyLabel = document.getElementById('modalMonthlyLabel');
     const yearlyLabel = document.getElementById('modalYearlyLabel');
@@ -166,7 +167,7 @@ window.toggleModalBilling = function() {
         circle.classList.remove('translate-x-5');
         circle.classList.add('translate-x-1');
         billingMode = 'monthly';
-        
+
         if (monthlyLabel) {
             monthlyLabel.classList.remove('text-slate-500');
             monthlyLabel.classList.add('text-slate-900');
@@ -180,7 +181,7 @@ window.toggleModalBilling = function() {
         circle?.classList.add('translate-x-5');
         circle?.classList.remove('translate-x-1');
         billingMode = 'yearly';
-        
+
         if (yearlyLabel) {
             yearlyLabel.classList.remove('text-slate-500');
             yearlyLabel.classList.add('text-slate-900');
@@ -195,7 +196,7 @@ window.toggleModalBilling = function() {
 };
 
 // ============================================
-// HANDLE UPGRADE CLICK - FIXED VERSION
+// HANDLE UPGRADE CLICK - 
 // ============================================
 window.handleUpgradeClick = async function() {
     if (!userCountry) {
@@ -233,7 +234,10 @@ window.handleUpgradeClick = async function() {
             return;
         }
 
-        // Redirect to Paystack
+        // Store which processor we're using
+        localStorage.setItem("paymentProcessor", data.processor);
+
+        // Redirect to payment page
         window.location.href = data.authorization_url;
         
     } catch (err) {
@@ -241,14 +245,14 @@ window.handleUpgradeClick = async function() {
     }
 };
 
-window.handleModalUpgrade = function() {
+window.handleModalUpgrade = function () {
     window.handleUpgradeClick();
 };
 
 // ============================================
 // USAGE FUNCTIONS
 // ============================================
-window.loadUsage = async function() {
+window.loadUsage = async function () {
     const token = await window.getAuthToken?.();
     if (!token) return;
 
@@ -282,7 +286,7 @@ window.loadUsage = async function() {
 // ============================================
 // ACCOUNT FUNCTIONS
 // ============================================
-window.loadAccountInfo = async function() {
+window.loadAccountInfo = async function () {
     const token = await window.getAuthToken?.();
     if (!token) return;
 
@@ -298,12 +302,12 @@ window.loadAccountInfo = async function() {
 
         // Update all plan displays
         const planElements = [
-            'accountPlan', 
-            'accountPlanDashboard', 
+            'accountPlan',
+            'accountPlanDashboard',
             'mobilePlan',
             'upgradeCurrentPlan'
         ];
-        
+
         planElements.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerText = data.plan === "pro" ? "Pro" : "Free";
@@ -334,14 +338,14 @@ window.loadAccountInfo = async function() {
 // ============================================
 // WELCOME NAME - FIXED VERSION
 // ============================================
-window.loadWelcomeName = async function() {
+window.loadWelcomeName = async function () {
     try {
         const supabase = window.supabaseClient; // Use the same global variable
         if (!supabase) {
             console.log("Supabase not ready for welcome name");
             return;
         }
-        
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -364,7 +368,7 @@ window.loadWelcomeName = async function() {
         if (welcomeEl && name) {
             const token = await window.getAuthToken?.();
             let plan = "Free";
-            
+
             if (token) {
                 try {
                     const response = await fetch("/api/account", {
@@ -372,9 +376,9 @@ window.loadWelcomeName = async function() {
                     });
                     const data = await response.json();
                     if (data.success) plan = data.plan === "pro" ? "Pro" : "Free";
-                } catch {}
+                } catch { }
             }
-            
+
             welcomeEl.innerHTML = `Scholar ${name} <span class="text-indigo-600 font-semibold">(${plan})</span> — what are we forging today?`;
         }
     } catch (err) {
@@ -382,7 +386,7 @@ window.loadWelcomeName = async function() {
     }
 };
 
-window.saveName = async function() {
+window.saveName = async function () {
     const newName = document.getElementById("updateNameInput")?.value;
     if (!newName) return;
 
@@ -400,20 +404,20 @@ window.saveName = async function() {
 // ============================================
 // MOBILE MENU FUNCTIONS
 // ============================================
-window.toggleMobileMenu = function() {
+window.toggleMobileMenu = function () {
     const menu = document.getElementById("mobileMenu");
     if (menu) menu.classList.toggle("hidden");
 };
 
-window.toggleSidebar = function() {
+window.toggleSidebar = function () {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
-    
+
     if (sidebar) sidebar.classList.toggle("-translate-x-full");
     if (overlay) overlay.classList.toggle("hidden");
 };
 
-window.toggleAccountDropdown = function() {
+window.toggleAccountDropdown = function () {
     const dropdown = document.getElementById("accountDropdown");
     if (dropdown) dropdown.classList.toggle("hidden");
 };
@@ -421,20 +425,20 @@ window.toggleAccountDropdown = function() {
 // ============================================
 // DASHBOARD REDIRECT - FIXED VERSION
 // ============================================
-window.handleDashboardClick = async function() {
+window.handleDashboardClick = async function () {
     try {
         // Check if supabaseClient exists
         const supabase = window.supabaseClient;
-        
+
         if (!supabase) {
             console.log("Supabase not initialized yet");
             window.toggleAuthModal?.();
             window.showToast?.('Please sign in first to access the dashboard');
             return;
         }
-        
+
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
             window.location.href = '/dashboard.html';
         } else {
@@ -455,7 +459,7 @@ function initFileUpload() {
     const fileUpload = document.getElementById("fileUpload");
     if (!fileUpload) return;
 
-    fileUpload.addEventListener("change", async function(e) {
+    fileUpload.addEventListener("change", async function (e) {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -470,7 +474,7 @@ function initFileUpload() {
 
         try {
             window.showToast?.("Uploading and extracting text...", "success");
-            
+
             const token = await window.getAuthToken?.();
             if (!token) {
                 window.showToast?.("Please sign in again.");
@@ -506,19 +510,22 @@ function initFileUpload() {
 }
 
 // ============================================
-// PAYMENT VERIFICATION ON PAGE LOAD - FIXED
+// PAYMENT VERIFICATION ON PAGE LOAD -
 // ============================================
 window.addEventListener("load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const reference = urlParams.get("reference");
     const trxref = urlParams.get("trxref"); // Paystack sometimes uses this
+    const status = urlParams.get("status"); // Flutterwave returns status
+    const tx_ref = urlParams.get("tx_ref"); // Flutterwave returns tx_ref
 
-    // Use either reference or trxref
-    const paymentReference = reference || trxref;
-    
+    // Use appropriate reference based on processor
+    let paymentReference = reference || trxref || tx_ref;
+    let processor = urlParams.get("processor") || (tx_ref ? "flutterwave" : "paystack");
+
     if (!paymentReference) return;
 
-    console.log("💰 Payment reference detected:", paymentReference);
+    console.log(`💰 Payment reference detected: ${paymentReference} (${processor})`);
     window.showToast?.("Verifying your payment...", "success");
 
     const token = await window.getAuthToken?.();
@@ -538,7 +545,8 @@ window.addEventListener("load", async () => {
             },
             body: JSON.stringify({
                 reference: paymentReference,
-                billingMode: savedBillingMode
+                billingMode: savedBillingMode,
+                processor: processor
             })
         });
 
@@ -547,14 +555,21 @@ window.addEventListener("load", async () => {
         if (data.success) {
             window.showToast?.("🎉 Payment successful! Your account is now Pro!", "success");
             localStorage.removeItem("billingMode");
-            
+
             // Clean URL (remove query params)
             window.history.replaceState({}, document.title, window.location.pathname);
-            
-            // Reload to show Pro features
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+
+            // Redirect to dashboard if not already there
+            if (!window.location.pathname.includes('dashboard.html')) {
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 2000);
+            } else {
+                // Already on dashboard, just reload to show Pro features
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
         } else {
             window.showToast?.("Payment verification failed: " + (data.error || "Unknown error"));
         }
@@ -568,23 +583,23 @@ window.addEventListener("load", async () => {
 // ============================================
 function animateCounters() {
     console.log("🎯 Starting counter animation...");
-    
+
     const counters = document.querySelectorAll(".counter");
-    
+
     if (counters.length === 0) {
         console.log("No counters found on page");
         return;
     }
-    
+
     console.log(`Found ${counters.length} counters to animate`);
-    
+
     counters.forEach(counter => {
         const target = parseInt(counter.getAttribute("data-target"));
         const increment = target / 50; // Divide into 50 steps for smooth animation
         let count = 0;
-        
+
         console.log(`Counter target: ${target}`);
-        
+
         const updateCount = () => {
             count += increment;
             if (count < target) {
@@ -595,7 +610,7 @@ function animateCounters() {
                 console.log(`✅ Counter finished: ${target}`);
             }
         };
-        
+
         updateCount();
     });
 }
@@ -605,14 +620,14 @@ function animateCounters() {
 // ============================================
 function setupCounterObserver() {
     const counterSection = document.querySelector(".counter")?.closest('section');
-    
+
     if (!counterSection) {
         console.log("Counter section not found");
         return;
     }
-    
+
     console.log("Setting up counter observer");
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -622,7 +637,7 @@ function setupCounterObserver() {
             }
         });
     }, { threshold: 0.3 }); // Trigger when 30% visible
-    
+
     observer.observe(counterSection);
 }
 
@@ -641,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFileUpload();
     detectCountry();
     window.loadWelcomeName();
-    
+
     document.querySelectorAll('#mobileMenu a').forEach(link => {
         link.addEventListener('click', () => {
             document.getElementById("mobileMenu")?.classList.add("hidden");
