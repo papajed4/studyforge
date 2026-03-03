@@ -21,9 +21,19 @@ const euroCountries = [
 const euroPricing = { symbol: "€", monthly: 8 };
 
 // ============================================
-// COUNTRY DETECTION
+// COUNTRY DETECTION - UPDATE with test country support
 // ============================================
 async function detectCountry() {
+    // Check for test country FIRST
+    // const testCountry = localStorage.getItem('testCountry');
+    // if (testCountry) {
+    //     userCountry = testCountry;
+    //     console.log(`🧪 TEST MODE: Using forced country ${userCountry}`);
+    //     updatePricingUI();
+    //     updateModalPricing();
+    //     return;
+    // }
+
     try {
         const response = await fetch("https://ipapi.co/json/");
         const data = await response.json();
@@ -196,7 +206,7 @@ window.toggleModalBilling = function () {
 };
 
 // ============================================
-// HANDLE UPGRADE CLICK 
+// HANDLE UPGRADE CLICK - UPDATE with debug logs
 // ============================================
 window.handleUpgradeClick = async function () {
     // First check if user is already on Pro plan
@@ -218,22 +228,27 @@ window.handleUpgradeClick = async function () {
         if (accountData.success && accountData.plan === "pro") {
             const expiryDate = accountData.expires_at ? new Date(accountData.expires_at).toLocaleDateString() : 'N/A';
             window.showToast?.(`✅ You are already on Pro plan! Expires: ${expiryDate}`, "success");
-
-            // Optional: Scroll to show they're already Pro
-            const pricingSection = document.getElementById("pricing");
-            if (pricingSection) {
-                pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
             return;
         }
 
+        // DEBUG: Check country before proceeding
+        console.log("🔍 Current userCountry:", userCountry);
+        console.log("🔍 Test country in localStorage:", localStorage.getItem('testCountry'));
+
         // If not on Pro, continue with normal upgrade flow
         if (!userCountry) {
+            console.log("🔍 No userCountry, detecting...");
             await detectCountry();
         }
 
         // Store billing mode
         localStorage.setItem("billingMode", billingMode);
+
+        // DEBUG: Log what we're sending
+        console.log("📤 Sending to server:", {
+            country: userCountry,
+            billingMode: billingMode
+        });
 
         window.showToast?.("Initializing payment...", "success");
 
@@ -250,22 +265,26 @@ window.handleUpgradeClick = async function () {
         });
 
         const data = await initResponse.json();
+        console.log("📥 Server response:", data);
 
         if (!data.success) {
-            window.showToast?.("Payment failed to start.");
+            window.showToast?.("Payment failed to start: " + (data.error || "Unknown error"));
             return;
         }
 
         // Store which processor we're using
         localStorage.setItem("paymentProcessor", data.processor);
+        console.log("💰 Using processor:", data.processor);
 
         // Redirect to payment page
         window.location.href = data.authorization_url;
 
     } catch (err) {
+        console.error("❌ Upgrade error:", err);
         window.showToast?.("Payment error: " + err.message);
     }
 };
+
 
 // ============================================
 // HANDLE MODAL UPGRADE -

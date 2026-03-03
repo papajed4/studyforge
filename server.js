@@ -187,25 +187,28 @@ async function requireAuth(req, res, next) {
 // ============================================
 function getPricingByCountry(country) {
     const normalized = country?.toUpperCase();
+    console.log("🔍 Server pricing for country:", normalized); // Add this log
 
     const pricingMap = {
         // NIGERIA - Paystack (NGN)
         NG: { price: 3500, currency: "NGN", processor: "paystack" },
 
-        // INTERNATIONAL - Flutterwave (various currencies)
-        US: { price: 9, currency: "USD", processor: "flutterwave" },
-        GB: { price: 7, currency: "GBP", processor: "flutterwave" },
-        CA: { price: 12, currency: "CAD", processor: "flutterwave" },  // ADD CANADA
-        DE: { price: 8, currency: "EUR", processor: "flutterwave" },
-        FR: { price: 8, currency: "EUR", processor: "flutterwave" },
-        IT: { price: 8, currency: "EUR", processor: "flutterwave" },
-        ES: { price: 8, currency: "EUR", processor: "flutterwave" },
-        NL: { price: 8, currency: "EUR", processor: "flutterwave" }
+        // INTERNATIONAL - Flutterwave
+        US: { price: 899, currency: "USD", processor: "flutterwave" },    // $8.99 in cents
+        GB: { price: 799, currency: "GBP", processor: "flutterwave" },    // £7.99 in pence
+        CA: { price: 1199, currency: "CAD", processor: "flutterwave" },   // C$11.99 in cents
+        DE: { price: 800, currency: "EUR", processor: "flutterwave" },    // €8.00 in cents
+        FR: { price: 800, currency: "EUR", processor: "flutterwave" },
+        IT: { price: 800, currency: "EUR", processor: "flutterwave" },
+        ES: { price: 800, currency: "EUR", processor: "flutterwave" },
+        NL: { price: 800, currency: "EUR", processor: "flutterwave" }
     };
 
     const selected = pricingMap[normalized] || pricingMap["US"];
+    console.log("💰 Selected pricing:", selected); // Add this log
+
     return {
-        amount: selected.price * 100, // Paystack uses kobo/cents
+        amount: selected.price, // Already multiplied by 100 in the map
         currency: selected.currency,
         processor: selected.processor
     };
@@ -255,7 +258,7 @@ async function initializeFlutterwavePayment(user, amount, currency, billingMode)
     try {
         // Generate a unique transaction reference
         const txRef = `SF-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-        
+
         const payload = {
             tx_ref: txRef,
             amount: amount / 100, // Flutterwave expects actual amount, not in cents
@@ -583,7 +586,10 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
 
         if (billingMode === "yearly") {
             finalAmount = Math.round(pricing.amount * 12 * 0.8);
+            // 👇 ADD THIS LINE
+            console.log("📅 Yearly pricing applied:", { original: pricing.amount, final: finalAmount });
         }
+
 
         // Store billing mode for later use
         const metadata = {
@@ -597,7 +603,7 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
         if (pricing.processor === "paystack") {
             // PAYSTACK for Nigeria
             console.log(`💰 Using Paystack for ${country}`);
-            
+
             const response = await axios.post("https://api.paystack.co/transaction/initialize", {
                 email: req.user.email,
                 amount: finalAmount,
@@ -617,28 +623,28 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
                 authorization_url: response.data.data.authorization_url,
                 processor: "paystack"
             });
-            
+
         } else {
             // FLUTTERWAVE for international (including Canada)
             console.log(`💰 Using Flutterwave for ${country}`);
-            
+
             const flutterwaveResult = await initializeFlutterwavePayment(
-                req.user, 
-                finalAmount, 
-                pricing.currency, 
+                req.user,
+                finalAmount,
+                pricing.currency,
                 billingMode
             );
 
             if (!flutterwaveResult.success) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: flutterwaveResult.error 
+                return res.status(400).json({
+                    success: false,
+                    error: flutterwaveResult.error
                 });
             }
 
             // Store the tx_ref for verification
             metadata.flutterwave_tx_ref = flutterwaveResult.tx_ref;
-            
+
             return res.json({
                 success: true,
                 authorization_url: flutterwaveResult.authorization_url,
@@ -1003,7 +1009,7 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
         // Verify webhook signature
         const secretHash = process.env.FLUTTERWAVE_SECRET_HASH || "studyforge_secret";
         const signature = req.headers['verif-hash'];
-        
+
         if (!signature || signature !== secretHash) {
             console.log("❌ Invalid Flutterwave signature");
             return res.sendStatus(401);
