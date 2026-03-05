@@ -392,7 +392,7 @@ window.sendChatMessage = async function () {
 };
 
 // ============================================
-// EXAM MODE
+// EXAM MODE - WITH VISUAL FEEDBACK
 // ============================================
 window.generateExamMode = async function () {
     const isAuthenticated = await window.requireAuth?.();
@@ -401,6 +401,14 @@ window.generateExamMode = async function () {
     if (!fullCourseContext) {
         window.showToast?.("Generate study guide first.");
         return;
+    }
+
+    // Show loading state on the Exam button
+    const examBtn = document.querySelector('button[onclick="generateExamMode()"]');
+    const originalBtnHTML = examBtn?.innerHTML;
+    if (examBtn) {
+        examBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
+        examBtn.disabled = true;
     }
 
     try {
@@ -432,16 +440,37 @@ window.generateExamMode = async function () {
         buildSections(data.data);
         if (window.loadUsage) await window.loadUsage();
 
+        // Show success toast with exam mode indicator
+        window.showToast?.("📝 Exam Mode Activated! Practice questions generated.", "success");
+        
+        // Add a temporary visual indicator
+        const headerTitle = document.querySelector('#resultSection h2');
+        if (headerTitle) {
+            const originalTitle = headerTitle.innerText;
+            headerTitle.innerHTML = '📝 Exam Mode <span class="text-sm font-normal text-emerald-600 ml-2 bg-emerald-50 px-3 py-1 rounded-full">Active</span>';
+            
+            // Change back after 5 seconds
+            setTimeout(() => {
+                headerTitle.innerHTML = 'Study Guide';
+            }, 5000);
+        }
+
         const resultSection = document.getElementById("resultSection");
         if (resultSection) {
             window.scrollTo({
-                top: resultSection.offsetTop,
+                top: resultSection.offsetTop - 80,
                 behavior: "smooth"
             });
         }
 
     } catch (err) {
         window.showToast?.("Exam mode error.");
+    } finally {
+        // Restore button
+        if (examBtn) {
+            examBtn.innerHTML = originalBtnHTML;
+            examBtn.disabled = false;
+        }
     }
 };
 
