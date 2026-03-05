@@ -227,6 +227,9 @@ window.handleSignup = async function() {
     }
 };
 
+// ============================================
+// LOGIN WITH LOADING STATE
+// ============================================
 window.handleLogin = async function() {
     const supabase = getSupabase();
     if (!supabase) {
@@ -234,11 +237,25 @@ window.handleLogin = async function() {
         return;
     }
     
+    // Get the login button
+    const loginBtn = document.querySelector('#loginForm button');
+    const originalText = loginBtn.innerText;
+    
+    // Show loading state
+    loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Logging in...';
+    loginBtn.disabled = true;
+    loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    
     const email = document.getElementById('loginEmail')?.value;
     const password = document.getElementById('loginPassword')?.value;
     
     if (!email || !password) {
         showToast("Please fill all fields");
+        
+        // Restore button
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         return;
     }
 
@@ -250,6 +267,11 @@ window.handleLogin = async function() {
 
         if (error) {
             showToast(error.message);
+            
+            // Restore button
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             return;
         }
 
@@ -266,6 +288,11 @@ window.handleLogin = async function() {
 
     } catch (err) {
         showToast(err.message);
+        
+        // Restore button
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
     }
 };
 
@@ -355,14 +382,31 @@ window.togglePassword = function(inputId, button) {
     }
 };
 
+// ============================================
+// RESET PASSWORD WITH LOADING STATE
+// ============================================
 window.resetPassword = async function() {
     const supabase = getSupabase();
     if (!supabase) return;
+    
+    // Find the forgot password link and get its parent button or create loading state
+    const resetLink = event.target;
+    const originalText = resetLink.innerText;
+    
+    // Show loading state on the link
+    resetLink.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Sending...';
+    resetLink.style.pointerEvents = 'none';
+    resetLink.style.opacity = '0.7';
     
     const email = document.getElementById('loginEmail')?.value;
     
     if (!email) {
         showToast("Please enter your email first.");
+        
+        // Restore link
+        resetLink.innerText = originalText;
+        resetLink.style.pointerEvents = 'auto';
+        resetLink.style.opacity = '1';
         return;
     }
 
@@ -375,6 +419,11 @@ window.resetPassword = async function() {
     } else {
         showToast("Password reset email sent. Check your inbox.", "success");
     }
+    
+    // Restore link
+    resetLink.innerText = originalText;
+    resetLink.style.pointerEvents = 'auto';
+    resetLink.style.opacity = '1';
 };
 
 // ============================================
@@ -401,3 +450,231 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 500);
 });
+
+
+// Store signup data temporarily
+let pendingSignup = {
+    email: '',
+    password: '',
+    name: ''
+};
+
+// ============================================
+// HANDLE SIGNUP WITH VERIFICATION
+// ============================================
+// ============================================
+// SIGNUP WITH LOADING STATE
+// ============================================
+window.handleSignup = async function() {
+    const supabase = getSupabase();
+    if (!supabase) {
+        showToast("Authentication system not ready");
+        return;
+    }
+    
+    // Get the signup button
+    const signupBtn = document.querySelector('#signupForm button');
+    const originalText = signupBtn.innerText;
+    
+    // Show loading state
+    signupBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Creating account...';
+    signupBtn.disabled = true;
+    signupBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    
+    const name = document.getElementById('signupName')?.value;
+    const email = document.getElementById('signupEmail')?.value;
+    const password = document.getElementById('signupPassword')?.value;
+
+    if (!email || !password || !name) {
+        showToast("Please fill all fields");
+        
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        return;
+    }
+
+    if (password.length < 6) {
+        showToast("Password must be at least 6 characters");
+        
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { full_name: name }
+            }
+        });
+
+        if (error) {
+            showToast(error.message);
+            
+            // Restore button
+            signupBtn.innerHTML = originalText;
+            signupBtn.disabled = false;
+            signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            return;
+        }
+
+        showToast("Signup successful! Check your email to confirm.", "success");
+        window.toggleAuthModal();
+        
+        // Restore button (in case modal closes)
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+    } catch (err) {
+        showToast(err.message);
+        
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+    }
+};
+
+// ============================================
+// VERIFY CODE AND COMPLETE SIGNUP
+// ============================================
+window.verifySignupCode = async function() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    // Get the 6-digit code
+    const inputs = document.querySelectorAll('.code-input');
+    const token = Array.from(inputs).map(input => input.value).join('');
+    
+    if (token.length !== 6) {
+        showToast("Please enter all 6 digits");
+        return;
+    }
+
+    try {
+        showToast("Verifying code...", "success");
+
+        const { data, error } = await supabase.auth.verifyOtp({
+            email: pendingSignup.email,
+            token: token,
+            type: 'signup'
+        });
+
+        if (error) {
+            showToast("Invalid code: " + error.message);
+            return;
+        }
+
+        showToast("Email verified! Logging you in...", "success");
+        
+        // Now sign them in with the stored credentials
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: pendingSignup.email,
+            password: pendingSignup.password
+        });
+
+        if (signInError) {
+            showToast("Auto-login failed. Please log in manually.");
+            window.location.href = '/';
+            return;
+        }
+
+        // Clear pending data
+        pendingSignup = { email: '', password: '', name: '' };
+        
+        // Close modal and go to dashboard
+        window.toggleAuthModal();
+        setTimeout(() => {
+            window.location.href = '/dashboard.html';
+        }, 1500);
+
+    } catch (err) {
+        showToast("Verification error: " + err.message);
+    }
+};
+
+// ============================================
+// RESEND VERIFICATION CODE
+// ============================================
+window.resendVerificationCode = async function() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    if (!pendingSignup.email) {
+        showToast("No pending verification found");
+        backToSignup();
+        return;
+    }
+
+    try {
+        showToast("Resending code...", "success");
+        
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: pendingSignup.email,
+            options: {
+                emailRedirectTo: window.location.origin + '/dashboard.html'
+            }
+        });
+
+        if (error) {
+            showToast("Failed to resend: " + error.message);
+        } else {
+            showToast("New code sent to your email!", "success");
+            
+            // Clear code inputs
+            document.querySelectorAll('.code-input').forEach(input => {
+                input.value = '';
+            });
+            document.querySelector('.code-input')?.focus();
+        }
+
+    } catch (err) {
+        showToast("Error: " + err.message);
+    }
+};
+
+// ============================================
+// BACK TO SIGNUP FORM
+// ============================================
+window.backToSignup = function() {
+    document.getElementById('signupStep1').classList.remove('hidden');
+    document.getElementById('verificationStep').classList.add('hidden');
+    
+    // Clear pending data
+    pendingSignup = { email: '', password: '', name: '' };
+    
+    // Clear code inputs
+    document.querySelectorAll('.code-input').forEach(input => {
+        input.value = '';
+    });
+};
+
+// ============================================
+// MOVE TO NEXT CODE INPUT (AUTO-TAB)
+// ============================================
+window.moveToNext = function(current, index) {
+    if (current.value.length === 1) {
+        const next = document.querySelectorAll('.code-input')[index + 1];
+        if (next) {
+            next.focus();
+        }
+    }
+    
+    // Handle backspace
+    current.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !current.value) {
+            const prev = document.querySelectorAll('.code-input')[index - 1];
+            if (prev) {
+                prev.focus();
+            }
+        }
+    });
+};

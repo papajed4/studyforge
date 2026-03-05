@@ -387,6 +387,26 @@
         </div>
     </div>
 
+    <!-- ================= DELETE CONFIRMATION MODAL ================= -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden ...">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 relative">
+            <!-- Warning Icon -->
+            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 text-center mb-2">Delete Study Guide?</h3>
+            <p class="text-sm text-slate-500 text-center mb-6">This action cannot be undone. The study guide will be permanently removed.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-semibold transition-all">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" onclick="deleteGuide()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="errorToast" class="fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:max-w-md bg-slate-900 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden opacity-0 translate-y-10 transition-all duration-300">
         <i id="toastIcon" class="fa-solid fa-circle-exclamation text-red-400"></i>

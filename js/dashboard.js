@@ -548,7 +548,7 @@ async function loadSavedGuides() {
                         <h3 class="font-semibold text-slate-800">${guide.title}</h3>
                         <p class="text-xs text-slate-500 mt-1">${new Date(guide.created_at).toLocaleDateString()}</p>
                     </div>
-                    <button onclick="deleteGuide('${guide.id}')" class="text-red-500 text-sm hover:text-red-600">Delete</button>
+                    <button onclick="confirmDeleteGuide('${guide.id}')" class="text-red-500 text-sm hover:text-red-600">Delete</button>
                 </div>
             `;
 
@@ -577,15 +577,89 @@ function openSavedGuide(content) {
     window.showSection("generate");
 }
 
-window.deleteGuide = async function (id) {
-    const confirmDelete = confirm("Are you sure you want to delete this study guide?");
-    if (!confirmDelete) return;
+// ============================================
+// DELETE GUIDE WITH LOADING STATE
+// ============================================
+// ============================================
+// DELETE GUIDE WITH CUSTOM MODAL
+// ============================================
+let guideToDelete = null; // Store the ID of guide to delete
+
+window.confirmDeleteGuide = function(id) {
+    // Store the guide ID
+    guideToDelete = id;
+    
+    // Show the custom modal
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('hidden');
+    
+    // Animate in
+    if (window.gsap) {
+        gsap.fromTo(modal, 
+            { opacity: 0 },
+            { opacity: 1, duration: 0.2 }
+        );
+        gsap.fromTo(modal.firstElementChild,
+            { scale: 0.95, y: 10, opacity: 0 },
+            { scale: 1, y: 0, opacity: 1, duration: 0.3, ease: "back.out(1.2)" }
+        );
+    }
+};
+
+window.closeDeleteModal = function() {
+    const modal = document.getElementById('deleteModal');
+    
+    if (window.gsap) {
+        gsap.to(modal.firstElementChild, {
+            scale: 0.95,
+            y: 10,
+            opacity: 0,
+            duration: 0.2,
+            onComplete: () => {
+                gsap.to(modal, {
+                    opacity: 0,
+                    duration: 0.2,
+                    onComplete: () => {
+                        modal.classList.add('hidden');
+                        modal.style.opacity = '';
+                    }
+                });
+            }
+        });
+    } else {
+        modal.classList.add('hidden');
+    }
+    
+    // Clear the stored ID
+    guideToDelete = null;
+};
+
+window.deleteGuide = async function() {
+    if (!guideToDelete) return;
+
+    // Find the delete button in modal and show loading
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = deleteBtn.innerText;
+    
+    // Show loading state
+    deleteBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Deleting...';
+    deleteBtn.disabled = true;
+    deleteBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
     const token = await window.getAuthToken?.();
-    if (!token) return;
+    if (!token) {
+        window.showToast?.("Please sign in again.");
+        closeDeleteModal();
+        
+        // Restore button
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+        deleteBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        return;
+    }
 
     try {
-        const response = await fetch(`/api/delete-guide/${id}`, {
+        const response = await fetch(`/api/delete-guide/${guideToDelete}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -594,13 +668,26 @@ window.deleteGuide = async function (id) {
 
         if (data.success) {
             window.showToast?.("Study guide deleted.", "success");
-            loadSavedGuides();
+            closeDeleteModal();
+            loadSavedGuides(); // Refresh the list
         } else {
             window.showToast?.("Delete failed.");
+            
+            // Restore button
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+            deleteBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         }
 
     } catch (err) {
         window.showToast?.("Delete error.");
+        
+        // Restore button
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+        deleteBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+    } finally {
+        guideToDelete = null;
     }
 };
 
