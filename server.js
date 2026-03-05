@@ -951,6 +951,17 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
 });
 
 // ============================================
+// HEALTH CHECK ENDPOINT - Add this anywhere in server.js
+// ============================================
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'alive', 
+        time: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// ============================================
 // START SERVER
 // ============================================
 app.listen(PORT, () => {
