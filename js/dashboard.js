@@ -10,19 +10,19 @@ function getSupabase() {
 }
 
 // ============================================
-// SECTION NAVIGATION
+// SECTION NAVIGATION - UPDATED for mobile classes
 // ============================================
-window.showSection = function(section) {
+window.showSection = function (section) {
     // Hide all sections
     document.getElementById("generateSection")?.classList.add("hidden");
     document.getElementById("savedSection")?.classList.add("hidden");
     document.getElementById("accountSection")?.classList.add("hidden");
 
-    // Reset nav buttons
+    // Reset nav buttons - UPDATED CLASSES to match mobile HTML
     ['navGenerate', 'navSaved', 'navAccount'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
-            btn.className = "flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition";
+            btn.className = "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-all";
         }
     });
 
@@ -31,15 +31,17 @@ window.showSection = function(section) {
         document.getElementById("generateSection")?.classList.remove("hidden");
         const navGenerate = document.getElementById("navGenerate");
         if (navGenerate) {
-            navGenerate.className = "flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold";
+            navGenerate.className = "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100";
         }
+        // Load welcome name if needed
+        if (window.loadWelcomeName) window.loadWelcomeName();
     }
 
     if (section === "saved") {
         document.getElementById("savedSection")?.classList.remove("hidden");
         const navSaved = document.getElementById("navSaved");
         if (navSaved) {
-            navSaved.className = "flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold";
+            navSaved.className = "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100";
         }
         loadSavedGuides();
     }
@@ -48,16 +50,32 @@ window.showSection = function(section) {
         document.getElementById("accountSection")?.classList.remove("hidden");
         const navAccount = document.getElementById("navAccount");
         if (navAccount) {
-            navAccount.className = "flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold";
+            navAccount.className = "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100";
         }
         if (window.loadAccountInfo) window.loadAccountInfo();
+    }
+
+    // Update mobile section title
+    const titles = {
+        'generate': 'Generate',
+        'saved': 'My Study Guides',
+        'account': 'Account'
+    };
+    const mobileTitle = document.getElementById('mobileSectionTitle');
+    if (mobileTitle) {
+        mobileTitle.textContent = titles[section] || 'Dashboard';
+    }
+
+    // Close sidebar on mobile after navigation
+    if (window.innerWidth < 768) {
+        toggleSidebar();
     }
 };
 
 // ============================================
 // STUDY GUIDE GENERATION
 // ============================================
-window.initiateCondense = async function() {
+window.initiateCondense = async function () {
     const isAuthenticated = await window.requireAuth?.();
     if (!isAuthenticated) return;
 
@@ -191,13 +209,13 @@ window.initiateCondense = async function() {
 function buildSections(text) {
     const container = document.getElementById('exportContainer');
     if (!container) return;
-    
+
     container.innerHTML = '';
 
     const sectionTitles = [
         "Executive Summary",
         "Key Concepts Explained Simply",
-        "Exam-Ready Bullet Points", 
+        "Exam-Ready Bullet Points",
         "Practice Questions",
         "Flashcards (Term - Definition)",
         "Quick Revision Sheet"
@@ -236,7 +254,7 @@ function buildSections(text) {
 
         let title = sectionText.split('\n')[0].trim();
         let body = sectionText.substring(title.length).trim();
-        
+
         body = body.replace(/[#*`]/g, '');
         body = body.replace(/\n/g, "<br>");
 
@@ -287,7 +305,7 @@ function buildSections(text) {
 // ============================================
 // CHAT SYSTEM
 // ============================================
-window.sendChatMessage = async function() {
+window.sendChatMessage = async function () {
     const isAuthenticated = await window.requireAuth?.();
     if (!isAuthenticated) return;
 
@@ -376,7 +394,7 @@ window.sendChatMessage = async function() {
 // ============================================
 // EXAM MODE
 // ============================================
-window.generateExamMode = async function() {
+window.generateExamMode = async function () {
     const isAuthenticated = await window.requireAuth?.();
     if (!isAuthenticated) return;
 
@@ -430,7 +448,7 @@ window.generateExamMode = async function() {
 // ============================================
 // EXPORT FUNCTIONS
 // ============================================
-window.exportToPDF = function() {
+window.exportToPDF = function () {
     const element = document.getElementById('exportContainer');
     if (!element || !window.html2pdf) return;
 
@@ -450,7 +468,7 @@ window.exportToPDF = function() {
     html2pdf().set(opt).from(element).save();
 };
 
-window.exportToNotion = function() {
+window.exportToNotion = function () {
     if (!fullCourseContext) return;
 
     const summary = `
@@ -530,7 +548,7 @@ function openSavedGuide(content) {
     window.showSection("generate");
 }
 
-window.deleteGuide = async function(id) {
+window.deleteGuide = async function (id) {
     const confirmDelete = confirm("Are you sure you want to delete this study guide?");
     if (!confirmDelete) return;
 
@@ -569,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = "/";
             return;
         }
-        
+
         // Check authentication
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
@@ -584,13 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chat input listener
     const chatInput = document.getElementById('chatInput');
     if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
+        chatInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') window.sendChatMessage();
         });
     }
 
     // Country detection for dashboard
-    (async function() {
+    (async function () {
         try {
             const response = await fetch("https://ipapi.co/json/");
             const data = await response.json();
@@ -600,6 +618,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 });
+
+// ============================================
+// TOGGLE SIDEBAR - Add this if missing
+// ============================================
+window.toggleSidebar = function () {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    if (sidebar) sidebar.classList.toggle("-translate-x-full");
+    if (overlay) overlay.classList.toggle("hidden");
+};
 
 // ============================================
 // EXPOSE FUNCTIONS

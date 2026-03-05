@@ -204,3 +204,76 @@ body {
         line-height: 1.6;
     }
 }
+
+
+/* ============================================
+   MOBILE OPTIMIZATIONS - Add at the bottom
+   ============================================ */
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .glass-panel {
+        padding: 0.75rem !important;
+    }
+    
+    #exportContainer .glass-panel {
+        margin-bottom: 0.75rem;
+    }
+    
+    #exportContainer .p-6 {
+        padding: 1rem !important;
+    }
+    
+    /* Better touch targets */
+    button, 
+    .cursor-pointer,
+    [onclick] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Fix overflowing content */
+    .markdown-body {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0.5rem !important;
+    }
+    
+    /* Better accordion on mobile */
+    .accordion-content {
+        transition: height 0.3s ease-out;
+    }
+    
+    /* Improve chat input on mobile */
+    #chatInput {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    /* Saved guides cards */
+    #savedGuidesList > div {
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Fix for iOS safe areas */
+@supports (padding: max(0px)) {
+    .fixed.bottom-10 {
+        bottom: max(10px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Better loading state */
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
