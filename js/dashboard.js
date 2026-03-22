@@ -37,6 +37,41 @@ function getSupabase() {
 }
 
 // ============================================
+// GOOGLE ANALYTICS EVENT TRACKING
+// ============================================
+
+// Track page views
+function trackPageView(pageName) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'page_view', {
+            'page_title': pageName,
+            'page_location': window.location.href
+        });
+    }
+}
+
+// Track generate
+function trackGenerate(guideTitle, contentLength) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'generate_guide', {
+            'event_category': 'study',
+            'event_label': guideTitle,
+            'value': contentLength
+        });
+    }
+}
+
+// Track upgrade
+function trackUpgrade(plan) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'upgrade', {
+            'event_category': 'subscription',
+            'event_label': plan
+        });
+    }
+}
+
+// ============================================
 // SECTION NAVIGATION WITH TRANSITIONS
 // ============================================
 window.showSection = function (section) {
