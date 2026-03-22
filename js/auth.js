@@ -5,7 +5,7 @@
 // Initialize Supabase once
 (function initSupabase() {
     console.log("Initializing Supabase...");
-    
+
     const SUPABASE_URL = "https://drkgygcoaisvjfppbuxx.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
 
@@ -25,18 +25,18 @@
 // ============================================
 // TOAST NOTIFICATION SYSTEM
 // ============================================
-window.showToast = function(msg, type = "error") {
+window.showToast = function (msg, type = "error") {
     const toast = document.getElementById('errorToast');
     const txt = document.getElementById('errorMsg');
-    
+
     if (!toast) return;
 
     txt.innerText = msg;
-    
+
     const icon = toast.querySelector('i');
     if (icon) {
-        icon.className = type === "success" ? 
-            "fa-solid fa-check-circle text-green-400" : 
+        icon.className = type === "success" ?
+            "fa-solid fa-check-circle text-green-400" :
             "fa-solid fa-circle-exclamation text-red-400";
     }
 
@@ -44,12 +44,12 @@ window.showToast = function(msg, type = "error") {
         const sound = document.getElementById("successSound");
         if (sound) {
             sound.currentTime = 0;
-            sound.play().catch(() => {});
+            sound.play().catch(() => { });
         }
     }
 
     toast.classList.remove('hidden');
-    
+
     if (window.gsap) {
         gsap.fromTo(toast,
             { opacity: 0, y: -20, scale: 0.95 },
@@ -63,7 +63,7 @@ window.showToast = function(msg, type = "error") {
 function hideToast() {
     const toast = document.getElementById('errorToast');
     if (!toast) return;
-    
+
     if (window.gsap) {
         gsap.to(toast, {
             opacity: 0,
@@ -86,13 +86,13 @@ function getSupabase() {
 // ============================================
 // AUTH HELPER FUNCTIONS
 // ============================================
-window.requireAuth = async function() {
+window.requireAuth = async function () {
     const supabase = getSupabase();
     if (!supabase) {
         console.error("Supabase not initialized");
         return false;
     }
-    
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         showToast("Please sign in first to use this feature.");
@@ -102,11 +102,11 @@ window.requireAuth = async function() {
     return true;
 };
 
-window.getAuthToken = async function() {
+window.getAuthToken = async function () {
     try {
         const supabase = getSupabase();
         if (!supabase) return null;
-        
+
         const { data: { session } } = await supabase.auth.getSession();
         return session?.access_token || null;
     } catch (error) {
@@ -118,7 +118,7 @@ window.getAuthToken = async function() {
 // ============================================
 // AUTH MODAL FUNCTIONS
 // ============================================
-window.toggleAuthModal = function() {
+window.toggleAuthModal = function () {
     const modal = document.getElementById('authModal');
     const modalContent = document.getElementById('modalContent');
 
@@ -126,7 +126,7 @@ window.toggleAuthModal = function() {
 
     if (modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');
-        
+
         if (window.gsap) {
             gsap.to(modal, { opacity: 1, duration: 0.3 });
             gsap.fromTo(modalContent,
@@ -158,7 +158,7 @@ window.toggleAuthModal = function() {
     }
 };
 
-window.switchAuthTab = function(tab) {
+window.switchAuthTab = function (tab) {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const loginTab = document.getElementById('loginTab');
@@ -184,13 +184,13 @@ window.switchAuthTab = function(tab) {
 // ============================================
 // SIGNUP / LOGIN FUNCTIONS
 // ============================================
-window.handleSignup = async function() {
+window.handleSignup = async function () {
     const supabase = getSupabase();
     if (!supabase) {
         showToast("Authentication system not ready");
         return;
     }
-    
+
     const name = document.getElementById('signupName')?.value;
     const email = document.getElementById('signupEmail')?.value;
     const password = document.getElementById('signupPassword')?.value;
@@ -230,28 +230,28 @@ window.handleSignup = async function() {
 // ============================================
 // LOGIN WITH LOADING STATE
 // ============================================
-window.handleLogin = async function() {
+window.handleLogin = async function () {
     const supabase = getSupabase();
     if (!supabase) {
         showToast("Authentication system not ready");
         return;
     }
-    
+
     // Get the login button
     const loginBtn = document.querySelector('#loginForm button');
     const originalText = loginBtn.innerText;
-    
+
     // Show loading state
     loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Logging in...';
     loginBtn.disabled = true;
     loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
-    
+
     const email = document.getElementById('loginEmail')?.value;
     const password = document.getElementById('loginPassword')?.value;
-    
+
     if (!email || !password) {
         showToast("Please fill all fields");
-        
+
         // Restore button
         loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
@@ -267,7 +267,7 @@ window.handleLogin = async function() {
 
         if (error) {
             showToast(error.message);
-            
+
             // Restore button
             loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;
@@ -277,7 +277,20 @@ window.handleLogin = async function() {
 
         showToast("Login successful!", "success");
         window.toggleAuthModal();
-        
+        await window.updateAuthUI(); // Force update
+
+        // In handleLogin function, before redirect
+        if (window.location.pathname.includes('dashboard.html')) {
+            // Add fade out effect before redirect
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                window.location.href = '/dashboard.html';
+            }, 300);
+        } else {
+            window.location.href = '/dashboard.html';
+        }
+
         if (window.updateAuthUI) window.updateAuthUI();
 
         setTimeout(() => {
@@ -288,7 +301,7 @@ window.handleLogin = async function() {
 
     } catch (err) {
         showToast(err.message);
-        
+
         // Restore button
         loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
@@ -297,14 +310,18 @@ window.handleLogin = async function() {
 };
 
 // ============================================
-// UI UPDATE FUNCTIONS
+// UI UPDATE FUNCTIONS - DEBUG VERSION
 // ============================================
-window.updateAuthUI = async function() {
+window.updateAuthUI = async function () {
+    console.log("🔄 Updating auth UI...");
+
     const supabase = getSupabase();
     if (!supabase) return;
-    
+
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user || null;
+
+    console.log("User logged in:", !!user);
 
     // Desktop elements
     const authButton = document.getElementById('authButton');
@@ -318,49 +335,64 @@ window.updateAuthUI = async function() {
     const mobileAccountSection = document.getElementById('mobileAccountSection');
     const mobileUserAvatar = document.getElementById('mobileUserAvatar');
 
+    console.log("Mobile SignIn button found:", !!mobileSignInBtn);
+    console.log("Mobile SignIn classes BEFORE:", mobileSignInBtn?.className);
+
     if (user) {
-        // Logged in - Desktop
+        // ========== LOGGED IN ==========
+        console.log("✅ LOGGED IN - Hiding Sign In, showing Dashboard & Account");
+
+        // Desktop
         if (authButton) authButton.classList.add('hidden');
         if (accountWrapper) accountWrapper.classList.remove('hidden');
         if (dashboardLink) dashboardLink.classList.remove('hidden');
         if (usageBadge) usageBadge.classList.remove('hidden');
 
-        // Logged in - Mobile
+        // Mobile
         if (mobileDashboardLink) mobileDashboardLink.classList.remove('hidden');
-        if (mobileSignInBtn) mobileSignInBtn.classList.add('hidden');
+        if (mobileSignInBtn) {
+            mobileSignInBtn.classList.add('hidden');
+            console.log("Mobile SignIn AFTER:", mobileSignInBtn.className);
+        }
         if (mobileAccountSection) mobileAccountSection.classList.remove('hidden');
 
         // Update avatar
         const name = user.user_metadata?.full_name || 'User';
         const initials = name.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase();
-        
         if (mobileUserAvatar) mobileUserAvatar.innerText = initials;
-        
-        // Load account info
+
+        // Get plan
         if (window.loadAccountInfo) window.loadAccountInfo();
         if (window.loadUsage) window.loadUsage();
+
     } else {
-        // Logged out - Desktop
+        // ========== LOGGED OUT ==========
+        console.log("❌ LOGGED OUT - Showing Sign In, hiding Dashboard & Account");
+
+        // Desktop
         if (authButton) authButton.classList.remove('hidden');
         if (accountWrapper) accountWrapper.classList.add('hidden');
         if (dashboardLink) dashboardLink.classList.add('hidden');
         if (usageBadge) usageBadge.classList.add('hidden');
 
-        // Logged out - Mobile
+        // Mobile
         if (mobileDashboardLink) mobileDashboardLink.classList.add('hidden');
-        if (mobileSignInBtn) mobileSignInBtn.classList.remove('hidden');
+        if (mobileSignInBtn) {
+            mobileSignInBtn.classList.remove('hidden');
+            console.log("Mobile SignIn AFTER:", mobileSignInBtn.className);
+        }
         if (mobileAccountSection) mobileAccountSection.classList.add('hidden');
     }
 };
 
-window.logoutUser = async function() {
+window.logoutUser = async function () {
     const supabase = getSupabase();
     if (!supabase) return;
-    
+
     await supabase.auth.signOut();
-    window.updateAuthUI();
+    await window.updateAuthUI(); // Force update
     showToast("Logged out successfully", "success");
-    
+
     if (window.location.pathname.includes('dashboard.html')) {
         window.location.href = '/';
     }
@@ -369,7 +401,7 @@ window.logoutUser = async function() {
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
-window.togglePassword = function(inputId, button) {
+window.togglePassword = function (inputId, button) {
     const input = document.getElementById(inputId);
     if (!input) return;
 
@@ -385,24 +417,24 @@ window.togglePassword = function(inputId, button) {
 // ============================================
 // RESET PASSWORD WITH LOADING STATE
 // ============================================
-window.resetPassword = async function() {
+window.resetPassword = async function () {
     const supabase = getSupabase();
     if (!supabase) return;
-    
+
     // Find the forgot password link and get its parent button or create loading state
     const resetLink = event.target;
     const originalText = resetLink.innerText;
-    
+
     // Show loading state on the link
     resetLink.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Sending...';
     resetLink.style.pointerEvents = 'none';
     resetLink.style.opacity = '0.7';
-    
+
     const email = document.getElementById('loginEmail')?.value;
-    
+
     if (!email) {
         showToast("Please enter your email first.");
-        
+
         // Restore link
         resetLink.innerText = originalText;
         resetLink.style.pointerEvents = 'auto';
@@ -419,7 +451,7 @@ window.resetPassword = async function() {
     } else {
         showToast("Password reset email sent. Check your inbox.", "success");
     }
-    
+
     // Restore link
     resetLink.innerText = originalText;
     resetLink.style.pointerEvents = 'auto';
@@ -427,18 +459,22 @@ window.resetPassword = async function() {
 };
 
 // ============================================
-// INITIALIZATION - FIXED!
+// INITIALIZATION - FIXED
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM ready, checking auth...");
+
     // Wait a bit for Supabase to be ready
-    setTimeout(() => {
+    setTimeout(async () => {
         const supabase = getSupabase();
         if (supabase) {
-            window.updateAuthUI();
-            
-            // Only set up listener if supabase exists
+            // Initial UI update
+            await window.updateAuthUI();
+
+            // Set up auth state listener
             try {
                 supabase.auth.onAuthStateChange((event, session) => {
+                    console.log("Auth state changed:", event);
                     window.updateAuthUI();
                 });
             } catch (e) {
@@ -465,29 +501,29 @@ let pendingSignup = {
 // ============================================
 // SIGNUP WITH LOADING STATE
 // ============================================
-window.handleSignup = async function() {
+window.handleSignup = async function () {
     const supabase = getSupabase();
     if (!supabase) {
         showToast("Authentication system not ready");
         return;
     }
-    
+
     // Get the signup button
     const signupBtn = document.querySelector('#signupForm button');
     const originalText = signupBtn.innerText;
-    
+
     // Show loading state
     signupBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Creating account...';
     signupBtn.disabled = true;
     signupBtn.classList.add('opacity-75', 'cursor-not-allowed');
-    
+
     const name = document.getElementById('signupName')?.value;
     const email = document.getElementById('signupEmail')?.value;
     const password = document.getElementById('signupPassword')?.value;
 
     if (!email || !password || !name) {
         showToast("Please fill all fields");
-        
+
         // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
@@ -497,7 +533,7 @@ window.handleSignup = async function() {
 
     if (password.length < 6) {
         showToast("Password must be at least 6 characters");
-        
+
         // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
@@ -516,7 +552,7 @@ window.handleSignup = async function() {
 
         if (error) {
             showToast(error.message);
-            
+
             // Restore button
             signupBtn.innerHTML = originalText;
             signupBtn.disabled = false;
@@ -526,7 +562,7 @@ window.handleSignup = async function() {
 
         showToast("Signup successful! Check your email to confirm.", "success");
         window.toggleAuthModal();
-        
+
         // Restore button (in case modal closes)
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
@@ -534,7 +570,7 @@ window.handleSignup = async function() {
 
     } catch (err) {
         showToast(err.message);
-        
+
         // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
@@ -545,14 +581,14 @@ window.handleSignup = async function() {
 // ============================================
 // VERIFY CODE AND COMPLETE SIGNUP
 // ============================================
-window.verifySignupCode = async function() {
+window.verifySignupCode = async function () {
     const supabase = getSupabase();
     if (!supabase) return;
 
     // Get the 6-digit code
     const inputs = document.querySelectorAll('.code-input');
     const token = Array.from(inputs).map(input => input.value).join('');
-    
+
     if (token.length !== 6) {
         showToast("Please enter all 6 digits");
         return;
@@ -573,7 +609,7 @@ window.verifySignupCode = async function() {
         }
 
         showToast("Email verified! Logging you in...", "success");
-        
+
         // Now sign them in with the stored credentials
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: pendingSignup.email,
@@ -588,7 +624,7 @@ window.verifySignupCode = async function() {
 
         // Clear pending data
         pendingSignup = { email: '', password: '', name: '' };
-        
+
         // Close modal and go to dashboard
         window.toggleAuthModal();
         setTimeout(() => {
@@ -603,7 +639,7 @@ window.verifySignupCode = async function() {
 // ============================================
 // RESEND VERIFICATION CODE
 // ============================================
-window.resendVerificationCode = async function() {
+window.resendVerificationCode = async function () {
     const supabase = getSupabase();
     if (!supabase) return;
 
@@ -615,7 +651,7 @@ window.resendVerificationCode = async function() {
 
     try {
         showToast("Resending code...", "success");
-        
+
         const { error } = await supabase.auth.resend({
             type: 'signup',
             email: pendingSignup.email,
@@ -628,7 +664,7 @@ window.resendVerificationCode = async function() {
             showToast("Failed to resend: " + error.message);
         } else {
             showToast("New code sent to your email!", "success");
-            
+
             // Clear code inputs
             document.querySelectorAll('.code-input').forEach(input => {
                 input.value = '';
@@ -644,13 +680,13 @@ window.resendVerificationCode = async function() {
 // ============================================
 // BACK TO SIGNUP FORM
 // ============================================
-window.backToSignup = function() {
+window.backToSignup = function () {
     document.getElementById('signupStep1').classList.remove('hidden');
     document.getElementById('verificationStep').classList.add('hidden');
-    
+
     // Clear pending data
     pendingSignup = { email: '', password: '', name: '' };
-    
+
     // Clear code inputs
     document.querySelectorAll('.code-input').forEach(input => {
         input.value = '';
@@ -660,16 +696,16 @@ window.backToSignup = function() {
 // ============================================
 // MOVE TO NEXT CODE INPUT (AUTO-TAB)
 // ============================================
-window.moveToNext = function(current, index) {
+window.moveToNext = function (current, index) {
     if (current.value.length === 1) {
         const next = document.querySelectorAll('.code-input')[index + 1];
         if (next) {
             next.focus();
         }
     }
-    
+
     // Handle backspace
-    current.addEventListener('keydown', function(e) {
+    current.addEventListener('keydown', function (e) {
         if (e.key === 'Backspace' && !current.value) {
             const prev = document.querySelectorAll('.code-input')[index - 1];
             if (prev) {
@@ -678,3 +714,6 @@ window.moveToNext = function(current, index) {
         }
     });
 };
+
+// Make sure updateAuthUI is exposed
+window.updateAuthUI = updateAuthUI;

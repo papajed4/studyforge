@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>StudyForge | Dashboard</title>
-    
+
     <!-- IMPORTANT: Add viewport meta for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 
@@ -42,7 +42,7 @@
 
     <!-- Flutterwave -->
     <script src="https://checkout.flutterwave.com/v3.js"></script>
-    
+
 </head>
 
 <body class="bg-slate-50 min-h-screen antialiased">
@@ -51,17 +51,28 @@
     <div class="flex h-screen overflow-hidden bg-slate-50">
 
         <!-- ================= MOBILE SIDEBAR OVERLAY ================= -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-40 md:hidden transition-opacity duration-300" onclick="toggleSidebar()"></div>
+        <div id="sidebarOverlay"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-40 md:hidden transition-opacity duration-300"
+            onclick="toggleSidebar()"></div>
 
         <!-- ================= MODERN LIGHT SIDEBAR ================= -->
-        <aside id="sidebar" class="fixed md:static z-50 inset-y-0 left-0 w-64 bg-white border-r border-slate-200 p-5 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-xl md:shadow-none">
-            
+        <aside id="sidebar"
+            class="fixed md:static z-50 inset-y-0 left-0 w-64 bg-white border-r border-slate-200 p-5 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-xl md:shadow-none">
+
             <!-- Top Logo -->
             <div>
                 <div class="flex items-center justify-between mb-8 md:mb-10">
-                    <h2 class="text-xl font-bold text-slate-900">
-                        Study<span class="text-indigo-600">Forge</span>
-                    </h2>
+                    <div class="flex items-center gap-2">
+                        <a href="index.html" class="flex items-center gap-2 group">
+                            <div
+                                class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                                <i class="fa-solid fa-house text-indigo-600"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900">
+                                Study<span class="text-indigo-600">Forge</span>
+                            </h2>
+                        </a>
+                    </div>
                     <!-- Close button for mobile -->
                     <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-700 p-2">
                         <i class="fa-solid fa-times text-xl"></i>
@@ -71,20 +82,30 @@
                 <!-- Navigation -->
                 <nav class="space-y-1.5 text-sm">
                     <!-- Generate -->
-                    <button id="navGenerate" onclick="showSection('generate')" class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100">
-                        <span class="text-lg">⚡</span>
+                    <button id="navGenerate" onclick="showSection('generate')"
+                        class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100">
+                        <i class="fa-solid fa-bolt text-lg"></i>
                         <span>Generate</span>
                     </button>
 
                     <!-- Saved -->
-                    <button id="navSaved" onclick="showSection('saved')" class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100">
-                        <span class="text-lg">📚</span>
+                    <button id="navSaved" onclick="showSection('saved')"
+                        class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-book-open text-lg"></i>
                         <span>My Study Guides</span>
                     </button>
 
+                    <!-- 👇 ADD THIS NEW ANALYTICS BUTTON -->
+                    <button id="navAnalytics" onclick="showSection('analytics')"
+                        class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-chart-line text-lg"></i>
+                        <span>Analytics</span>
+                    </button>
+
                     <!-- Account -->
-                    <button id="navAccount" onclick="showSection('account')" class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100">
-                        <span class="text-lg">👤</span>
+                    <button id="navAccount" onclick="showSection('account')"
+                        class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-circle-user text-lg"></i>
                         <span>Account</span>
                     </button>
                 </nav>
@@ -93,16 +114,34 @@
             <!-- Bottom Profile -->
             <div class="border-t border-slate-200 pt-5 mt-4">
                 <div class="flex items-center gap-3 mb-4">
-                    <div id="userAvatar" class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0">
-                        SF
+                    <div class="relative">
+                        <div id="userAvatar"
+                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0">
+                            SF
+                        </div>
+                        <!-- Pro Badge - hidden by default -->
+                        <div id="proBadge" class="absolute -top-1 -right-1 hidden">
+                            <div
+                                class="w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+                                <i class="fa-solid fa-fire text-white text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm text-slate-900 font-medium truncate">Your Dashboard</p>
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm text-slate-900 font-medium truncate">Your Dashboard</p>
+                            <!-- Pro Active Badge - hidden by default -->
+                            <span id="proActiveBadge"
+                                class="hidden text-xs bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-0.5 rounded-full font-medium">
+                                Pro
+                            </span>
+                        </div>
                         <p class="text-xs text-slate-500">Study Mode</p>
                     </div>
                 </div>
 
-                <button onclick="logoutUser()" class="w-full text-left text-red-500 hover:text-red-600 active:text-red-700 text-sm font-medium py-3 px-2 rounded-lg hover:bg-red-50 transition-colors">
+                <button onclick="logoutUser()"
+                    class="w-full text-left text-red-500 hover:text-red-600 active:text-red-700 text-sm font-medium py-3 px-2 rounded-lg hover:bg-red-50 transition-colors">
                     <i class="fa-solid fa-sign-out-alt mr-2"></i> Logout
                 </button>
             </div>
@@ -114,26 +153,46 @@
             <!-- Mobile Top Bar -->
             <div class="md:hidden bg-white border-b border-slate-200 sticky top-0 z-30">
                 <div class="px-4 py-3 flex justify-between items-center">
-                    <button onclick="toggleSidebar()" class="text-slate-600 text-xl p-2 -ml-2 active:bg-slate-100 rounded-lg" aria-label="Menu">
+                    <button onclick="toggleSidebar()"
+                        class="text-slate-600 text-xl p-2 -ml-2 active:bg-slate-100 rounded-lg" aria-label="Menu">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <span class="font-bold text-indigo-600">StudyForge</span>
+                    <span class="text-xl font-bold tracking-tight text-slate-900">
+                        Study<span class="text-indigo-600">Forge</span>
+                    </span>
                     <div class="w-10"><!-- spacer --></div>
                 </div>
-                
+
                 <!-- Mobile Section Indicator -->
                 <div class="px-4 pb-2">
                     <span id="mobileSectionTitle" class="text-sm font-medium text-slate-500">Generate</span>
                 </div>
             </div>
 
+            <!-- Smart Usage Warning Bar -->
+            <div id="usageWarningBar"
+                class="hidden bg-amber-50 border-l-4 border-amber-500 p-3 mb-4 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high text-amber-600"></i>
+                        <span class="text-sm text-amber-700">
+                            <span id="usageRemaining">5</span> generations remaining today
+                        </span>
+                    </div>
+                    <button onclick="toggleUpgradeModal()"
+                        class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full transition font-medium">
+                        Upgrade to Pro →
+                    </button>
+                </div>
+            </div>
+
             <main class="p-4 md:p-8 lg:p-10 max-w-5xl mx-auto w-full">
-                
+
                 <!-- ===================================================== -->
                 <!-- ================= GENERATE SECTION ================== -->
                 <!-- ===================================================== -->
                 <div id="generateSection" class="space-y-5 md:space-y-8">
-                    
+
                     <!-- Welcome Header -->
                     <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200">
                         <h2 id="welcomeText" class="text-xl md:text-2xl font-bold text-slate-900">
@@ -141,12 +200,106 @@
                         </h2>
                     </div>
 
+                    <!-- ================= PROGRESS TRACKING DASHBOARD ================= -->
+                    <div id="progressDashboard" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-indigo-600"></i>
+                                Your Study Progress
+                            </h3>
+                            <span class="text-xs text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full font-medium">
+                                Last 7 days
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <!-- Lectures Saved -->
+                            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 text-center">
+                                <i class="fa-solid fa-book-open text-indigo-600 text-2xl mb-1 block"></i>
+                                <div class="text-xl font-bold text-slate-800" id="lecturesSaved">0</div>
+                                <div class="text-xs text-slate-500">Lectures</div>
+                            </div>
+
+                            <!-- Flashcards Reviewed -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 text-center">
+                                <i class="fa-regular fa-rectangle-ad text-blue-600 text-2xl mb-1 block"></i>
+                                <div class="text-xl font-bold text-slate-800" id="flashcardsReviewed">0</div>
+                                <div class="text-xs text-slate-500">Flashcards</div>
+                            </div>
+
+                            <!-- Questions Answered -->
+                            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 text-center">
+                                <i class="fa-regular fa-question-circle text-emerald-600 text-2xl mb-1 block"></i>
+                                <div class="text-xl font-bold text-slate-800" id="questionsAnswered">0</div>
+                                <div class="text-xs text-slate-500">Questions</div>
+                            </div>
+
+                            <!-- Current Streak -->
+                            <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 text-center">
+                                <i class="fa-solid fa-fire-flame-curved text-amber-600 text-2xl mb-1 block"></i>
+                                <div class="text-xl font-bold text-slate-800" id="currentStreak">0</div>
+                                <div class="text-xs text-slate-500">Day streak</div>
+                            </div>
+
+                            <!-- Time Saved -->
+                            <div
+                                class="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-3 text-center col-span-2 md:col-span-1">
+                                <i class="fa-regular fa-hourglass-half text-rose-600 text-2xl mb-1 block"></i>
+                                <div class="text-xl font-bold text-slate-800" id="timeSaved">0</div>
+                                <div class="text-xs text-slate-500">Hours saved</div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Activity Heatmap -->
+                        <div class="mt-4 pt-3 border-t border-slate-100">
+                            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                                <span>Sun</span>
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 progress-heatmap-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <p class="text-right text-xs text-indigo-600 mt-1">
+                                <i class="fa-regular fa-calendar-check mr-1"></i> <span class="best-day-text">Best day:
+                                    --</span>
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- Profile Name Section -->
-                    <div id="profileNameSection" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hidden">
+                    <div id="profileNameSection"
+                        class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hidden">
                         <p class="text-sm text-slate-600 mb-3">Tell us your name to personalize your dashboard</p>
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <input type="text" id="updateNameInput" placeholder="Enter your name" class="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
-                            <button onclick="saveName()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold active:bg-indigo-700 transition-colors">
+                            <input type="text" id="updateNameInput" placeholder="Enter your name"
+                                class="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
+                            <button onclick="saveName()"
+                                class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold active:bg-indigo-700 transition-colors">
                                 Save
                             </button>
                         </div>
@@ -154,10 +307,129 @@
 
                     <!-- INPUT CARD -->
                     <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                        
+                        <!-- Guide Title Input -->
+                        <div class="p-4 bg-indigo-50/30 border-b border-indigo-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-pencil text-indigo-600"></i>
+                                </div>
+                                <input type="text" id="guideTitle"
+                                    placeholder="Enter a name for this study guide (e.g., Thermodynamics Midterm)"
+                                    class="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value="Study Guide - ">
+                                <span id="titleCharCount" class="text-xs text-slate-400">0/50</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <p class="text-xs text-indigo-600 ml-11">✨ This will auto-save to your library</p>
+                                <!-- ADD THIS - Auto-save indicator -->
+                                <span id="autoSaveIndicator" class="text-xs text-slate-400 hidden">
+                                    <i class="fa-regular fa-circle-check text-green-500 mr-1"></i>
+                                    <span id="autoSaveTime">Saved</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Subject and Tags Input -->
+                        <div class="p-4 bg-indigo-50/10 border-b border-indigo-100">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <!-- Subject -->
+                                <div>
+                                    <label class="block text-xs font-medium text-indigo-600 mb-1 ml-1">
+                                        <i class="fa-regular fa-bookmark mr-1"></i> Subject
+                                    </label>
+                                    <input type="text" id="guideSubject"
+                                        placeholder="e.g., Thermodynamics, Contract Law, Biochemistry"
+                                        class="w-full bg-white border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        value="">
+                                </div>
+
+                                <!-- Course Code -->
+                                <div>
+                                    <label class="block text-xs font-medium text-indigo-600 mb-1 ml-1">
+                                        <i class="fa-regular fa-hashtag mr-1"></i> Course Code
+                                    </label>
+                                    <input type="text" id="guideCourseCode" placeholder="e.g., MEC221, LAW101, BIO230"
+                                        class="w-full bg-white border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        value="">
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="mt-3">
+                                <label class="block text-xs font-medium text-indigo-600 mb-1 ml-1">
+                                    <i class="fa-regular fa-tags mr-1"></i> Tags <span class="text-slate-400">(comma
+                                        separated)</span>
+                                </label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="guideTags"
+                                        placeholder="e.g., exam-prep, week-3, important, formulas"
+                                        class="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        value="">
+                                    <button onclick="addTagFromInput()"
+                                        class="px-4 py-2.5 bg-indigo-100 text-indigo-700 rounded-xl text-sm font-medium hover:bg-indigo-200 transition">
+                                        Add
+                                    </button>
+                                </div>
+
+                                <!-- Tag suggestions (common tags) -->
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <span onclick="addTag('exam-prep')"
+                                        class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-full text-xs cursor-pointer transition">
+                                        <i class="fa-regular fa-pen-to-square mr-1"></i> exam-prep
+                                    </span>
+                                    <span onclick="addTag('important')"
+                                        class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-full text-xs cursor-pointer transition">
+                                        <i class="fa-regular fa-star mr-1"></i> important
+                                    </span>
+                                    <span onclick="addTag('review')"
+                                        class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-full text-xs cursor-pointer transition">
+                                        <i class="fa-regular fa-clock mr-1"></i> review
+                                    </span>
+                                    <span onclick="addTag('formulas')"
+                                        class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-full text-xs cursor-pointer transition">
+                                        <i class="fa-solid fa-calculator mr-1"></i> formulas
+                                    </span>
+                                    <span onclick="addTag('definitions')"
+                                        class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-full text-xs cursor-pointer transition">
+                                        <i class="fa-regular fa-comment mr-1"></i> definitions
+                                    </span>
+                                </div>
+
+                                <!-- Selected tags display -->
+                                <div id="selectedTagsContainer" class="flex flex-wrap gap-2 mt-3 min-h-[32px]">
+                                    <!-- Selected tags will appear here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Pack Display -->
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 border-b border-indigo-100">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span class="text-sm font-semibold text-indigo-700">
+                                    <i class="fa-regular fa-cube mr-1"></i> Your One-Click Revision Pack includes:
+                                </span>
+                                <div class="flex gap-2">
+                                    <span class="text-xs bg-white px-3 py-1.5 rounded-full shadow-sm">
+                                        <i class="fa-regular fa-file-lines mr-1"></i> Summary
+                                    </span>
+                                    <span class="text-xs bg-white px-3 py-1.5 rounded-full shadow-sm">
+                                        <i class="fa-regular fa-rectangle-ad mr-1"></i> 20 Cards
+                                    </span>
+                                    <span class="text-xs bg-white px-3 py-1.5 rounded-full shadow-sm">
+                                        <i class="fa-regular fa-question-circle mr-1"></i> 10 Questions
+                                    </span>
+                                    <span class="text-xs bg-white px-3 py-1.5 rounded-full shadow-sm">
+                                        <i class="fa-regular fa-sheet-plain mr-1"></i> 1-Pager
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Textarea -->
                         <div class="p-4 md:p-6">
-                            <textarea id="courseInput" rows="6" class="w-full bg-transparent border-0 focus:ring-0 text-slate-700 placeholder:text-slate-400 text-base md:text-lg resize-none p-0" placeholder="Paste your lecture notes, transcript, or course material here..."></textarea>
+                            <textarea id="courseInput" rows="6"
+                                class="w-full bg-transparent border-0 focus:ring-0 text-slate-700 placeholder:text-slate-400 text-base md:text-lg resize-none p-0"
+                                placeholder="Paste your lecture notes, transcript, or course material here..."></textarea>
 
                             <!-- Divider -->
                             <div class="border-t border-slate-200 my-4"></div>
@@ -167,15 +439,19 @@
                                 <!-- YouTube -->
                                 <div class="relative">
                                     <i class="fa-brands fa-youtube absolute left-4 top-4 text-slate-400"></i>
-                                    <input type="text" id="youtubeInput" placeholder="Paste YouTube lecture link (Optional)" class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
+                                    <input type="text" id="youtubeInput"
+                                        placeholder="Paste YouTube lecture link (Optional)"
+                                        class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
                                 </div>
-                                
+
                                 <!-- File Upload -->
                                 <div class="relative">
-                                    <input type="file" id="fileUpload" accept=".pdf,.docx,.pptx" class="hidden">
-                                    <label for="fileUpload" class="flex items-center justify-center gap-2 w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 active:bg-slate-100 transition-colors cursor-pointer text-base font-medium">
+                                    <input type="file" id="fileUpload" accept=".pdf,.docx,.pptx,.jpg,.jpeg,.png"
+                                        class="hidden">
+                                    <label for="fileUpload"
+                                        class="flex items-center justify-center gap-2 w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 active:bg-slate-100 transition-colors cursor-pointer text-base font-medium">
                                         <i class="fa-solid fa-upload"></i>
-                                        Upload PDF/DOCX/PPTX
+                                        Upload PDF/DOCX/PPTX/JPG/PNG
                                     </label>
                                 </div>
                             </div>
@@ -183,43 +459,79 @@
 
                         <!-- Generate Button -->
                         <div class="p-4 pt-0 md:p-6 md:pt-2">
-                            <button id="condenseBtn" onclick="initiateCondense()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl text-lg font-bold shadow-lg active:scale-[0.98] transition-all">
-                                <i class="fa-solid fa-bolt mr-2"></i> Forge Study Guide
+                            <button id="condenseBtn" title="Generate study guide (⌘/Ctrl + Enter)"
+                                onclick="initiateCondense()"
+                                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl text-lg font-bold shadow-lg active:scale-[0.98] transition-all">
+                                <i class="fa-solid fa-bolt mr-2"></i> Forge Revision Pack
                             </button>
+                        </div>
+
+                        <!-- Last Generated History -->
+                        <div id="lastGeneratedContainer" class="mt-3 text-center hidden">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full">
+                                <i class="fa-regular fa-clock text-slate-400 text-xs"></i>
+                                <span class="text-xs text-slate-500">Last guide:</span>
+                                <a href="#" id="lastGeneratedLink"
+                                    class="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition">
+                                    Loading...
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- LOADING -->
-                    <div id="loadingSection" class="hidden bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
+                    <!-- LOADING SECTION -->
+                    <div id="loadingSection"
+                        class="hidden bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
                         <div class="loader mb-4"></div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">
-                            Processing...
-                        </h3>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">Processing...</h3>
                         <p class="text-sm text-slate-500">This may take a few moments</p>
                     </div>
 
                     <!-- RESULT SECTION -->
                     <div id="resultSection" class="hidden space-y-5">
-                        
                         <!-- Action Bar -->
-                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 sticky top-0 z-20 backdrop-blur-sm bg-white/90">
+                        <div
+                            class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 sticky top-0 z-20 backdrop-blur-sm bg-white/90">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <h2 class="text-xl md:text-2xl font-bold text-slate-900">
-                                    Study Guide
+                                    <i class="fa-regular fa-newspaper mr-2"></i> Study Guide
                                 </h2>
                                 <div class="flex gap-2">
-                                    <button onclick="exportToNotion()" class="px-4 py-2.5 bg-slate-100 active:bg-slate-200 rounded-xl text-sm font-semibold flex items-center gap-2">
-                                        <i class="fa-regular fa-copy"></i>
-                                        <span class="hidden xs:inline">Copy</span>
+                                    <button onclick="exportToNotion()" title="Copy to clipboard (⌘/Ctrl + Shift + C)"
+                                        class="px-4 py-2.5 bg-slate-100 active:bg-slate-200 rounded-xl text-sm font-semibold flex items-center gap-2">
+                                        <i class="fa-regular fa-copy"></i> <span class="hidden xs:inline">Copy</span>
                                     </button>
-                                    <button onclick="exportToPDF()" class="px-4 py-2.5 bg-indigo-600 active:bg-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
-                                        <i class="fa-regular fa-file-pdf"></i>
-                                        <span class="hidden xs:inline">PDF</span>
+                                    <button onclick="exportToPDF()" title="Export PDF (⌘/Ctrl + Shift + P)"
+                                        class="px-4 py-2.5 bg-indigo-600 active:bg-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
+                                        <i class="fa-regular fa-file-pdf"></i> <span class="hidden xs:inline">PDF</span>
                                     </button>
-                                    <button onclick="generateExamMode()" class="px-4 py-2.5 bg-emerald-600 active:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                        <span class="hidden xs:inline">Exam</span>
+                                    <button onclick="generateExamMode()" title="Exam Mode (⌘/Ctrl + Shift + E)"
+                                        class="px-4 py-2.5 bg-emerald-600 active:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
+                                        <i class="fa-solid fa-pen-to-square"></i> <span
+                                            class="hidden xs:inline">Exam</span>
                                     </button>
+                                    <!-- Study Mode Dropdown -->
+                                    <div class="relative" id="studyModeDropdown">
+                                        <button onclick="toggleStudyMode()" title="Study Mode (⌘/Ctrl + Shift + S)"
+                                            class="px-4 py-2.5 bg-purple-600 active:bg-purple-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
+                                            <i class="fa-solid fa-brain"></i> <span class="hidden xs:inline">Study
+                                                Mode</span>
+                                            <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+                                        </button>
+                                        <div id="studyModeOptions"
+                                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-30">
+                                            <button onclick="startFlashcardMode()"
+                                                class="w-full text-left px-4 py-3 hover:bg-indigo-50 text-slate-700 text-sm flex items-center gap-3">
+                                                <i class="fa-solid fa-layer-group text-xl"></i> <span>Flashcard
+                                                    Mode</span>
+                                            </button>
+                                            <button onclick="startQuizMode()"
+                                                class="w-full text-left px-4 py-3 hover:bg-indigo-50 text-slate-700 text-sm flex items-center gap-3 border-t border-slate-100">
+                                                <i class="fa-regular fa-question-circle text-xl"></i> <span>Quiz
+                                                    Mode</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -229,81 +541,297 @@
                     </div>
 
                     <!-- CHAT SECTION -->
-                    <div id="chatSection" class="hidden bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                        
+                    <div id="chatSection"
+                        class="hidden bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                         <!-- Chat Header -->
                         <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
                             <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-comment-dots text-indigo-600"></i>
-                                Chat with Your Course
+                                <i class="fa-solid fa-comment-dots text-indigo-600"></i> Chat with Your Course
                             </h3>
                         </div>
 
                         <!-- Chat History -->
-                        <div id="chatHistory" class="p-4 h-96 overflow-y-auto space-y-4 bg-slate-50" style="-webkit-overflow-scrolling: touch;"></div>
+                        <div id="chatHistory" class="p-4 h-96 overflow-y-auto space-y-4 bg-slate-50"
+                            style="-webkit-overflow-scrolling: touch;"></div>
 
                         <!-- Chat Input -->
                         <div class="p-4 border-t border-slate-200 bg-white">
                             <div class="flex gap-2">
-                                <input type="text" id="chatInput" placeholder="Ask a question..." class="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
-                                <button onclick="sendChatMessage()" class="bg-indigo-600 active:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold transition-all flex items-center justify-center">
+                                <input type="text" id="chatInput" placeholder="Ask a question..."
+                                    class="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base">
+                                <button onclick="sendChatMessage()"
+                                    class="bg-indigo-600 active:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold transition-all flex items-center justify-center">
                                     <i class="fa-solid fa-paper-plane"></i>
                                 </button>
                             </div>
                             <p class="text-xs text-slate-400 mt-2 text-center">Press Enter to send</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- ===================================================== -->
+                </div> <!-- End generateSection -->
+
                 <!-- ================= SAVED SECTION ===================== -->
-                <!-- ===================================================== -->
                 <div id="savedSection" class="hidden">
                     <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                         <div class="p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-bookmark text-indigo-600"></i>
-                                My Study Guides
-                            </h2>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-bookmark text-indigo-600"></i> My Study Library
+                                </h2>
+
+                                <!-- Search Bar -->
+                                <div class="relative flex-1 max-w-xs">
+                                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                                    <input type="text" id="librarySearch" title="Search library (⌘/Ctrl + K)"
+                                        placeholder="Search by subject or tag..."
+                                        class="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                                        onkeyup="filterLibrary()">
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div id="savedGuidesList" class="p-5 space-y-3">
-                            <p class="text-slate-500 text-center py-8">
-                                <i class="fa-regular fa-folder-open text-4xl text-slate-300 mb-3 block"></i>
-                                No saved guides yet.
-                            </p>
+
+                        <!-- Stats Bar -->
+                        <div
+                            class="bg-indigo-50/50 px-5 py-3 border-b border-slate-200 flex justify-between items-center text-sm">
+                            <span class="text-slate-600"><span id="guideCount">0</span> study guides</span>
+                            <button onclick="exportLibrary()"
+                                class="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> Export All
+                            </button>
+                        </div>
+
+                        <!-- Guides Grid -->
+                        <div id="savedGuidesList" class="p-5">
+                            <!-- Loading state -->
+                            <div id="libraryLoading" class="text-center py-12 hidden">
+                                <div class="loader w-8 h-8 mx-auto mb-3"></div>
+                                <p class="text-slate-500 text-sm">Loading your library...</p>
+                            </div>
+
+                            <!-- Empty state -->
+                            <div id="emptyLibrary" class="text-center py-12">
+                                <div
+                                    class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fa-solid fa-books text-3xl text-indigo-300"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-slate-800 mb-2">Your library is empty</h3>
+                                <p class="text-slate-500 text-sm mb-6 max-w-sm mx-auto">Generate your first study guide
+                                    and it'll automatically save here.</p>
+                                <button onclick="showSection('generate')"
+                                    class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold">
+                                    <i class="fa-solid fa-bolt mr-2"></i> Create Study Guide
+                                </button>
+                            </div>
+
+                            <!-- Guides grid (populated by JavaScript) -->
+                            <div id="libraryGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ===================================================== -->
-                <!-- ================= ACCOUNT SECTION =================== -->
-                <!-- ===================================================== -->
+                <!-- ================= ACCOUNT SECTION ================= -->
                 <div id="accountSection" class="hidden">
                     <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                        <!-- Header -->
                         <div class="p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-user text-indigo-600"></i>
-                                Account Information
-                            </h2>
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-indigo-600"></i>
+                                    Account Settings
+                                </h2>
+                                <span id="accountPlanBadge"
+                                    class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">Free</span>
+                            </div>
+                            <p class="text-sm text-slate-500 mt-1">Manage your profile and subscription</p>
                         </div>
-                        
-                        <div class="p-6 space-y-4">
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <span class="text-slate-600">Plan:</span>
-                                <span id="accountPlanDashboard" class="font-bold text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full">Free</span>
+
+                        <div class="p-6 space-y-6">
+                            <!-- Profile Section -->
+                            <div class="border-b border-slate-200 pb-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i class="fa-regular fa-circle-user text-indigo-600"></i>
+                                    Profile Information
+                                </h3>
+                                <div class="space-y-4">
+                                    <!-- Name -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                                        <div class="flex gap-3">
+                                            <input type="text" id="profileName" value="Loading..."
+                                                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                            <button onclick="updateProfileName()"
+                                                class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition">
+                                                Save
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-slate-400 mt-1">This is how your name appears in the
+                                            dashboard</p>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Email
+                                            Address</label>
+                                        <input type="email" id="profileEmail" value="Loading..." disabled
+                                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed">
+                                        <p class="text-xs text-slate-400 mt-1">Your email address cannot be changed</p>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <span class="text-slate-600">Expires:</span>
-                                <span id="accountExpiryDashboard" class="font-medium text-slate-700">—</span>
+
+                            <!-- Security Section -->
+                            <div class="border-b border-slate-200 pb-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-shield-hal text-indigo-600"></i>
+                                    Security
+                                </h3>
+                                <div>
+                                    <button onclick="showChangePasswordModal()"
+                                        class="px-6 py-2.5 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-600 rounded-xl font-medium transition flex items-center gap-2">
+                                        <i class="fa-solid fa-key"></i> Change Password
+                                    </button>
+                                    <p class="text-xs text-slate-400 mt-2">Update your password to keep your account
+                                        secure</p>
+                                </div>
                             </div>
-                            
-                            <div class="mt-6 p-4 bg-amber-50 rounded-xl">
-                                <p class="text-sm text-amber-700 flex items-start gap-2">
-                                    <i class="fa-solid fa-circle-info mt-0.5"></i>
-                                    <span>Upgrade to Pro for unlimited generations, exam mode, and priority support.</span>
-                                </p>
+
+                            <!-- Subscription Section -->
+                            <div class="border-b border-slate-200 pb-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i class="fa-regular fa-credit-card text-indigo-600"></i>
+                                    Subscription
+                                </h3>
+                                <div class="bg-slate-50 rounded-xl p-4 mb-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm text-slate-600">Current Plan</span>
+                                        <span id="accountPlanDisplay" class="font-bold text-indigo-600">Free</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm text-slate-600">Expires</span>
+                                        <span id="accountExpiryDisplay" class="text-sm text-slate-700">—</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-slate-600">Generations Today</span>
+                                        <span id="accountUsageDisplay" class="text-sm text-slate-700">0/5</span>
+                                    </div>
+                                </div>
+                                <div id="subscriptionActions">
+                                    <button onclick="handleUpgradeClick()" id="upgradeAccountBtn"
+                                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition shadow-md">
+                                        Upgrade to Pro
+                                    </button>
+                                    <button onclick="cancelSubscription()" id="cancelSubscriptionBtn"
+                                        class="hidden w-full mt-3 border border-red-300 text-red-600 hover:bg-red-50 py-3 rounded-xl font-semibold transition">
+                                        Cancel Subscription
+                                    </button>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-3 text-center">Cancel anytime • No long-term
+                                    commitment</p>
+                            </div>
+
+                            <!-- Danger Zone -->
+                            <div class="border border-red-200 rounded-xl p-4 bg-red-50/30">
+                                <h3 class="text-sm font-semibold text-red-600 mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    Danger Zone
+                                </h3>
+                                <p class="text-xs text-red-500 mb-3">Permanently delete your account and all data</p>
+                                <button onclick="showDeleteAccountModal()"
+                                    class="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition">
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= ANALYTICS SECTION ================= -->
+                <div id="analyticsSection" class="hidden">
+                    <div class="space-y-6">
+                        <!-- Header -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                                        <i class="fa-solid fa-chart-line text-indigo-600"></i>
+                                        Study Analytics
+                                    </h2>
+                                    <p class="text-slate-500 mt-1">Track your learning progress and mastery</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar text-slate-400"></i>
+                                    <span id="analyticsDateRange" class="text-sm text-slate-500">All time</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-slate-500">Average Score</span>
+                                    <i class="fa-regular fa-chart-line text-indigo-400"></i>
+                                </div>
+                                <div class="text-3xl font-bold text-slate-900" id="avgScore">--</div>
+                                <div class="text-xs text-slate-400 mt-1">across all quizzes</div>
+                            </div>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-slate-500">Quizzes Taken</span>
+                                    <i class="fa-regular fa-circle-check text-indigo-400"></i>
+                                </div>
+                                <div class="text-3xl font-bold text-slate-900" id="totalQuizzes">--</div>
+                                <div class="text-xs text-slate-400 mt-1">total attempts</div>
+                            </div>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-slate-500">Mastery Rate</span>
+                                    <i class="fa-regular fa-trophy text-indigo-400"></i>
+                                </div>
+                                <div class="text-3xl font-bold text-slate-900" id="masteryRate">--</div>
+                                <div class="text-xs text-slate-400 mt-1">guides with 70%+ score</div>
+                            </div>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-slate-500">Weak Topics</span>
+                                    <i class="fa-regular fa-lightbulb text-amber-500"></i>
+                                </div>
+                                <div class="text-3xl font-bold text-slate-900" id="weakTopicsCount">--</div>
+                                <div class="text-xs text-slate-400 mt-1">need review</div>
+                            </div>
+                        </div>
+
+                        <!-- Subject Breakdown -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-regular fa-folder-tree text-indigo-600"></i>
+                                Subject Breakdown
+                            </h3>
+                            <div id="subjectBreakdown" class="space-y-3">
+                                <div class="text-center py-8 text-slate-400">Loading analytics...</div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Trend (Simple Progress Bars) -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-regular fa-chart-scatter text-indigo-600"></i>
+                                Recent Performance
+                            </h3>
+                            <div id="recentPerformance" class="space-y-3">
+                                <div class="text-center py-8 text-slate-400">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div
+                            class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <i class="fa-regular fa-bulb text-amber-600"></i>
+                                Recommended for You
+                            </h3>
+                            <div id="recommendations" class="space-y-2">
+                                <p class="text-slate-500 text-sm">Take a quiz to get personalized recommendations!</p>
                             </div>
                         </div>
                     </div>
@@ -313,45 +841,168 @@
         </div>
     </div>
 
+    <!-- ================= STUDY MODE MODAL ================= -->
+    <div id="studyModeModal"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden transition-opacity duration-300"
+        style="backdrop-filter: blur(8px);">
+        <div class="bg-white rounded-3xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+
+            <!-- Header - Fixed at top -->
+            <div
+                class="p-6 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex-shrink-0">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="studyModeTitle" class="text-2xl font-bold flex items-center gap-3">
+                            <i id="studyModeIcon" class="fa-solid fa-layer-group"></i>
+                            <span id="studyModeTitleText">Flashcard Mode</span>
+                        </h2>
+                        <p id="studyModeSubtitle" class="text-indigo-100 text-sm mt-1">5 cards remaining • Active recall
+                            training</p>
+                    </div>
+                    <button onclick="closeStudyMode()"
+                        class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition flex-shrink-0">
+                        <i class="fa-solid fa-times text-white"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="h-1 bg-slate-100 flex-shrink-0">
+                <div id="studyProgressBar"
+                    class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
+                    style="width: 20%"></div>
+            </div>
+
+            <!-- Main Content Area - Scrollable -->
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50" id="studyContent">
+                <!-- Flashcard Mode UI -->
+                <div id="flashcardUI" class="h-full">
+                    <div class="w-full max-w-lg mx-auto cursor-pointer" onclick="flipCard()">
+                        <div id="flashcard"
+                            class="bg-white rounded-2xl shadow-xl p-8 min-h-[250px] flex items-center justify-center text-center transition-all duration-500 transform-gpu"
+                            style="transform-style: preserve-3d;">
+                            <div id="cardFront" class="text-2xl text-slate-800 font-medium">
+                                Click to start
+                            </div>
+                            <div id="cardBack" class="hidden text-2xl text-indigo-600 font-bold">
+                                Answer will appear here
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-4 text-center">
+                        <i class="fa-regular fa-hand-pointer mr-1"></i> Click card to flip
+                    </p>
+                </div>
+
+                <!-- Quiz Mode UI -->
+                <div id="quizUI" class="hidden w-full">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 mb-4">
+                        <p class="text-xs text-indigo-600 font-semibold mb-2">
+                            QUESTION <span id="currentQuestionNum">1</span> OF <span id="totalQuestions">10</span>
+                        </p>
+                        <h3 id="quizQuestion" class="text-xl text-slate-800 font-medium mb-6">Loading questions...</h3>
+
+                        <div id="quizOptions" class="space-y-3">
+                            <div onclick="selectQuizOption(0)"
+                                class="quiz-option p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition">
+                                A. Option A
+                            </div>
+                            <div onclick="selectQuizOption(1)"
+                                class="quiz-option p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition">
+                                B. Option B
+                            </div>
+                            <div onclick="selectQuizOption(2)"
+                                class="quiz-option p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition">
+                                C. Option C
+                            </div>
+                            <div onclick="selectQuizOption(3)"
+                                class="quiz-option p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition">
+                                D. Option D
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="quizExplanation"
+                        class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4 hidden">
+                        <p class="text-sm text-emerald-700"><span class="font-bold">Explanation:</span> Explanation will
+                            appear here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Controls - Fixed at bottom -->
+            <div class="p-6 border-t border-slate-200 bg-white flex-shrink-0">
+                <div class="flex justify-between items-center">
+                    <button onclick="previousCard()"
+                        class="px-6 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                    </button>
+                    <span id="cardCounter" class="text-sm text-slate-500">1 / 5</span>
+                    <button onclick="nextCard()"
+                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition flex items-center gap-2">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="flex justify-center gap-3 mt-4">
+                    <button onclick="markHard()"
+                        class="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                        <i class="fa-regular fa-face-frown mr-1"></i> Hard
+                    </button>
+                    <button onclick="markGood()"
+                        class="px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition">
+                        <i class="fa-regular fa-face-smile mr-1"></i> Good
+                    </button>
+                    <button onclick="markEasy()"
+                        class="px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                        <i class="fa-regular fa-star mr-1"></i> Easy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= UPGRADE MODAL ================= -->
-    <div id="upgradeModal" class="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 hidden transition-opacity duration-300">
+    <div id="upgradeModal"
+        class="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 hidden transition-opacity duration-300">
         <div class="bg-white rounded-t-2xl md:rounded-2xl p-6 max-w-md w-full mx-auto relative animate-slide-up">
-            
+
             <!-- Handle bar for mobile -->
             <div class="md:hidden w-12 h-1 bg-slate-300 rounded-full mx-auto mb-4"></div>
 
             <!-- X Close Button -->
-            <button onclick="toggleUpgradeModal()" class="absolute top-4 right-4 w-10 h-10 bg-slate-100 active:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 transition-all">
+            <button onclick="toggleUpgradeModal()"
+                class="absolute top-4 right-4 w-10 h-10 bg-slate-100 active:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 transition-all">
                 <i class="fa-solid fa-times"></i>
             </button>
 
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <span class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm px-3 py-1 rounded-full">PRO</span>
+                    <span
+                        class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm px-3 py-1 rounded-full"><i
+                            class="fa-regular fa-gem mr-1"></i> PRO</span>
                     Upgrade Now
                 </h2>
             </div>
 
             <!-- Current Plan Info -->
             <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
-                <p class="text-sm text-indigo-700 font-medium mb-1">Your Current Plan: <span class="font-bold" id="upgradeCurrentPlan">Free</span></p>
+                <p class="text-sm text-indigo-700 font-medium mb-1">Your Current Plan: <span class="font-bold"
+                        id="upgradeCurrentPlan">Free</span></p>
                 <p class="text-xs text-indigo-600">5 generations per day • Basic features</p>
             </div>
 
             <!-- Pro Plan Details -->
             <div class="mb-6">
-                <h3 class="font-bold text-slate-800 mb-3">✨ Pro Plan Includes:</h3>
+                <h3 class="font-bold text-slate-800 mb-3"><i class="fa-regular fa-gem text-indigo-600 mr-1"></i> Pro
+                    Plan Includes:</h3>
                 <ul class="space-y-3 text-sm">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-500 text-lg">✓</span>
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-infinity text-green-500 text-lg"></i>
                         <span><span class="font-semibold">Unlimited</span> generations</span>
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-500 text-lg">✓</span>
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-star text-green-500 text-lg"></i>
                         <span><span class="font-semibold">Unlimited</span> exam mode</span>
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-500 text-lg">✓</span>
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-message text-green-500 text-lg"></i>
                         <span><span class="font-semibold">Unlimited</span> AI chat</span>
                     </li>
                 </ul>
@@ -360,12 +1011,13 @@
             <!-- Plan Selection Toggle -->
             <div class="flex items-center justify-center gap-4 mb-6">
                 <span id="modalMonthlyLabel" class="text-sm font-semibold text-slate-900">Monthly</span>
-                <button id="modalBillingToggle" onclick="toggleModalBilling()" class="relative inline-flex h-7 w-12 items-center rounded-full bg-indigo-600 transition">
-                    <span id="modalToggleCircle" class="inline-block h-5 w-5 transform rounded-full bg-white transition translate-x-1"></span>
+                <button id="modalBillingToggle" onclick="toggleModalBilling()"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full bg-indigo-600 transition">
+                    <span id="modalToggleCircle"
+                        class="inline-block h-5 w-5 transform rounded-full bg-white transition translate-x-1"></span>
                 </button>
                 <span id="modalYearlyLabel" class="text-sm font-semibold text-slate-500">
-                    Yearly
-                    <span class="ml-1 text-indigo-600 font-bold text-xs">-20%</span>
+                    Yearly <span class="ml-1 text-indigo-600 font-bold text-xs">-20%</span>
                 </span>
             </div>
 
@@ -377,38 +1029,163 @@
             </div>
 
             <!-- Upgrade Button -->
-            <button onclick="handleModalUpgrade()" class="upgrade-btn w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg active:scale-[0.98] transition-all">
+            <button onclick="handleModalUpgrade()"
+                class="upgrade-btn w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg active:scale-[0.98] transition-all">
                 Upgrade Now
             </button>
 
-            <p class="text-xs text-slate-400 text-center mt-4">
-                Secure payment • Cancel anytime
-            </p>
+            <p class="text-xs text-slate-400 text-center mt-4">Secure payment • Cancel anytime</p>
         </div>
     </div>
 
     <!-- ================= DELETE CONFIRMATION MODAL ================= -->
-    <div id="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden ...">
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 relative">
             <!-- Warning Icon -->
             <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-900 text-center mb-2">Delete Study Guide?</h3>
-            <p class="text-sm text-slate-500 text-center mb-6">This action cannot be undone. The study guide will be permanently removed.</p>
+            <p class="text-sm text-slate-500 text-center mb-6">This action cannot be undone. The study guide will be
+                permanently removed.</p>
             <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-semibold transition-all">
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-semibold transition-all">
                     Cancel
                 </button>
-                <button id="confirmDeleteBtn" onclick="deleteGuide()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all">
+                <button id="confirmDeleteBtn" onclick="deleteGuide()"
+                    class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all">
                     Delete
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Change Password</h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Current Password</label>
+                    <input type="password" id="currentPassword"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+                    <input type="password" id="newPassword"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <p class="text-xs text-slate-400 mt-1">At least 6 characters</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Confirm New Password</label>
+                    <input type="password" id="confirmPassword"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeChangePasswordModal()"
+                    class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                <button onclick="changePassword()"
+                    class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition">Update
+                    Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteAccountModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-red-600">Delete Account</h3>
+                <button onclick="closeDeleteAccountModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-slate-600">Are you sure? This action <span class="font-bold text-red-600">cannot be
+                        undone</span>. All your study guides, quiz data, and progress will be permanently deleted.</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Type <span
+                            class="font-bold text-red-600">DELETE</span> to confirm</label>
+                    <input type="text" id="deleteConfirmInput" placeholder="DELETE"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeDeleteAccountModal()"
+                    class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                <button onclick="deleteAccount()"
+                    class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition">Delete
+                    Forever</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Upgrade Overlay (Blur Effect) -->
+    <div id="proUpgradeOverlay"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] hidden transition-all duration-300">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center transform transition-all duration-300 scale-95">
+            <!-- Icon -->
+            <div
+                class="w-20 h-20 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <i class="fa-regular fa-gem text-white text-3xl"></i>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">Daily Limit Reached</h3>
+
+            <!-- Message -->
+            <p class="text-slate-600 mb-4">
+                You've used all <span class="font-semibold">5 free generations</span> for today.
+            </p>
+
+            <!-- Pro Highlight -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-6">
+                <p class="text-sm text-slate-600">Upgrade to <span class="font-bold text-indigo-600">Pro</span> for:</p>
+                <ul class="mt-2 space-y-1 text-sm">
+                    <li class="flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-infinity text-indigo-500"></i>
+                        <span>Unlimited generations</span>
+                    </li>
+                    <li class="flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-star text-indigo-500"></i>
+                        <span>Unlimited exam mode</span>
+                    </li>
+                    <li class="flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-message text-indigo-500"></i>
+                        <span>Priority AI chat</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button onclick="closeProOverlay()"
+                    class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-semibold transition">
+                    Maybe Later
+                </button>
+                <button onclick="handleUpgradeClick()"
+                    class="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold transition shadow-md">
+                    Upgrade Now →
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400 mt-4">Cancel anytime • No long-term commitment</p>
+        </div>
+    </div>
+    <!-- Shortcut hint (optional) -->
+    <div id="shortcutHintContainer" class="text-center mt-4 text-xs text-slate-400"></div>
     <!-- Toast Notification -->
-    <div id="errorToast" class="fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:max-w-md bg-slate-900 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden opacity-0 translate-y-10 transition-all duration-300">
+    <div id="errorToast"
+        class="fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:max-w-md bg-slate-900 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden opacity-0 translate-y-10 transition-all duration-300">
         <i id="toastIcon" class="fa-solid fa-circle-exclamation text-red-400"></i>
         <span id="errorMsg" class="text-sm font-medium flex-1">An error occurred</span>
     </div>
@@ -421,15 +1198,15 @@
     <script src="js/dashboard.js"></script>
 
     <script>
-    // Close sidebar when clicking a nav link on mobile
-    document.querySelectorAll('#sidebar button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (window.innerWidth < 768) {
-                toggleSidebar();
-            }
+        // Close sidebar when clicking a nav link on mobile
+        document.querySelectorAll('#sidebar button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
         });
-    });
-</script>
+    </script>
 </body>
 
 </html>

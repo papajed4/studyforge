@@ -4,70 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - StudyForge AI</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="font-['Plus_Jakarta_Sans'] bg-slate-50">
     
-    <!-- Simple Nav -->
-    <nav class="bg-white border-b border-slate-200">
-        <div class="max-w-4xl mx-auto px-4 py-4">
-            <a href="/" class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></a>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Container max-width */
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container-custom {
+                padding: 0 2rem;
+            }
+        }
+        
+        /* Card hover effect */
+        .hover-card {
+            transition: all 0.2s ease;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Custom list styling */
+        .custom-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .custom-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .custom-list li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #6366f1;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="container-custom py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></span>
+                </a>
+                
+                <div class="flex items-center gap-6">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
-    
-    <!-- Content -->
-    <div class="max-w-4xl mx-auto px-4 py-16">
-        <h1 class="text-4xl font-bold text-slate-900 mb-4">Privacy Policy</h1>
-        <p class="text-slate-500 mb-8">Last updated: March 2026</p>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-b from-white to-slate-50 py-16">
+        <div class="container-custom text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
+                <i class="fa-solid fa-shield-hal text-indigo-500 text-xs"></i>
+                <span class="text-xs font-semibold text-indigo-700">Your Privacy Matters</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+                Privacy Policy
+            </h1>
+            <p class="text-slate-500">
+                Last updated: <span class="font-medium">March 2026</span>
+            </p>
+        </div>
+    </section>
+
+    <!-- Content Sections -->
+    <div class="container-custom max-w-3xl mx-auto py-12">
         
-        <div class="prose prose-slate max-w-none">
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">1. Information We Collect</h2>
-            <p class="text-slate-600 mb-4">We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes:</p>
-            <ul class="list-disc pl-6 text-slate-600 mb-6">
+        <!-- Section 1 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-solid fa-database text-indigo-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">1. Information We Collect</h2>
+            </div>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes:
+            </p>
+            <ul class="custom-list text-slate-600 space-y-2 mb-4">
                 <li>Email address and account credentials</li>
-                <li>Payment information (processed securely by Paystack)</li>
+                <li>Payment information (processed securely by Paystack and Flutterwave)</li>
                 <li>Lecture notes and content you upload</li>
                 <li>Usage data and preferences</li>
             </ul>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">2. How We Use Your Information</h2>
-            <p class="text-slate-600 mb-4">We use the information we collect to:</p>
-            <ul class="list-disc pl-6 text-slate-600 mb-6">
+        </div>
+
+        <!-- Section 2 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-solid fa-chart-simple text-indigo-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">2. How We Use Your Information</h2>
+            </div>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                We use the information we collect to:
+            </p>
+            <ul class="custom-list text-slate-600 space-y-2 mb-4">
                 <li>Provide and improve StudyForge's AI study features</li>
                 <li>Process your subscriptions and payments</li>
                 <li>Communicate with you about your account</li>
                 <li>Analyze usage to enhance our services</li>
                 <li>Protect against unauthorized access</li>
             </ul>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">3. Data Security</h2>
-            <p class="text-slate-600 mb-6">We implement industry-standard security measures including encryption, secure servers, and regular security audits. Your payment information is never stored on our servers – it's processed directly by Paystack, a PCI-DSS compliant payment processor.</p>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">4. Third-Party Services</h2>
-            <p class="text-slate-600 mb-6">We use trusted third-party services to operate StudyForge:</p>
-            <ul class="list-disc pl-6 text-slate-600 mb-6">
-                <li><strong>Paystack:</strong> Payment processing</li>
-                <li><strong>Supabase:</strong> Database and authentication</li>
-                <li><strong>Google Gemini AI:</strong> Study guide generation</li>
-            </ul>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">5. Your Rights</h2>
-            <p class="text-slate-600 mb-6">You have the right to access, correct, or delete your personal data. Contact us at privacy@studyforge.site for assistance.</p>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">6. Contact Us</h2>
-            <p class="text-slate-600 mb-6">Questions about this Privacy Policy? Contact us at privacy@studyforge.site or at our Lagos, Nigeria office.</p>
+        </div>
+
+        <!-- Section 3 - Security Card -->
+        <div class="mb-12 bg-slate-50 rounded-2xl p-6 border border-slate-100">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <i class="fa-solid fa-lock text-emerald-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">3. Data Security</h2>
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+                We implement industry-standard security measures including encryption, secure servers, and regular security audits. Your payment information is never stored on our servers – it's processed directly by Paystack and Flutterwave, a PCI-DSS compliant payment processor.
+            </p>
+            <div class="mt-4 flex items-center gap-2 text-xs text-emerald-600">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>PCI-DSS Compliant</span>
+                <span class="text-slate-300 mx-2">•</span>
+                <i class="fa-solid fa-shield"></i>
+                <span>256-bit Encryption</span>
+            </div>
+        </div>
+
+        <!-- Section 4 - Third Party Services -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-solid fa-cloud text-indigo-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">4. Third-Party Services</h2>
+            </div>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                We use trusted third-party services to operate StudyForge:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                <div class="bg-white rounded-xl p-4 border border-slate-100 text-center hover-card">
+                    <i class="fa-solid fa-money-bill text-indigo-600 text-2xl mb-2 block"></i>
+                    <span class="text-sm font-medium text-slate-700">Paystack</span>
+                    <p class="text-xs text-slate-400 mt-1">Payment Processing</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-slate-100 text-center hover-card">
+                    <i class="fa-solid fa-database text-indigo-600 text-2xl mb-2 block"></i>
+                    <span class="text-sm font-medium text-slate-700">Supabase</span>
+                    <p class="text-xs text-slate-400 mt-1">Database & Auth</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-slate-100 text-center hover-card">
+                    <i class="fa-solid fa-brain text-indigo-600 text-2xl mb-2 block"></i>
+                    <span class="text-sm font-medium text-slate-700">Google Gemini AI</span>
+                    <p class="text-xs text-slate-400 mt-1">Study Guide Generation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-solid fa-scale-balanced text-indigo-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">5. Your Rights</h2>
+            </div>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                You have the right to access, correct, or delete your personal data. Contact us at <a href="mailto:privacy@studyforge.site" class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a> for assistance.
+            </p>
+            <div class="flex flex-wrap gap-3 mt-4">
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-eye mr-1"></i> Access Data</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-pen-to-square mr-1"></i> Correct Data</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-trash-can mr-1"></i> Delete Data</span>
+            </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-regular fa-envelope text-indigo-600 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">6. Contact Us</h2>
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+                Questions about this Privacy Policy? Contact us at <a href="mailto:privacy@studyforge.site" class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a>
+            </p>
+        </div>
+
+        <!-- Last Updated Notice -->
+        <div class="mt-12 pt-6 border-t border-slate-100 text-center">
+            <p class="text-xs text-slate-400">
+                <i class="fa-regular fa-clock mr-1"></i> This policy is effective as of March 2026. We may update this policy from time to time.
+            </p>
         </div>
     </div>
-    
-    <!-- Simple Footer -->
-    <footer class="border-t border-slate-200 mt-12">
-        <div class="max-w-4xl mx-auto px-4 py-8 text-center text-slate-500 text-sm">
-            © 2026 StudyForge AI. All rights reserved.
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-100 bg-white mt-12">
+        <div class="container-custom py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
+                </div>
+            </div>
         </div>
     </footer>
 </body>

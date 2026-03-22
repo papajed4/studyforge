@@ -110,17 +110,38 @@ body {
 }
 
 @keyframes rotation {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Shake Animation */
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
 }
 
 .shake {
@@ -168,6 +189,7 @@ body {
         transform: scale(0.95) translateY(10px);
         opacity: 0;
     }
+
     100% {
         transform: scale(1) translateY(0);
         opacity: 1;
@@ -195,7 +217,9 @@ body {
         height: auto !important;
     }
 
-    h1, h2, h3 {
+    h1,
+    h2,
+    h3 {
         page-break-after: avoid;
     }
 
@@ -205,52 +229,45 @@ body {
     }
 }
 
-
 /* ============================================
-   MOBILE OPTIMIZATIONS - Add at the bottom
+   MOBILE OPTIMIZATIONS
    ============================================ */
 
-/* Mobile optimizations */
 @media (max-width: 768px) {
     .glass-panel {
         padding: 0.75rem !important;
     }
-    
+
     #exportContainer .glass-panel {
         margin-bottom: 0.75rem;
     }
-    
+
     #exportContainer .p-6 {
         padding: 1rem !important;
     }
-    
-    /* Better touch targets */
-    button, 
+
+    button,
     .cursor-pointer,
     [onclick] {
         min-height: 44px;
         min-width: 44px;
     }
-    
-    /* Fix overflowing content */
+
     .markdown-body {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         padding: 0.5rem !important;
     }
-    
-    /* Better accordion on mobile */
+
     .accordion-content {
         transition: height 0.3s ease-out;
     }
-    
-    /* Improve chat input on mobile */
+
     #chatInput {
-        font-size: 16px !important; /* Prevents zoom on iOS */
+        font-size: 16px !important;
     }
-    
-    /* Saved guides cards */
-    #savedGuidesList > div {
+
+    #savedGuidesList>div {
         margin-bottom: 0.75rem;
     }
 }
@@ -274,8 +291,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Exam Mode active indicator */
@@ -287,9 +309,11 @@ body {
     0% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
     }
+
     70% {
         box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
     }
@@ -311,4 +335,366 @@ body {
 
 .exam-badge i {
     font-size: 0.625rem;
+}
+
+/* ============================================
+   STUDY MODE STYLES
+   ============================================ */
+
+#flashcard {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+#flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+.quiz-option {
+    transition: all 0.2s;
+}
+
+.quiz-option.selected {
+    border-color: #6366f1;
+    background-color: #eef2ff;
+}
+
+.quiz-option.correct {
+    border-color: #10b981;
+    background-color: #ecfdf5;
+}
+
+.quiz-option.incorrect {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+/* Mobile optimizations for study mode */
+@media (max-width: 768px) {
+    #studyModeModal .p-8 {
+        padding: 1.5rem !important;
+    }
+
+    #flashcard {
+        min-height: 200px !important;
+    }
+
+    #flashcard>div {
+        font-size: 1.25rem !important;
+    }
+
+    .quiz-option {
+        padding: 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* ============================================
+   NAVIGATION FIXES - SIMPLE VERSION
+   ============================================ */
+
+/* Simple navigation alignment */
+nav .max-w-7xl > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Mobile menu alignment */
+#mobileMenu a,
+#mobileMenu button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+}
+
+/* Force hidden class to work on BOTH dashboard links */
+#dashboardLink.hidden,
+#mobileDashboardLink.hidden {
+    display: none !important;
+}
+
+/* Force Tailwind hidden class to work */
+#mobileSignInBtn.hidden {
+    display: none !important;
+}
+
+#mobileDashboardLink.hidden {
+    display: none !important;
+}
+
+#mobileAccountSection.hidden {
+    display: none !important;
+}
+
+/* Debug styles - remove later */
+#exportContainer {
+    min-height: 200px !important;
+    background-color: #f0f9ff !important;
+    padding: 20px !important;
+    display: block !important;
+    visibility: visible !important;
+}
+
+#resultSection {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ============================================
+   PRO UPGRADE OVERLAY
+   ============================================ */
+
+#proUpgradeOverlay {
+    backdrop-filter: blur(8px);
+}
+
+#proUpgradeOverlay:not(.hidden) .bg-white {
+    animation: modalPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Blur main content when overlay is active */
+body.overlay-active .main-content {
+    filter: blur(4px);
+    transition: filter 0.3s ease;
+}
+
+/* Custom tooltip styling */
+[title] {
+    position: relative;
+}
+
+/* Optional: Make tooltips more visible */
+button[title]:hover::after,
+input[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 100;
+    margin-bottom: 8px;
+    pointer-events: none;
+    font-family: monospace;
+}
+
+/* Small arrow for tooltip */
+button[title]:hover::before,
+input[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e293b;
+    margin-bottom: 2px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Hide tooltip on mobile (too intrusive) */
+@media (max-width: 768px) {
+    [title]:hover::after,
+    [title]:hover::before {
+        display: none;
+    }
+}
+
+/* ============================================
+   SOFT PAGE TRANSITIONS
+   ============================================ */
+
+/* Fade transition for page loads */
+.page-transition {
+    animation: fadeIn 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Section transition when switching tabs */
+.section-transition {
+    animation: slideFade 0.3s ease-out;
+}
+
+@keyframes slideFade {
+    0% {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Content card transitions */
+.card-transition {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card-transition.hide {
+    opacity: 0;
+    transform: scale(0.98);
+}
+
+/* Modal transitions (already have these, just ensuring smooth) */
+.modal-transition-enter {
+    opacity: 0;
+    transform: scale(0.96);
+}
+
+.modal-transition-enter-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.25s ease-out;
+}
+
+.modal-transition-exit {
+    opacity: 1;
+}
+
+.modal-transition-exit-active {
+    opacity: 0;
+    transform: scale(0.96);
+    transition: all 0.2s ease-in;
+}
+
+/* Loading skeleton pulse (already have, just enhancing) */
+.skeleton-pulse {
+    animation: skeletonPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Analytics badge animations */
+.quiz-badge {
+    transition: all 0.2s ease;
+}
+
+.quiz-badge:hover {
+    transform: scale(1.02);
+}
+
+/* Tooltip for weak topics */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 100;
+    margin-bottom: 5px;
+}
+
+/* ============================================
+   PAGE TRANSITIONS
+   ============================================ */
+
+/* Fade in animation for sections */
+.section-transition {
+    animation: fadeSlideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+@keyframes fadeSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade out animation for leaving sections */
+.section-fade-out {
+    animation: fadeOut 0.15s ease forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+/* Page load transition */
+.page-load {
+    animation: pageFadeIn 0.4s ease-out;
+}
+
+@keyframes pageFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
 }

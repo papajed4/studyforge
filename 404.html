@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - StudyForge AI</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container-custom {
+                padding: 0 2rem;
+            }
+        }
+        
+        /* Floating animation for the book icon */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .float-animation {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+    <!-- Simple Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="container-custom py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 404 Content -->
+    <div class="min-h-[70vh] flex items-center justify-center py-20">
+        <div class="container-custom text-center max-w-2xl mx-auto">
+            
+            <!-- Animated Icon -->
+            <div class="mb-8 float-animation">
+                <div class="w-32 h-32 mx-auto bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass text-5xl text-indigo-500"></i>
+                </div>
+            </div>
+            
+            <!-- 404 Number -->
+            <h1 class="text-8xl md:text-9xl font-extrabold text-slate-800 mb-4 tracking-tighter">
+                404
+            </h1>
+            
+            <!-- Message -->
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
+                Oops! Page not found
+            </h2>
+            
+            <p class="text-slate-500 mb-8 max-w-md mx-auto">
+                The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md">
+                    <i class="fa-solid fa-house"></i> Back to Home
+                </a>
+                <a href="/dashboard.html" class="inline-flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-6 py-3 rounded-xl font-semibold transition">
+                    <i class="fa-solid fa-chalkboard-user"></i> Go to Dashboard
+                </a>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="mt-12 pt-8 border-t border-slate-100">
+                <p class="text-sm text-slate-400 mb-4">Or try these popular pages:</p>
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <a href="/#features" class="text-sm text-slate-500 hover:text-indigo-600 transition">Features</a>
+                    <span class="text-slate-300">•</span>
+                    <a href="/#pricing" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
+                    <span class="text-slate-300">•</span>
+                    <a href="/about.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">About</a>
+                    <span class="text-slate-300">•</span>
+                    <a href="/contact.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Contact</a>
+                </div>
+            </div>
+            
+            <!-- Fun Fact -->
+            <div class="mt-8 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100">
+                <p class="text-xs text-indigo-600">
+                    <i class="fa-regular fa-lightbulb mr-1"></i> Fun fact: Students who use StudyForge save an average of 5 hours per week!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-100 bg-white mt-12">
+        <div class="container-custom py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -4,65 +4,259 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - StudyForge AI</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="font-['Plus_Jakarta_Sans'] bg-slate-50">
     
-    <!-- Simple Nav -->
-    <nav class="bg-white border-b border-slate-200">
-        <div class="max-w-4xl mx-auto px-4 py-4">
-            <a href="/" class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></a>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Card hover effect */
+        .hover-card {
+            transition: all 0.2s ease;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Container max-width */
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container-custom {
+                padding: 0 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="container-custom py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></span>
+                </a>
+                
+                <div class="flex items-center gap-6">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
-    
-    <!-- Content -->
-    <div class="max-w-4xl mx-auto px-4 py-16">
-        <h1 class="text-4xl font-bold text-slate-900 mb-4">About StudyForge</h1>
-        
-        <div class="prose prose-slate max-w-none">
-            <p class="text-lg text-slate-600 mb-8">StudyForge was founded with a simple mission: help students turn overwhelming lecture materials into structured, exam-ready study guides using AI.</p>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Our Story</h2>
-            <p class="text-slate-600 mb-6">StudyForge was created by Jedidiah, a Nigerian developer who saw fellow students struggling with dense PDFs, long YouTube lectures, and messy PowerPoint slides. There had to be a better way to study.</p>
-            <p class="text-slate-600 mb-6">What started as a personal project to solve this problem grew into StudyForge – an AI-powered platform that automatically transforms any course material into structured summaries, flashcards, and practice questions.</p>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Our Mission</h2>
-            <p class="text-slate-600 mb-6">We believe every student deserves to study smarter, not longer. Our mission is to use AI to reduce the time students spend organizing materials so they can focus on actually understanding and remembering concepts.</p>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Our Values</h2>
-            <ul class="list-disc pl-6 text-slate-600 mb-6">
-                <li><strong>Student-First:</strong> Every feature is built with students' needs in mind</li>
-                <li><strong>Simplicity:</strong> No prompt engineering required – just paste and go</li>
-                <li><strong>Accessibility:</strong> Free tier available so everyone can benefit</li>
-                <li><strong>Continuous Improvement:</strong> We're always making StudyForge better</li>
-            </ul>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">The Founder</h2>
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 mb-8">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-16 h-16 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold">J</div>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-b from-white to-slate-50 py-20">
+        <div class="container-custom text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
+                <i class="fa-solid fa-rocket text-indigo-500 text-xs"></i>
+                <span class="text-xs font-semibold text-indigo-700">Our Story</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                Building tools that help students <span class="gradient-text">study smarter</span>
+            </h1>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto">
+                StudyForge was founded with a simple mission: turn overwhelming lecture materials into structured, exam-ready study guides using AI.
+            </p>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-12 border-y border-slate-100">
+        <div class="container-custom">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div>
+                    <div class="text-3xl font-bold text-indigo-600">1+</div>
+                    <div class="text-sm text-slate-500 mt-1">Years Building</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-indigo-600">100+</div>
+                    <div class="text-sm text-slate-500 mt-1">Students Helped</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-indigo-600">24/7</div>
+                    <div class="text-sm text-slate-500 mt-1">AI Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="py-16">
+        <div class="container-custom max-w-3xl mx-auto">
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fa-solid fa-quote-left text-indigo-400 text-2xl"></i>
+                <h2 class="text-2xl font-bold text-slate-800">Our Story</h2>
+            </div>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                StudyForge was created by Jedidiah, a  developer who saw fellow students struggling with dense PDFs, long YouTube lectures, and messy PowerPoint slides. There had to be a better way to study.
+            </p>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                What started as a personal project to solve this problem grew into StudyForge – an AI-powered platform that automatically transforms any course material into structured summaries, flashcards, and practice questions.
+            </p>
+            <p class="text-slate-600 leading-relaxed">
+                Today, StudyForge helps students across Engineering, Medicine, Law, Business, and more to prepare for exams with confidence.
+            </p>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="py-16 bg-slate-50">
+        <div class="container-custom max-w-3xl mx-auto">
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fa-solid fa-bullseye text-indigo-400 text-2xl"></i>
+                <h2 class="text-2xl font-bold text-slate-800">Our Mission</h2>
+            </div>
+            <p class="text-slate-600 mb-6 leading-relaxed">
+                We believe every student deserves to study smarter, not longer. Our mission is to use AI to reduce the time students spend organizing materials so they can focus on actually understanding and remembering concepts.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-bolt text-indigo-500 mt-1"></i>
+                    <span class="text-sm text-slate-600">No prompt engineering required</span>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-clock text-indigo-500 mt-1"></i>
+                    <span class="text-sm text-slate-600">Save hours of study time</span>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-chart-line text-indigo-500 mt-1"></i>
+                    <span class="text-sm text-slate-600">Track your progress</span>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-gem text-indigo-500 mt-1"></i>
+                    <span class="text-sm text-slate-600">Free tier available</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="py-16">
+        <div class="container-custom max-w-3xl mx-auto">
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fa-solid fa-heart text-indigo-400 text-2xl"></i>
+                <h2 class="text-2xl font-bold text-slate-800">Our Values</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
+                    <i class="fa-solid fa-graduation-cap text-indigo-500 text-xl mb-3"></i>
+                    <h3 class="font-semibold text-slate-800 mb-2">Student-First</h3>
+                    <p class="text-sm text-slate-500">Every feature is built with students' needs in mind</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
+                    <i class="fa-solid fa-wand-magic text-indigo-500 text-xl mb-3"></i>
+                    <h3 class="font-semibold text-slate-800 mb-2">Simplicity</h3>
+                    <p class="text-sm text-slate-500">No prompt engineering required – just paste and go</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
+                    <i class="fa-solid fa-universal-access text-indigo-500 text-xl mb-3"></i>
+                    <h3 class="font-semibold text-slate-800 mb-2">Accessibility</h3>
+                    <p class="text-sm text-slate-500">Free tier available so everyone can benefit</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
+                    <i class="fa-solid fa-arrows-spin text-indigo-500 text-xl mb-3"></i>
+                    <h3 class="font-semibold text-slate-800 mb-2">Continuous Improvement</h3>
+                    <p class="text-sm text-slate-500">We're always making StudyForge better</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section class="py-16 bg-slate-50">
+        <div class="container-custom max-w-3xl mx-auto">
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fa-solid fa-user-astronaut text-indigo-400 text-2xl"></i>
+                <h2 class="text-2xl font-bold text-slate-800">The Founder</h2>
+            </div>
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                <div class="flex flex-col md:flex-row gap-6 items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                            J
+                        </div>
+                    </div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800">Jedidiah</h3>
-                        <p class="text-slate-500">Founder & Developer</p>
+                        <h3 class="text-xl font-bold text-slate-800 mb-1">Jedidiah</h3>
+                        <p class="text-sm text-indigo-600 mb-4">Founder & Developer</p>
+                        <p class="text-slate-600 leading-relaxed">
+                            Jedidiah is a self-taught developer and entrepreneur. He built StudyForge from scratch – handling everything from frontend design to backend development, AI integration, and payment systems. His goal is to use technology to solve real problems for students.
+                        </p>
                     </div>
                 </div>
-                <p class="text-slate-600">Jedidiah is a self-taught developer and entrepreneur. He built StudyForge from scratch – handling everything from the frontend design to backend development, AI integration, and payment systems. His goal is to use technology to solve real problems for students.</p>
             </div>
-            
-            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">Contact</h2>
-            <p class="text-slate-600 mb-6">Have questions or feedback? Reach out at hello@studyforge.site or follow us on Twitter @studyforge.</p>
         </div>
-    </div>
-    
-    <!-- Simple Footer -->
-    <footer class="border-t border-slate-200 mt-12">
-        <div class="max-w-4xl mx-auto px-4 py-8 text-center text-slate-500 text-sm">
-            © 2026 StudyForge AI. All rights reserved.
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="container-custom max-w-3xl mx-auto text-center">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-12 text-white">
+                <i class="fa-regular fa-message text-3xl mb-4"></i>
+                <h2 class="text-2xl md:text-3xl font-bold mb-4">Have questions or feedback?</h2>
+                <p class="text-indigo-100 mb-6">We'd love to hear from you</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:byforgelabs@outlook.com" class="inline-flex items-center justify-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition">
+                        <i class="fa-regular fa-envelope"></i> Email Us
+                    </a>
+                    <a href="/" class="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition">
+                        <i class="fa-solid fa-arrow-right"></i> Start Studying
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-100 bg-white">
+        <div class="container-custom py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
+                </div>
+            </div>
         </div>
     </footer>
 </body>

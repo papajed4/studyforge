@@ -7,10 +7,18 @@ let userCountry = "US";
 let billingMode = "monthly";
 
 const pricingTable = {
-    NG: { symbol: "₦", monthly: 3500 },      // Fixed: ₦3,500 (not 350,000 - this is for display only)
-    US: { symbol: "$", monthly: 8.99 },
-    GB: { symbol: "£", monthly: 7.99 },
-    CA: { symbol: "C$", monthly: 11.99 }
+    NG: { symbol: "₦", monthly: 3500 },      // Nigeria - Naira
+    US: { symbol: "$", monthly: 8.99 },       // USA - Dollar
+    GB: { symbol: "£", monthly: 7.99 },       // UK - Pound
+    CA: { symbol: "C$", monthly: 11.99 },     // Canada - Canadian Dollar
+    DE: { symbol: "€", monthly: 8 },           // Germany - Euro
+    FR: { symbol: "€", monthly: 8 },           // France - Euro
+    IT: { symbol: "€", monthly: 8 },           // Italy - Euro
+    ES: { symbol: "€", monthly: 8 },           // Spain - Euro
+    NL: { symbol: "€", monthly: 8 },           // Netherlands - Euro
+    AU: { symbol: "A$", monthly: 12.99 },      // Australia - Australian Dollar
+    JP: { symbol: "¥", monthly: 1200 },        // Japan - Yen
+    IN: { symbol: "₹", monthly: 699 }          // India - Rupee
 };
 
 const euroCountries = [
@@ -23,28 +31,146 @@ const euroPricing = { symbol: "€", monthly: 8 };
 // ============================================
 // COUNTRY DETECTION - Test mode commented out
 // ============================================
-async function detectCountry() {
-    // TEST MODE - Uncomment to force a country for testing
-    /*
-    const testCountry = localStorage.getItem('testCountry');
-    if (testCountry) {
-        userCountry = testCountry;
-        console.log(`🧪 TEST MODE: Using forced country ${userCountry}`);
-        updatePricingUI();
-        updateModalPricing();
-        return;
-    }
-    */
 
-    try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
-        userCountry = data.country_code || "US";
-        console.log("🌍 Detected country:", userCountry);
-    } catch (error) {
-        userCountry = "US";
-        console.log("🌍 Country detection failed, defaulting to US");
+async function detectCountry() {
+
+    // // ===== TEST MODE - Comment out for production =====
+    // // Force different countries to test pricing
+    // const testCountry = localStorage.getItem('testCountry');
+    // if (testCountry) {
+    //     userCountry = testCountry;
+    //     console.log(`🧪 TEST MODE: Using forced country ${userCountry}`);
+    //     updatePricingUI();
+    //     updateModalPricing();
+    //     return;
+    // }
+
+    console.log("🔍 Detecting country...");
+
+    // Check localStorage first
+    const cachedCountry = localStorage.getItem('userCountry');
+    const cacheTime = localStorage.getItem('userCountryTime');
+
+    // Use cache if less than 7 days old
+    if (cachedCountry && cacheTime) {
+        const daysOld = (Date.now() - parseInt(cacheTime)) / (1000 * 60 * 60 * 24);
+        if (daysOld < 7) {
+            userCountry = cachedCountry;
+            console.log("🌍 Using cached country:", userCountry);
+            updatePricingUI();
+            updateModalPricing();
+            return;
+        }
     }
+
+    // Try to detect country using multiple methods
+    let detectedCountry = null;
+
+    // Method 1: Check timezone for all countries
+    try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        console.log("🕐 Timezone:", timezone);
+
+        // Map timezones to country codes
+        if (timezone.includes('Lagos') || timezone.includes('Africa')) {
+            detectedCountry = 'NG';
+        } else if (timezone.includes('New_York') || timezone.includes('Chicago') || timezone.includes('Los_Angeles') || timezone.includes('Denver')) {
+            detectedCountry = 'US';
+        } else if (timezone.includes('London')) {
+            detectedCountry = 'GB';
+        } else if (timezone.includes('Berlin') || timezone.includes('Frankfurt')) {
+            detectedCountry = 'DE';
+        } else if (timezone.includes('Paris')) {
+            detectedCountry = 'FR';
+        } else if (timezone.includes('Rome') || timezone.includes('Milan')) {
+            detectedCountry = 'IT';
+        } else if (timezone.includes('Madrid')) {
+            detectedCountry = 'ES';
+        } else if (timezone.includes('Amsterdam')) {
+            detectedCountry = 'NL';
+        } else if (timezone.includes('Toronto') || timezone.includes('Vancouver')) {
+            detectedCountry = 'CA';
+        } else if (timezone.includes('Sydney') || timezone.includes('Melbourne')) {
+            detectedCountry = 'AU';
+        } else if (timezone.includes('Tokyo')) {
+            detectedCountry = 'JP';
+        } else if (timezone.includes('Seoul')) {
+            detectedCountry = 'KR';
+        } else if (timezone.includes('Shanghai') || timezone.includes('Beijing')) {
+            detectedCountry = 'CN';
+        } else if (timezone.includes('Moscow')) {
+            detectedCountry = 'RU';
+        } else if (timezone.includes('Sao_Paulo') || timezone.includes('Rio')) {
+            detectedCountry = 'BR';
+        } else if (timezone.includes('Mumbai') || timezone.includes('Kolkata')) {
+            detectedCountry = 'IN';
+        }
+    } catch (e) { }
+
+    // Method 2: Check language for all countries
+    if (!detectedCountry) {
+        const lang = navigator.language || '';
+        console.log("🌐 Language:", lang);
+
+        // Map languages to country codes
+        if (lang.includes('NG') || lang.includes('en-NG')) {
+            detectedCountry = 'NG';
+        } else if (lang.includes('US') || lang.includes('en-US')) {
+            detectedCountry = 'US';
+        } else if (lang.includes('GB') || lang.includes('en-GB')) {
+            detectedCountry = 'GB';
+        } else if (lang.includes('DE') || lang.includes('de-DE')) {
+            detectedCountry = 'DE';
+        } else if (lang.includes('FR') || lang.includes('fr-FR')) {
+            detectedCountry = 'FR';
+        } else if (lang.includes('IT') || lang.includes('it-IT')) {
+            detectedCountry = 'IT';
+        } else if (lang.includes('ES') || lang.includes('es-ES')) {
+            detectedCountry = 'ES';
+        } else if (lang.includes('NL') || lang.includes('nl-NL')) {
+            detectedCountry = 'NL';
+        } else if (lang.includes('CA') || lang.includes('en-CA') || lang.includes('fr-CA')) {
+            detectedCountry = 'CA';
+        } else if (lang.includes('AU') || lang.includes('en-AU')) {
+            detectedCountry = 'AU';
+        } else if (lang.includes('JP') || lang.includes('ja-JP')) {
+            detectedCountry = 'JP';
+        } else if (lang.includes('KR') || lang.includes('ko-KR')) {
+            detectedCountry = 'KR';
+        } else if (lang.includes('CN') || lang.includes('zh-CN')) {
+            detectedCountry = 'CN';
+        } else if (lang.includes('RU') || lang.includes('ru-RU')) {
+            detectedCountry = 'RU';
+        } else if (lang.includes('BR') || lang.includes('pt-BR')) {
+            detectedCountry = 'BR';
+        } else if (lang.includes('IN') || lang.includes('hi-IN')) {
+            detectedCountry = 'IN';
+        }
+    }
+
+    // Method 3: Allow user to select if we're not sure
+    if (!detectedCountry) {
+        // Ask user their country (only once)
+        const wantsToSelect = confirm("🌍 Help us customize your experience!\n\nClick OK to select your country for accurate pricing.\nClick Cancel to continue with US pricing.");
+
+        if (wantsToSelect) {
+            const country = prompt("Enter your country code (e.g., NG for Nigeria, US for USA, GB for UK):", "NG");
+            if (country && country.trim()) {
+                detectedCountry = country.trim().toUpperCase();
+            }
+        }
+    }
+
+    // Default to US if nothing else worked
+    userCountry = detectedCountry || 'US';
+
+    // Save to localStorage with timestamp
+    localStorage.setItem('userCountry', userCountry);
+    localStorage.setItem('userCountryTime', Date.now().toString());
+
+    console.log("🌍 Country set to:", userCountry);
+
+    // Update pricing displays
     updatePricingUI();
     updateModalPricing();
 }
@@ -356,7 +482,7 @@ window.handleModalUpgrade = async function () {
 };
 
 // ============================================
-// USAGE FUNCTIONS - UPDATED (Hides for Pro users)
+// USAGE FUNCTIONS - WITH WARNING BAR
 // ============================================
 window.loadUsage = async function () {
     const token = await window.getAuthToken?.();
@@ -369,13 +495,18 @@ window.loadUsage = async function () {
         });
         const accountData = await accountResponse.json();
 
-        // If user is Pro, hide the usage badge completely
+        // If user is Pro, hide the usage badge and warning bar
         if (accountData.success && accountData.plan === "pro") {
             const badge = document.getElementById("usageBadge");
-            if (badge) {
-                badge.classList.add("hidden");
-            }
-            return; // Don't fetch usage for Pro users
+            const warningBar = document.getElementById("usageWarningBar");
+            if (badge) badge.classList.add("hidden");
+            if (warningBar) warningBar.classList.add("hidden");
+
+            // Update account section to show Unlimited
+            const usageDisplay = document.getElementById("accountUsageDisplay");
+            if (usageDisplay) usageDisplay.innerHTML = "♾️ Unlimited";
+
+            return;
         }
 
         // Only fetch usage for Free users
@@ -389,14 +520,54 @@ window.loadUsage = async function () {
 
         if (data.success) {
             const badge = document.getElementById("usageBadge");
+            const warningBar = document.getElementById("usageWarningBar");
+            const remaining = 5 - data.used;
+            const remainingSpan = document.getElementById("usageRemaining");
+
             if (badge) {
                 badge.classList.remove("hidden");
                 badge.innerText = `${data.used}/5 used today`;
-
                 if (data.used >= 5) {
                     badge.classList.add("text-red-600");
                 } else {
                     badge.classList.remove("text-red-600");
+                }
+            }
+
+            // Update account section with current usage
+            const usageDisplay = document.getElementById("accountUsageDisplay");
+            if (usageDisplay) usageDisplay.innerHTML = `${data.used}/5 used today`;
+
+            // Update warning bar
+            if (warningBar && remainingSpan) {
+                remainingSpan.innerText = remaining;
+
+                // Show warning bar if less than 3 generations left
+                if (remaining <= 2) {
+                    warningBar.classList.remove("hidden");
+
+                    // Change color based on urgency
+                    if (remaining === 0) {
+                        warningBar.classList.remove("bg-amber-50", "border-amber-500");
+                        warningBar.classList.add("bg-red-50", "border-red-500");
+                        const icon = warningBar.querySelector('i');
+                        if (icon) icon.classList.remove('fa-gauge-high', 'text-amber-600');
+                        if (icon) icon.classList.add('fa-circle-exclamation', 'text-red-600');
+                    } else if (remaining === 1) {
+                        warningBar.classList.remove("bg-amber-50", "border-amber-500");
+                        warningBar.classList.add("bg-orange-50", "border-orange-500");
+                        const icon = warningBar.querySelector('i');
+                        if (icon) icon.classList.remove('fa-gauge-high', 'text-amber-600');
+                        if (icon) icon.classList.add('fa-hourglass-half', 'text-orange-600');
+                    } else {
+                        warningBar.classList.remove("bg-red-50", "border-red-500", "bg-orange-50", "border-orange-500");
+                        warningBar.classList.add("bg-amber-50", "border-amber-500");
+                        const icon = warningBar.querySelector('i');
+                        if (icon) icon.classList.remove('fa-circle-exclamation', 'text-red-600', 'fa-hourglass-half', 'text-orange-600');
+                        if (icon) icon.classList.add('fa-gauge-high', 'text-amber-600');
+                    }
+                } else {
+                    warningBar.classList.add("hidden");
                 }
             }
         }
@@ -444,6 +615,15 @@ window.loadAccountInfo = async function () {
             });
         }
 
+        // Update account section displays
+        const planDisplay = document.getElementById('accountPlanDisplay');
+        const expiryDisplay = document.getElementById('accountExpiryDisplay');
+        const planBadge = document.getElementById('accountPlanBadge');
+
+        if (planDisplay) planDisplay.innerText = data.plan === "pro" ? "Pro" : "Free";
+        if (planBadge) planBadge.innerText = data.plan === "pro" ? "Pro" : "Free";
+        if (expiryDisplay) expiryDisplay.innerText = data.expires_at ? new Date(data.expires_at).toLocaleDateString() : "—";
+
         // Update avatar for Pro users
         if (data.plan === "pro") {
             const avatar = document.getElementById('userAvatar');
@@ -451,21 +631,51 @@ window.loadAccountInfo = async function () {
                 avatar.classList.remove('bg-indigo-600');
                 avatar.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-purple-600');
             }
-            
-            // 👇 ADD THIS - HIDE UPGRADE MESSAGE FOR PRO USERS
+
+            // 👇 ADD THESE LINES - Show Pro badges
+            const proBadge = document.getElementById('proBadge');
+            const proActiveBadge = document.getElementById('proActiveBadge');
+            if (proBadge) proBadge.classList.remove('hidden');
+            if (proActiveBadge) proActiveBadge.classList.remove('hidden');
+
+            // Hide upgrade message
             const upgradeMessage = document.querySelector('#accountSection .bg-amber-50');
             if (upgradeMessage) {
                 upgradeMessage.classList.add('hidden');
             }
-            
+
+            // Hide warning bar
+            const warningBar = document.getElementById("usageWarningBar");
+            if (warningBar) warningBar.classList.add("hidden");
+
         } else {
-            // 👇 ADD THIS - SHOW UPGRADE MESSAGE FOR FREE USERS
+            // 👇 ADD THESE LINES - Hide Pro badges for free users
+            const proBadge = document.getElementById('proBadge');
+            const proActiveBadge = document.getElementById('proActiveBadge');
+            if (proBadge) proBadge.classList.add('hidden');
+            if (proActiveBadge) proActiveBadge.classList.add('hidden');
+
+            // Show upgrade message
             const upgradeMessage = document.querySelector('#accountSection .bg-amber-50');
             if (upgradeMessage) {
                 upgradeMessage.classList.remove('hidden');
             }
         }
 
+        // Update upgrade/cancel buttons for Account section
+        const upgradeAccountBtn = document.getElementById('upgradeAccountBtn');
+        const cancelSubscriptionBtn = document.getElementById('cancelSubscriptionBtn');
+        if (upgradeAccountBtn && cancelSubscriptionBtn) {
+            if (data.plan === "pro") {
+                upgradeAccountBtn.classList.add('hidden');
+                cancelSubscriptionBtn.classList.remove('hidden');
+            } else {
+                upgradeAccountBtn.classList.remove('hidden');
+                cancelSubscriptionBtn.classList.add('hidden');
+            }
+        }
+
+        // Update upgrade button (existing code)
         const upgradeBtn = document.querySelector('.upgrade-btn');
         if (upgradeBtn) {
             if (data.plan === "pro") {

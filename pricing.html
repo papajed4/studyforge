@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - StudyForge AI</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container-custom {
+                padding: 0 2rem;
+            }
+        }
+        
+        .pricing-card {
+            transition: all 0.3s ease;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        /* Toggle switch animation */
+        .toggle-switch {
+            transition: background-color 0.2s ease;
+        }
+        
+        .toggle-circle {
+            transition: transform 0.2s ease;
+        }
+        
+        /* Skeleton loader */
+        .price-placeholder {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 8px;
+            display: inline-block;
+            width: 100px;
+            height: 40px;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="container-custom py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-900">Study<span class="text-indigo-600">Forge</span></span>
+                </a>
+                
+                <div class="flex items-center gap-6">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-b from-white to-slate-50 py-16">
+        <div class="container-custom text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
+                <i class="fa-regular fa-gem text-indigo-500 text-xs"></i>
+                <span class="text-xs font-semibold text-indigo-700">Simple, Transparent Pricing</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+                Choose the plan that works for you
+            </h1>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto">
+                Start free. Upgrade when you're ready to study seriously. Cancel anytime.
+            </p>
+        </div>
+    </section>
+
+    <!-- Billing Toggle -->
+    <div class="container-custom text-center py-8">
+        <div class="inline-flex items-center gap-4 bg-white p-2 rounded-full shadow-sm border border-slate-200">
+            <span id="monthlyLabel" class="text-sm font-semibold text-slate-900 px-4 py-2">Monthly</span>
+            <button id="billingToggle" onclick="toggleBilling()" 
+                class="relative inline-flex h-8 w-14 items-center rounded-full bg-indigo-600 transition toggle-switch">
+                <span id="toggleCircle" class="inline-block h-6 w-6 transform rounded-full bg-white transition translate-x-1 toggle-circle"></span>
+            </button>
+            <span id="yearlyLabel" class="text-sm font-semibold text-slate-500 px-4 py-2">Yearly <span class="text-indigo-600 text-xs">Save 20%</span></span>
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="container-custom py-8">
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            
+            <!-- Free Plan -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 pricing-card">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-regular fa-crown text-slate-400 text-xl"></i>
+                    <h2 class="text-2xl font-bold text-slate-800">Free</h2>
+                </div>
+                <div class="mb-6">
+                    <span class="text-4xl font-bold text-slate-900">$0</span>
+                    <span class="text-slate-500">/month</span>
+                </div>
+                <ul class="feature-list space-y-3 text-slate-600 mb-8">
+                    <li>5 AI generations per day</li>
+                    <li>Structured study summaries</li>
+                    <li>Exam-style question mode</li>
+                    <li>AI clarification chat</li>
+                    <li>Basic support</li>
+                </ul>
+                <a href="/dashboard.html" class="block w-full text-center bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">
+                    Get Started
+                </a>
+            </div>
+            
+            <!-- Pro Plan - Dynamic Pricing -->
+            <div class="relative bg-white rounded-2xl shadow-xl border-2 border-indigo-600 p-8 pricing-card">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                    <i class="fa-regular fa-fire"></i> MOST POPULAR
+                </div>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-regular fa-gem text-indigo-600 text-xl"></i>
+                    <h2 class="text-2xl font-bold text-slate-800">Pro</h2>
+                </div>
+                <div class="mb-2">
+                    <span id="proPrice" class="text-4xl font-bold text-slate-900">Loading...</span>
+                    <span id="proPeriod" class="text-slate-500">/month</span>
+                </div>
+                <p id="perDayPrice" class="text-xs text-slate-500 mb-6"></p>
+                <ul class="feature-list space-y-3 text-slate-600 mb-8">
+                    <li><span class="font-semibold">Unlimited</span> AI generations</li>
+                    <li><span class="font-semibold">Unlimited</span> exam prediction mode</li>
+                    <li><span class="font-semibold">Unlimited</span> AI tutor chat</li>
+                    <li>Faster priority processing</li>
+                    <li>Priority support</li>
+                    <li class="text-red-500 font-semibold">✓ Early adopters locked in at current price</li>
+                </ul>
+                <a href="/dashboard.html" class="block w-full text-center bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition shadow-md">
+                    Upgrade to Pro
+                </a>
+                <p class="text-xs text-slate-500 text-center mt-4">Cancel anytime. No long-term commitment.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="bg-slate-50 py-16 mt-12">
+        <div class="container-custom max-w-3xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
+                <p class="text-slate-500">Everything you need to know before upgrading</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-white rounded-xl p-6 border border-slate-200">
+                    <h3 class="font-semibold text-slate-800 mb-2">What happens after I upgrade?</h3>
+                    <p class="text-slate-600 text-sm">Your account is instantly upgraded to Pro. You get unlimited generations, exam mode, and priority AI chat access immediately.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-slate-200">
+                    <h3 class="font-semibold text-slate-800 mb-2">Can I cancel my subscription anytime?</h3>
+                    <p class="text-slate-600 text-sm">Yes! You can cancel anytime from your account dashboard. No questions asked. No long-term contracts.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-slate-200">
+                    <h3 class="font-semibold text-slate-800 mb-2">Is StudyForge better than ChatGPT?</h3>
+                    <p class="text-slate-600 text-sm">Yes! StudyForge is structured specifically for academic exam preparation. No prompting required. One click generates exam-ready sections, revision sheets, flashcards, and likely exam questions.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-slate-200">
+                    <h3 class="font-semibold text-slate-800 mb-2">Does it work for all courses?</h3>
+                    <p class="text-slate-600 text-sm">Yes! StudyForge works for Engineering, Medicine, Law, Business, Social Sciences, and more. If you have lecture notes, it can structure them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="container-custom text-center">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-12 text-white">
+                <i class="fa-regular fa-rocket text-3xl mb-4"></i>
+                <h2 class="text-2xl md:text-3xl font-bold mb-4">Ready to study smarter?</h2>
+                <p class="text-indigo-100 mb-6">Join students who are already acing their exams with StudyForge</p>
+                <a href="/dashboard.html" class="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition">
+                    Start Free Today <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <p class="text-xs text-indigo-200 mt-4">No credit card required • Free tier available</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-100 bg-white">
+        <div class="container-custom py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
+                    <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Dynamic Pricing Script -->
+    <script>
+        // Pricing table matching your main.js
+        const pricingTable = {
+            NG: { symbol: "₦", monthly: 3500 },
+            US: { symbol: "$", monthly: 8.99 },
+            GB: { symbol: "£", monthly: 7.99 },
+            CA: { symbol: "C$", monthly: 11.99 },
+            DE: { symbol: "€", monthly: 8 },
+            FR: { symbol: "€", monthly: 8 },
+            IT: { symbol: "€", monthly: 8 },
+            ES: { symbol: "€", monthly: 8 },
+            NL: { symbol: "€", monthly: 8 },
+            AU: { symbol: "A$", monthly: 12.99 },
+            JP: { symbol: "¥", monthly: 1200 },
+            IN: { symbol: "₹", monthly: 699 }
+        };
+        
+        const euroCountries = ["FR", "DE", "ES", "IT", "NL", "BE", "PT", "IE", "AT", "FI", "GR", "LU", "LV", "LT", "EE", "CY", "MT", "SK", "SI"];
+        const euroPricing = { symbol: "€", monthly: 8 };
+        
+        let billingMode = "monthly";
+        
+        async function getCountry() {
+            let country = localStorage.getItem('userCountry');
+            
+            if (!country) {
+                try {
+                    const lang = navigator.language || '';
+                    if (lang.includes('NG') || lang.includes('en-NG')) country = 'NG';
+                    else if (lang.includes('GB') || lang.includes('en-GB')) country = 'GB';
+                    else if (lang.includes('DE')) country = 'DE';
+                    else if (lang.includes('FR')) country = 'FR';
+                    else if (lang.includes('ES')) country = 'ES';
+                    else if (lang.includes('IT')) country = 'IT';
+                    else if (lang.includes('NL')) country = 'NL';
+                    else if (lang.includes('IN')) country = 'IN';
+                    else if (lang.includes('JP')) country = 'JP';
+                    else if (lang.includes('AU')) country = 'AU';
+                    else if (lang.includes('CA')) country = 'CA';
+                    else country = 'US';
+                    
+                    localStorage.setItem('userCountry', country);
+                } catch (e) {
+                    country = 'US';
+                }
+            }
+            
+            return country;
+        }
+        
+        async function updatePricing() {
+            const country = await getCountry();
+            
+            let pricing = pricingTable[country];
+            if (!pricing && euroCountries.includes(country)) {
+                pricing = euroPricing;
+            }
+            if (!pricing) {
+                pricing = pricingTable['US'];
+            }
+            
+            const monthlyPrice = pricing.monthly;
+            const symbol = pricing.symbol;
+            const yearlyPrice = (monthlyPrice * 12 * 0.8).toFixed(2);
+            const perDay = (yearlyPrice / 365).toFixed(2);
+            
+            if (billingMode === "monthly") {
+                document.getElementById('proPrice').innerHTML = `${symbol}${monthlyPrice}`;
+                document.getElementById('proPeriod').innerHTML = '/month';
+                document.getElementById('perDayPrice').innerHTML = '';
+            } else {
+                document.getElementById('proPrice').innerHTML = `${symbol}${yearlyPrice}`;
+                document.getElementById('proPeriod').innerHTML = '/year';
+                document.getElementById('perDayPrice').innerHTML = `≈ ${symbol}${perDay} per day (billed yearly)`;
+            }
+        }
+        
+        function toggleBilling() {
+            const toggle = document.getElementById('billingToggle');
+            const circle = document.getElementById('toggleCircle');
+            const monthlyLabel = document.getElementById('monthlyLabel');
+            const yearlyLabel = document.getElementById('yearlyLabel');
+            
+            if (billingMode === "monthly") {
+                billingMode = "yearly";
+                circle.classList.add('translate-x-7');
+                toggle.classList.add('bg-indigo-600');
+                monthlyLabel.classList.remove('text-slate-900');
+                monthlyLabel.classList.add('text-slate-500');
+                yearlyLabel.classList.remove('text-slate-500');
+                yearlyLabel.classList.add('text-slate-900');
+            } else {
+                billingMode = "monthly";
+                circle.classList.remove('translate-x-7');
+                toggle.classList.remove('bg-indigo-600');
+                toggle.classList.add('bg-slate-300');
+                yearlyLabel.classList.remove('text-slate-900');
+                yearlyLabel.classList.add('text-slate-500');
+                monthlyLabel.classList.remove('text-slate-500');
+                monthlyLabel.classList.add('text-slate-900');
+            }
+            
+            updatePricing();
+        }
+        
+        updatePricing();
+        
+        // Make toggle function globally available
+        window.toggleBilling = toggleBilling;
+    </script>
+</body>
+</html>

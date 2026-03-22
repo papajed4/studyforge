@@ -15,6 +15,8 @@ const { YoutubeTranscript } = require('youtube-transcript');
 const axios = require('axios');
 const https = require('https');
 const crypto = require('crypto');
+const Tesseract = require('tesseract.js');
+const { fromBuffer } = require('pdf2pic'); // For converting PDF pages to images
 
 // ============================================
 // CONFIGURATION
@@ -79,7 +81,16 @@ app.use("/api/", apiLimiter);
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.pdf', '.docx', '.pptx', '.jpg', '.jpeg', '.png'];
+        const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf('.'));
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'), false);
+        }
+    }
 });
 
 // ============================================
@@ -162,7 +173,7 @@ function getPricingByCountry(country) {
     const pricingMap = {
         // NIGERIA - Paystack (NGN) - FIXED: ₦3,500 = 350,000 kobo
         NG: { price: 350000, currency: "NGN", processor: "paystack" },
-        
+
         // INTERNATIONAL - Flutterwave
         US: { price: 899, currency: "USD", processor: "flutterwave" },
         GB: { price: 799, currency: "GBP", processor: "flutterwave" },
@@ -297,6 +308,10 @@ app.post('/api/condense', requireAuth, async (req, res) => {
             .eq('id', req.user.id)
             .single();
 
+        // After getting the content, detect language
+        const detectedLanguage = req.body.language || 'en';
+        console.log(`🌐 Responding in language: ${detectedLanguage}`);
+
         const now = new Date();
         const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
 
@@ -307,24 +322,44 @@ app.post('/api/condense', requireAuth, async (req, res) => {
         if (!content) return res.status(400).json({ success: false, error: "No content provided" });
         if (content.length > 60000) return res.status(400).json({ success: false, error: "Content too long" });
 
+        // Then update the prompt to include language instruction
         const prompt = `
-You are a structured academic formatting engine. Format the content into clean, readable sections.
+You are a structured academic formatting engine. 
+IMPORTANT: Respond in ${detectedLanguage} language.
+
+Format the content into clean, readable sections with **visual hierarchy** that shows students what matters most.
 
 OUTPUT FORMAT RULES:
 1. Use ONLY plain text - NO markdown symbols.
 2. DO NOT use any special characters for formatting.
-3. Section titles should be written as plain text without any symbols.
-4. Use simple bullet points with dashes (-) only when listing items.
+3. Use simple bullet points with dashes (-) only when listing items.
 
-Create these exact sections in this order:
+Create these exact sections in this order WITH the emoji indicators:
+
+📌 CORE CONCEPTS (What you absolutely must understand)
+- [Concept 1 - explain in 1-2 sentences why it's foundational]
+- [Concept 2 - explain in 1-2 sentences why it's foundational]
+- [Concept 3 - explain in 1-2 sentences why it's foundational]
+
+📋 KEY DEFINITIONS (Terms you need to memorize)
+- [Term 1]: [Clear, concise definition]
+- [Term 2]: [Clear, concise definition]
+- [Term 3]: [Clear, concise definition]
+- [Term 4]: [Clear, concise definition]
+- [Term 5]: [Clear, concise definition]
+
+⚖️ IMPORTANT LAWS/FORMULAS (Must-know equations and principles)
+- [Law/Formula 1]: [Explanation of when/why to use it]
+- [Law/Formula 2]: [Explanation of when/why to use it]
+- [Law/Formula 3]: [Explanation of when/why to use it]
+
+🎯 LIKELY EXAM TOPICS (What professors will test)
+- ⭐ [High probability topic 1 - why it's likely on the exam]
+- ⭐ [High probability topic 2 - why it's likely on the exam]
+- ⭐ [High probability topic 3 - why it's likely on the exam]
 
 Executive Summary
-[Write a 2-3 paragraph summary here]
-
-Key Concepts Explained Simply
-- Concept 1 explanation
-- Concept 2 explanation
-- Concept 3 explanation
+[Write a 2-3 paragraph summary here connecting all the concepts]
 
 Exam-Ready Bullet Points
 - Important point 1
@@ -481,44 +516,206 @@ ${content}
     }
 });
 
-// File upload
+// ============================================
+// FILE UPLOAD - WITH OCR SUPPORT
+// ============================================
 app.post("/api/upload-file", requireAuth, upload.single("file"), async (req, res) => {
+    console.log("📁 File upload received");
+
     try {
         if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
+            return res.status(400).json({ success: false, error: "No file uploaded" });
         }
+
+        console.log("File:", req.file.originalname, "Size:", req.file.size);
 
         const fileName = req.file.originalname.toLowerCase();
         let extractedText = "";
 
+        // PDF Processing - NEW VERSION
         if (fileName.endsWith(".pdf")) {
-            const data = await pdfParse(req.file.buffer);
-            extractedText = data.text;
+            try {
+                // First try normal PDF parsing
+                const data = await pdfParse(req.file.buffer);
+                extractedText = data.text;
+                console.log("PDF text extraction result length:", extractedText.length);
+
+                // If we have enough text, use it
+                if (extractedText && extractedText.trim().length > 200) {
+                    console.log("✅ Sufficient text extracted from PDF");
+                } else {
+                    console.log("⚠️ Low text content, trying OCR...");
+
+                    // Use pdf-poppler instead
+                    const pdfPoppler = require('pdf-poppler');
+                    const fs = require('fs');
+                    const path = require('path');
+                    const os = require('os');
+
+                    // Save buffer to temp file
+                    const tempDir = path.join(os.tmpdir(), 'pdf-ocr-' + Date.now());
+                    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+                    const tempPdfPath = path.join(tempDir, 'document.pdf');
+                    fs.writeFileSync(tempPdfPath, req.file.buffer);
+
+                    try {
+                        // Convert PDF to images using pdf-poppler
+                        const opts = {
+                            format: 'png',
+                            out_dir: tempDir,
+                            out_prefix: 'page',
+                            page: null // all pages
+                        };
+
+                        await pdfPoppler.convert(tempPdfPath, opts);
+                        console.log(`📄 PDF converted to images`);
+
+                        // Find all generated images
+                        const files = fs.readdirSync(tempDir);
+                        const images = files.filter(f => f.startsWith('page') && f.endsWith('.png')).sort();
+                        console.log(`Found ${images.length} images`);
+
+                        let ocrText = '';
+
+                        // Process each image
+                        for (let i = 0; i < images.length; i++) {
+                            const imgPath = path.join(tempDir, images[i]);
+                            console.log(`🔍 Running OCR on page ${i + 1}...`);
+
+                            const imgBuffer = fs.readFileSync(imgPath);
+                            const result = await Tesseract.recognize(
+                                imgBuffer,
+                                'deu+eng',
+                                {
+                                    logger: m => {
+                                        if (m.status === 'recognizing text') {
+                                            console.log(`   Page ${i + 1}: ${Math.round(m.progress * 100)}%`);
+                                        }
+                                    }
+                                }
+                            );
+
+                            ocrText += result.data.text + '\n\n';
+                            console.log(`   Found ${result.data.text.length} chars`);
+
+                            // Clean up image file
+                            fs.unlinkSync(imgPath);
+                        }
+
+                        extractedText = ocrText;
+                        console.log(`📝 OCR complete, total text length: ${extractedText.length}`);
+
+                    } catch (convertErr) {
+                        console.error("PDF conversion error:", convertErr.message);
+                        extractedText = "";
+                    } finally {
+                        // Clean up temp directory
+                        if (fs.existsSync(tempDir)) {
+                            fs.rmdirSync(tempDir, { recursive: true });
+                        }
+                    }
+                }
+
+            } catch (pdfErr) {
+                console.error("PDF error:", pdfErr.message);
+                return res.status(422).json({
+                    success: false,
+                    error: "Could not read this PDF. Please take a screenshot/photo of the notes and upload as an image instead."
+                });
+            }
         }
+        // DOCX Processing
         else if (fileName.endsWith(".docx")) {
-            const result = await mammoth.extractRawText({ buffer: req.file.buffer });
-            extractedText = result.value;
+            try {
+                const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+                extractedText = result.value;
+                console.log("DOCX extracted, length:", extractedText.length);
+            } catch (docxErr) {
+                return res.status(422).json({
+                    success: false,
+                    error: "Could not read this DOCX file."
+                });
+            }
         }
+        // PPTX Processing
         else if (fileName.endsWith(".pptx")) {
-            extractedText = await officeParser.parseOfficeAsync(req.file.buffer);
+            try {
+                extractedText = await officeParser.parseOfficeAsync(req.file.buffer);
+                console.log("PPTX extracted, length:", extractedText.length);
+            } catch (pptxErr) {
+                return res.status(422).json({
+                    success: false,
+                    error: "Could not read this PPTX file."
+                });
+            }
+        }
+        // Image Processing (JPG, PNG, JPEG)
+        else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")) {
+            console.log("🖼️ Processing image file...");
+            try {
+                // Run OCR directly on the image
+                const result = await Tesseract.recognize(
+                    req.file.buffer,
+                    'deu+eng', // German + English
+                    {
+                        logger: m => console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`)
+                    }
+                );
+
+                extractedText = result.data.text;
+                console.log(`📝 Image OCR complete, text length: ${extractedText.length}`);
+
+            } catch (imageErr) {
+                console.error("Image OCR error:", imageErr.message);
+                return res.status(422).json({
+                    success: false,
+                    error: "Could not read text from this image. Make sure the handwriting is clear and well-lit."
+                });
+            }
         }
         else {
-            return res.status(400).json({ error: "Unsupported file type. Only .pdf, .docx and .pptx are supported" });
+            return res.status(400).json({
+                success: false,
+                error: "Only .pdf, .docx, .pptx, .jpg, .jpeg, and .png files are supported"
+            });
         }
 
-        if (!extractedText || extractedText.trim().length === 0) {
-            return res.status(422).json({ error: "No text could be extracted from the file" });
+        // Check if we got any text
+        if (!extractedText || extractedText.trim().length < 50) {
+            return res.status(422).json({
+                success: false,
+                error: "No readable text found in file. The file might be scanned or image-based, or the handwriting is not recognized."
+            });
         }
 
+        // Detect language from text
+        let detectedLanguage = 'en';
+        // Simple language detection - look for German characters
+        const hasGermanChars = /[äöüß]/i.test(extractedText);
+        const hasFrenchChars = /[éèêëàâç]/i.test(extractedText);
+        const hasSpanishChars = /[ñáéíóúü]/i.test(extractedText);
+
+        if (hasGermanChars) detectedLanguage = 'de';
+        else if (hasFrenchChars) detectedLanguage = 'fr';
+        else if (hasSpanishChars) detectedLanguage = 'es';
+
+        console.log(`🌐 Detected language: ${detectedLanguage}`);
+
+        // Success - return the text with language info
         res.json({
             success: true,
             text: extractedText,
-            length: extractedText.length
+            length: extractedText.length,
+            language: detectedLanguage
         });
 
     } catch (error) {
-        console.error("File upload error:", error);
-        res.status(500).json({ error: "Extraction failed", details: error.message });
+        console.error("Upload error:", error);
+        res.status(500).json({
+            success: false,
+            error: "Server error processing file: " + error.message
+        });
     }
 });
 
@@ -703,30 +900,46 @@ app.post('/api/verify-payment', requireAuth, async (req, res) => {
 });
 
 // ============================================
-// STUDY GUIDES ENDPOINTS
+// STUDY GUIDES ENDPOINTS - FIXED
 // ============================================
 app.post('/api/save-guide', requireAuth, async (req, res) => {
     try {
-        const { title, content } = req.body;
+        const { title, content, subject, course_code, tags } = req.body;
+
+        console.log("=".repeat(50));
+        console.log("SAVING GUIDE");
+        console.log("Title:", title);
+        console.log("Content length:", content?.length || 0);
+        console.log("=".repeat(50));
 
         if (!content) {
             return res.status(400).json({ success: false, error: "Content is required" });
         }
 
-        const { error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
             .from('study_guides')
             .insert({
                 user_id: req.user.id,
                 title: title || "Untitled Guide",
-                content: content
-            });
+                content: content,  // THIS IS THE FULL GENERATED CONTENT
+                subject: subject || null,
+                course_code: course_code || null,
+                tags: tags || [],
+                created_at: new Date().toISOString()
+            })
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error("Save error:", error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
 
-        res.json({ success: true });
+        console.log("✅ Guide saved with content length:", content.length);
+        res.json({ success: true, data: data });
 
     } catch (err) {
-        res.status(500).json({ success: false, error: "Failed to save guide" });
+        console.error("Save exception:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -734,19 +947,60 @@ app.get('/api/my-guides', requireAuth, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('study_guides')
-            .select('*')
+            .select('*')  // MUST BE '*' to get content
             .eq('user_id', req.user.id)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-
-        res.json({ success: true, guides: data });
+        res.json({ success: true, guides: data || [] });
 
     } catch (err) {
         res.status(500).json({ success: false, error: "Failed to fetch guides" });
     }
 });
 
+// Update guide - handles title, subject, course_code, tags
+app.put('/api/update-guide/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, subject, course_code, tags } = req.body;
+
+        // Build update object with only provided fields
+        const updates = {};
+        if (title !== undefined) updates.title = title;
+        if (subject !== undefined) updates.subject = subject;
+        if (course_code !== undefined) updates.course_code = course_code;
+        if (tags !== undefined) updates.tags = tags;
+
+        // Always update the updated_at timestamp
+        updates.updated_at = new Date().toISOString();
+
+        console.log("Updating guide:", id, "with:", updates);
+
+        const { data, error } = await supabaseAdmin
+            .from('study_guides')
+            .update(updates)
+            .eq('id', id)
+            .eq('user_id', req.user.id)
+            .select();
+
+        if (error) {
+            console.error("Update error:", error);
+            return res.status(500).json({ success: false, error: "Update failed: " + error.message });
+        }
+
+        console.log("Guide updated successfully:", data);
+        res.json({ success: true, data: data });
+
+    } catch (err) {
+        console.error("Update exception:", err);
+        res.status(500).json({ success: false, error: "Update failed: " + err.message });
+    }
+});
+
+// ============================================
+// DELETE STUDY GUIDE
+// ============================================
 app.delete('/api/delete-guide/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -762,6 +1016,7 @@ app.delete('/api/delete-guide/:id', requireAuth, async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
+        console.error("Delete error:", err);
         res.status(500).json({ success: false, error: "Delete failed" });
     }
 });
@@ -820,6 +1075,117 @@ app.post('/api/youtube-transcript', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: "Transcript failed", details: error.message });
+    }
+});
+
+// ============================================
+// SAVE QUIZ ATTEMPT
+// ============================================
+app.post('/api/save-quiz-attempt', requireAuth, async (req, res) => {
+    try {
+        const { guide_id, score, total_questions, percentage, answers } = req.body;
+        
+        console.log(`📊 Saving quiz attempt for user ${req.user.id}`);
+        console.log(`   Score: ${score}/${total_questions} (${percentage}%)`);
+        
+        const { data, error } = await supabaseAdmin
+            .from('quiz_attempts')
+            .insert({
+                user_id: req.user.id,
+                guide_id: guide_id,
+                score: score,
+                total_questions: total_questions,
+                percentage: percentage,
+                answers: answers
+            })
+            .select();
+            
+        if (error) throw error;
+        
+        res.json({ success: true, data: data });
+        
+    } catch (err) {
+        console.error("Save quiz attempt error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ============================================
+// GET QUIZ STATS FOR A GUIDE
+// ============================================
+app.get('/api/quiz-stats/:guideId', requireAuth, async (req, res) => {
+    try {
+        const { guideId } = req.params;
+        
+        console.log(`📊 Fetching quiz stats for guide ${guideId}`);
+        
+        // Get all quiz attempts for this guide
+        const { data: attempts, error } = await supabaseAdmin
+            .from('quiz_attempts')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .eq('guide_id', guideId)
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        if (!attempts || attempts.length === 0) {
+            return res.json({ success: true, stats: null });
+        }
+        
+        // Calculate stats
+        const lastAttempt = attempts[0];
+        const bestAttempt = attempts.reduce((best, a) => a.percentage > best.percentage ? a : best, attempts[0]);
+        const averageScore = Math.round(attempts.reduce((sum, a) => sum + a.percentage, 0) / attempts.length);
+        
+        // Collect weak topics from wrong answers
+        const weakTopics = new Set();
+        attempts.forEach(attempt => {
+            if (attempt.answers && attempt.answers.weak_topics) {
+                attempt.answers.weak_topics.forEach(topic => weakTopics.add(topic));
+            }
+        });
+        
+        const stats = {
+            last_score: lastAttempt.percentage,
+            last_score_date: lastAttempt.created_at,
+            best_score: bestAttempt.percentage,
+            average_score: averageScore,
+            attempts_count: attempts.length,
+            weak_topics: Array.from(weakTopics).slice(0, 3),
+            needs_review: lastAttempt.percentage < 70
+        };
+        
+        res.json({ success: true, stats });
+        
+    } catch (err) {
+        console.error("Quiz stats error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ============================================
+// GET ALL QUIZ ATTEMPTS FOR USER
+// ============================================
+app.get('/api/all-quiz-attempts', requireAuth, async (req, res) => {
+    console.log("🔥 /api/all-quiz-attempts endpoint HIT!"); // 👈 ADD THIS LINE
+    try {
+        console.log(`📊 Fetching all quiz attempts for user ${req.user.id}`);
+        
+        const { data, error } = await supabaseAdmin
+            .from('quiz_attempts')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        console.log(`✅ Found ${data?.length || 0} quiz attempts`);
+        res.json({ success: true, attempts: data || [] });
+        
+    } catch (err) {
+        console.error("Fetch all attempts error:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -951,11 +1317,45 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
 });
 
 // ============================================
+// DELETE ACCOUNT
+// ============================================
+app.delete('/api/delete-account', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        console.log(`🗑️ Deleting account for user ${userId}`);
+        
+        // Delete all user data
+        await supabaseAdmin.from('quiz_attempts').delete().eq('user_id', userId);
+        await supabaseAdmin.from('study_guides').delete().eq('user_id', userId);
+        await supabaseAdmin.from('ai_usage').delete().eq('user_id', userId);
+        await supabaseAdmin.from('transactions').delete().eq('user_id', userId);
+        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        
+        // Delete the user from auth (this is the final step)
+        const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        
+        if (error) throw error;
+        
+        console.log(`✅ Account deleted for user ${userId}`);
+        res.json({ success: true });
+        
+    } catch (err) {
+        console.error("Delete account error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Catch-all route for 404 - add at the END of your routes
+app.use((req, res) => {
+    res.status(404).sendFile(__dirname + '/404.html');
+});
+
+// ============================================
 // HEALTH CHECK ENDPOINT - Add this anywhere in server.js
 // ============================================
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'alive', 
+    res.status(200).json({
+        status: 'alive',
         time: new Date().toISOString(),
         uptime: process.uptime()
     });
