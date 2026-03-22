@@ -1,0 +1,10 @@
+# robots.txt for StudyForge AI
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /api/
+Disallow: /js/
+Disallow: /css/
+Disallow: /*?auth=true
+
+Sitemap: https://studyforge.site/sitemap.xml
