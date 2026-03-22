@@ -1765,20 +1765,20 @@ function initFileUpload() {
 // ============================================
 async function loadProfileData() {
     console.log("👤 Loading profile data...");
-    
+
     const supabase = getSupabase();
     if (!supabase) return;
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    
+
     // Set name and email
     const nameInput = document.getElementById('profileName');
     const emailInput = document.getElementById('profileEmail');
-    
+
     if (nameInput) nameInput.value = user.user_metadata?.full_name || '';
     if (emailInput) emailInput.value = user.email || '';
-    
+
     // Check if user is Pro first
     const token = await window.getAuthToken?.();
     if (token) {
@@ -1788,7 +1788,7 @@ async function loadProfileData() {
             });
             const accountData = await accountRes.json();
             const isPro = accountData.success && accountData.plan === "pro";
-            
+
             const usageSpan = document.getElementById('accountUsageDisplay');
             if (usageSpan) {
                 if (isPro) {
@@ -1808,7 +1808,7 @@ async function loadProfileData() {
             console.error("Error loading usage:", err);
         }
     }
-    
+
     // Load account info for plan and expiry
     if (window.loadAccountInfo) window.loadAccountInfo();
 }
@@ -2286,10 +2286,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loadLastGenerated();
     loadProgressStats();
     setTimeout(addShortcutHint, 1000);
+
+    //Initialize timer
+    initTimer();
 });
 
 // Add page load transition
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Add fade-in to main content on page load
     const mainContent = document.querySelector('main');
     if (mainContent) {
@@ -2299,5 +2302,539 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
     }
 });
+
+// ============================================
+// STUDY TIMER (POMODORO) - ENHANCED VERSION
+// ============================================
+
+let timerInterval = null;
+let timerSeconds = 25 * 60;
+let timerRunning = false;
+let currentMode = 'focus';
+let sessionsCompleted = 0;
+let todayFocusMinutes = 0;
+let focusStreak = 1;
+let autoStart = false;
+let currentDuration = 25;
+let ambientPlaying = false;
+let currentAmbient = 'lofi';
+
+// ============================================
+// AMBIENT SOUNDS - BROWSER GENERATED (NO EXTERNAL FILES)
+// ============================================
+
+let ambientContext = null;
+let ambientSource = null;
+let ambientGain = null;
+
+// Create audio context (starts suspended until user interacts)
+function getAudioContext() {
+    if (!ambientContext) {
+        ambientContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return ambientContext;
+}
+
+// Generate white noise
+function generateWhiteNoise(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < samples; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    return buffer;
+}
+
+// Generate brown noise (deeper, more soothing)
+function generateBrownNoise(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    let lastOut = 0;
+    for (let i = 0; i < samples; i++) {
+        const white = Math.random() * 2 - 1;
+        const brown = (lastOut + (0.02 * white)) / 1.02;
+        data[i] = brown * 0.5;
+        lastOut = brown;
+    }
+    return buffer;
+}
+
+// Generate rain-like sound
+function generateRainSound(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < samples; i++) {
+        if (Math.random() < 0.05) {
+            data[i] = (Math.random() - 0.5) * 0.8;
+        } else {
+            data[i] = data[i - 1] * 0.95 || 0;
+        }
+    }
+    return buffer;
+}
+
+// Generate lo-fi style
+function generateLofiSound(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < samples; i++) {
+        let value = Math.random() * 0.2 - 0.1;
+        if (Math.random() < 0.01) {
+            value += Math.random() * 0.1;
+        }
+        const t = i / sampleRate;
+        value += Math.sin(t * 2 * Math.PI * 440) * 0.03;
+        value += Math.sin(t * 2 * Math.PI * 880) * 0.02;
+        data[i] = Math.max(-0.5, Math.min(0.5, value));
+    }
+    return buffer;
+}
+
+// Generate cafe ambience
+function generateCafeSound(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < samples; i++) {
+        let value = Math.random() * 0.15 - 0.075;
+        if (Math.random() < 0.002) {
+            value += Math.random() * 0.2;
+        }
+        const t = i / sampleRate;
+        value += Math.sin(t * 2 * Math.PI * 60) * 0.02;
+        data[i] = Math.max(-0.3, Math.min(0.3, value));
+    }
+    return buffer;
+}
+
+// Generate nature sounds
+function generateNatureSound(duration) {
+    const ctx = getAudioContext();
+    const sampleRate = ctx.sampleRate;
+    const samples = duration * sampleRate;
+    const buffer = ctx.createBuffer(1, samples, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < samples; i++) {
+        let value = Math.random() * 0.2 - 0.1;
+        const t = i / sampleRate;
+        if (Math.random() < 0.005) {
+            const chirp = Math.sin(t * 2 * Math.PI * 2000) * 0.15;
+            value += chirp * (1 - (Math.random() * 0.5));
+        }
+        data[i] = Math.max(-0.4, Math.min(0.4, value));
+    }
+    return buffer;
+}
+
+// Generate sound based on type
+function generateAmbientSound(type, duration = 10) {
+    switch (type) {
+        case 'whiteNoise':
+            return generateWhiteNoise(duration);
+        case 'brownNoise':
+            return generateBrownNoise(duration);
+        case 'rain':
+            return generateRainSound(duration);
+        case 'lofi':
+            return generateLofiSound(duration);
+        case 'cafe':
+            return generateCafeSound(duration);
+        case 'nature':
+            return generateNatureSound(duration);
+        default:
+            return generateBrownNoise(duration);
+    }
+}
+
+// Play ambient sound
+window.playAmbientSound = function () {
+    const select = document.getElementById('ambientSelect');
+    if (!select) return;
+
+    const selectedType = select.value;
+
+    if (selectedType === 'off') {
+        if (ambientSource) {
+            try {
+                ambientSource.stop();
+                ambientSource.disconnect();
+            } catch (e) { }
+            ambientSource = null;
+        }
+        ambientPlaying = false;
+        if (window.showToast) window.showToast("🔇 Ambient sound off", "success");
+        return;
+    }
+
+    // Stop current if playing
+    if (ambientSource) {
+        try {
+            ambientSource.stop();
+            ambientSource.disconnect();
+        } catch (e) { }
+        ambientSource = null;
+    }
+
+    try {
+        const ctx = getAudioContext();
+        const buffer = generateAmbientSound(selectedType, 30);
+
+        ambientSource = ctx.createBufferSource();
+        ambientSource.buffer = buffer;
+        ambientSource.loop = true;
+
+        ambientGain = ctx.createGain();
+        ambientGain.gain.value = 0.2;
+
+        ambientSource.connect(ambientGain);
+        ambientGain.connect(ctx.destination);
+
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                ambientSource.start();
+                ambientPlaying = true;
+                currentAmbient = selectedType;
+                if (window.showToast) window.showToast(`🎧 Playing ${selectedType} sounds`, "success");
+                localStorage.setItem('ambientType', selectedType);
+                localStorage.setItem('ambientPlaying', 'true');
+            });
+        } else {
+            ambientSource.start();
+            ambientPlaying = true;
+            currentAmbient = selectedType;
+            if (window.showToast) window.showToast(`🎧 Playing ${selectedType} sounds`, "success");
+            localStorage.setItem('ambientType', selectedType);
+            localStorage.setItem('ambientPlaying', 'true');
+        }
+
+    } catch (err) {
+        console.error('Ambient sound error:', err);
+        if (window.showToast) window.showToast("⚠️ Click anywhere on the page first, then try again.", "error");
+    }
+};
+
+// Change ambient type
+window.changeAmbientSound = function () {
+    if (ambientPlaying) {
+        playAmbientSound();
+    }
+};
+
+// Stop ambient sound
+window.stopAmbientSound = function () {
+    if (ambientSource) {
+        try {
+            ambientSource.stop();
+            ambientSource.disconnect();
+        } catch (e) { }
+        ambientSource = null;
+    }
+    ambientPlaying = false;
+    localStorage.setItem('ambientPlaying', 'false');
+    if (window.showToast) window.showToast("🔇 Ambient sound stopped", "success");
+};
+
+// Load saved ambient settings
+function loadAmbientSettings() {
+    const savedAmbient = localStorage.getItem('ambientType');
+    const savedPlaying = localStorage.getItem('ambientPlaying');
+
+    if (savedAmbient && savedAmbient !== 'off') {
+        const select = document.getElementById('ambientSelect');
+        if (select) select.value = savedAmbient;
+
+        if (savedPlaying === 'true') {
+            if (window.showToast) window.showToast("🎧 Click Play to start ambient sounds", "success");
+        }
+    }
+
+    // Add click listener to initialize audio context on first user interaction
+    const initAudio = function () {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                console.log('Audio context resumed');
+                document.removeEventListener('click', initAudio);
+                document.removeEventListener('keydown', initAudio);
+            });
+        }
+    };
+    document.addEventListener('click', initAudio);
+    document.addEventListener('keydown', initAudio);
+}
+
+// Sound effects
+function playTimerEndSound() {
+    const sound = document.getElementById('timerSound');
+    if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(() => console.log('Sound play failed'));
+    }
+}
+
+// Toggle auto-start
+function toggleAutoStart() {
+    autoStart = !autoStart;
+    document.getElementById('autoStartText').innerHTML = autoStart ? 'Auto On' : 'Auto';
+    document.getElementById('autoStartBtn').classList.toggle('bg-indigo-100', autoStart);
+    document.getElementById('autoStartBtn').classList.toggle('text-indigo-700', autoStart);
+    localStorage.setItem('timerAutoStart', autoStart);
+}
+
+// Set custom duration
+window.setCustomDuration = function (minutes) {
+    if (timerRunning) {
+        pauseTimer();
+    }
+    currentDuration = minutes;
+    currentMode = 'focus';
+    timerSeconds = minutes * 60;
+    updateTimerDisplay();
+
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-100', 'text-indigo-700');
+        btn.classList.add('bg-slate-100');
+    });
+    if (event && event.target) {
+        event.target.classList.remove('bg-slate-100');
+        event.target.classList.add('bg-indigo-100', 'text-indigo-700');
+    }
+
+    document.getElementById('timerStatus').innerHTML = `${minutes} min focus mode 🎯`;
+    localStorage.setItem('timerDuration', minutes);
+};
+
+// Load saved timer data
+function loadTimerData() {
+    const savedSessions = localStorage.getItem('timerSessions');
+    const savedFocus = localStorage.getItem('todayFocusMinutes');
+    const savedStreak = localStorage.getItem('focusStreak');
+    const lastDate = localStorage.getItem('lastFocusDate');
+    const savedDuration = localStorage.getItem('timerDuration');
+    const savedAutoStart = localStorage.getItem('timerAutoStart');
+
+    if (savedDuration) {
+        currentDuration = parseInt(savedDuration);
+        timerSeconds = currentDuration * 60;
+        updateTimerDisplay();
+    }
+
+    if (savedAutoStart === 'true') {
+        autoStart = true;
+        document.getElementById('autoStartText').innerHTML = 'Auto On';
+        document.getElementById('autoStartBtn').classList.add('bg-indigo-100', 'text-indigo-700');
+    }
+
+    const today = new Date().toDateString();
+
+    if (lastDate !== today) {
+        localStorage.setItem('todayFocusMinutes', '0');
+        localStorage.setItem('lastFocusDate', today);
+        todayFocusMinutes = 0;
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (lastDate === yesterday.toDateString()) {
+            focusStreak = parseInt(savedStreak) || 1;
+        } else {
+            focusStreak = 1;
+            localStorage.setItem('focusStreak', '1');
+        }
+    } else {
+        todayFocusMinutes = parseInt(savedFocus) || 0;
+        focusStreak = parseInt(savedStreak) || 1;
+    }
+
+    sessionsCompleted = parseInt(savedSessions) || 0;
+    updateSessionCounter();
+    updateTimerStats();
+}
+
+// Update session counter
+function updateSessionCounter() {
+    const sessionNum = (sessionsCompleted % 4) + 1;
+    const counter = document.getElementById('sessionCounter');
+    if (counter) counter.innerHTML = `Session ${sessionNum}/4`;
+}
+
+// Update timer stats display
+function updateTimerStats() {
+    const todayEl = document.getElementById('todayFocus');
+    const streakEl = document.getElementById('focusStreak');
+    if (todayEl) todayEl.innerText = todayFocusMinutes;
+    if (streakEl) streakEl.innerText = focusStreak;
+}
+
+// Update timer display
+function updateTimerDisplay() {
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+    const display = document.getElementById('timerDisplay');
+    if (display) display.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Play notification
+function playNotification() {
+    playTimerEndSound();
+
+    if (Notification.permission === 'granted') {
+        new Notification('StudyForge Timer', {
+            body: currentMode === 'focus' ? 'Focus session complete! Time for a break 🎉' : 'Break over! Ready to focus again? 💪',
+            icon: '/favicon-32x32.png'
+        });
+    }
+}
+
+// Complete session
+function completeSession() {
+    if (currentMode === 'focus') {
+        todayFocusMinutes += currentDuration;
+        localStorage.setItem('todayFocusMinutes', todayFocusMinutes);
+        updateTimerStats();
+
+        const lastDate = localStorage.getItem('lastFocusDate');
+        const today = new Date().toDateString();
+        if (lastDate !== today) {
+            focusStreak++;
+            localStorage.setItem('focusStreak', focusStreak);
+            localStorage.setItem('lastFocusDate', today);
+            updateTimerStats();
+        }
+
+        sessionsCompleted++;
+        localStorage.setItem('timerSessions', sessionsCompleted);
+        updateSessionCounter();
+
+        if (sessionsCompleted % 4 === 0) {
+            currentMode = 'longBreak';
+            timerSeconds = 15 * 60;
+            document.getElementById('timerStatus').innerHTML = 'Long break! 15 minutes 🧘';
+        } else {
+            currentMode = 'shortBreak';
+            timerSeconds = 5 * 60;
+            document.getElementById('timerStatus').innerHTML = 'Short break! 5 minutes ☕';
+        }
+    } else {
+        currentMode = 'focus';
+        timerSeconds = currentDuration * 60;
+        document.getElementById('timerStatus').innerHTML = `Focus time! ${currentDuration} minutes 🎯`;
+    }
+
+    updateTimerDisplay();
+    playNotification();
+
+    if (autoStart) {
+        setTimeout(() => {
+            startTimer();
+        }, 1000);
+    }
+}
+
+// Start timer
+window.startTimer = function () {
+    if (timerRunning) return;
+
+    timerRunning = true;
+    const startBtn = document.getElementById('timerStartBtn');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    timerInterval = setInterval(() => {
+        if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerRunning = false;
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            completeSession();
+            return;
+        }
+
+        timerSeconds--;
+        updateTimerDisplay();
+    }, 1000);
+
+    const statusEl = document.getElementById('timerStatus');
+    if (statusEl) {
+        statusEl.innerHTML = currentMode === 'focus' ? 'Focusing... 🧠' : (currentMode === 'shortBreak' ? 'Taking a break ☕' : 'Long break 🧘');
+    }
+};
+
+// Pause timer
+window.pauseTimer = function () {
+    if (!timerRunning) return;
+
+    clearInterval(timerInterval);
+    timerRunning = false;
+
+    const startBtn = document.getElementById('timerStartBtn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    const statusEl = document.getElementById('timerStatus');
+    if (statusEl) {
+        statusEl.innerHTML = currentMode === 'focus' ? 'Paused. Ready to continue? ⏸️' : 'Break paused ⏸️';
+    }
+};
+
+// Reset timer
+window.resetTimer = function () {
+    clearInterval(timerInterval);
+    timerRunning = false;
+
+    currentMode = 'focus';
+    timerSeconds = currentDuration * 60;
+    updateTimerDisplay();
+
+    const startBtn = document.getElementById('timerStartBtn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    const statusEl = document.getElementById('timerStatus');
+    if (statusEl) {
+        statusEl.innerHTML = `Ready to focus 🎯 (${currentDuration} min)`;
+    }
+};
+
+// Initialize timer
+function initTimer() {
+    loadTimerData();
+    loadAmbientSettings();
+    updateTimerDisplay();
+    updateSessionCounter();
+
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
 
 console.log("✅ Dashboard JS fully loaded with all features!");

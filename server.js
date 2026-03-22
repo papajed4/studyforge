@@ -720,7 +720,7 @@ app.post("/api/upload-file", requireAuth, upload.single("file"), async (req, res
 });
 
 // ============================================
-// INITIALIZE PAYMENT - WITH YEARLY LOGGING
+// INITIALIZE PAYMENT - WITH YEARLY LOGGING & RATE LIMITING
 // ============================================
 app.post("/api/initialize-payment", requireAuth, async (req, res) => {
     try {
@@ -732,6 +732,22 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
 
         if (!country) {
             return res.status(400).json({ success: false, error: "Country required" });
+        }
+
+        // 👇 ADD RATE LIMITING HERE 👇
+        // Check for too many payment attempts in last 5 minutes
+        const recentPayments = await supabaseAdmin
+            .from('transactions')
+            .select('created_at')
+            .eq('user_id', req.user.id)
+            .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString());
+
+        if (recentPayments.data?.length > 3) {
+            console.log(`⚠️ User ${req.user.id} attempted too many payments: ${recentPayments.data.length} attempts in 5 min`);
+            return res.status(429).json({
+                success: false,
+                error: "Too many payment attempts. Please wait a few minutes and try again."
+            });
         }
 
         const pricing = getPricingByCountry(country);
@@ -834,6 +850,15 @@ app.post('/api/verify-payment', requireAuth, async (req, res) => {
             });
         }
 
+        // 👇 EXTRA SECURITY: Check if payment was intended for this user 👇
+        if (paymentData.metadata?.user_id !== req.user.id) {
+            console.warn(`⚠️ Payment mismatch: Payment for user ${paymentData.metadata?.user_id} attempted by user ${req.user.id}`);
+            return res.status(403).json({
+                success: false,
+                error: "Payment not intended for this account"
+            });
+        }
+
         const { data: existing } = await supabaseAdmin
             .from('transactions')
             .select('id')
@@ -898,7 +923,6 @@ app.post('/api/verify-payment', requireAuth, async (req, res) => {
         });
     }
 });
-
 // ============================================
 // STUDY GUIDES ENDPOINTS - FIXED
 // ============================================
@@ -1084,10 +1108,10 @@ app.post('/api/youtube-transcript', async (req, res) => {
 app.post('/api/save-quiz-attempt', requireAuth, async (req, res) => {
     try {
         const { guide_id, score, total_questions, percentage, answers } = req.body;
-        
+
         console.log(`📊 Saving quiz attempt for user ${req.user.id}`);
         console.log(`   Score: ${score}/${total_questions} (${percentage}%)`);
-        
+
         const { data, error } = await supabaseAdmin
             .from('quiz_attempts')
             .insert({
@@ -1099,11 +1123,11 @@ app.post('/api/save-quiz-attempt', requireAuth, async (req, res) => {
                 answers: answers
             })
             .select();
-            
+
         if (error) throw error;
-        
+
         res.json({ success: true, data: data });
-        
+
     } catch (err) {
         console.error("Save quiz attempt error:", err);
         res.status(500).json({ success: false, error: err.message });
@@ -1116,9 +1140,9 @@ app.post('/api/save-quiz-attempt', requireAuth, async (req, res) => {
 app.get('/api/quiz-stats/:guideId', requireAuth, async (req, res) => {
     try {
         const { guideId } = req.params;
-        
+
         console.log(`📊 Fetching quiz stats for guide ${guideId}`);
-        
+
         // Get all quiz attempts for this guide
         const { data: attempts, error } = await supabaseAdmin
             .from('quiz_attempts')
@@ -1126,18 +1150,18 @@ app.get('/api/quiz-stats/:guideId', requireAuth, async (req, res) => {
             .eq('user_id', req.user.id)
             .eq('guide_id', guideId)
             .order('created_at', { ascending: false });
-            
+
         if (error) throw error;
-        
+
         if (!attempts || attempts.length === 0) {
             return res.json({ success: true, stats: null });
         }
-        
+
         // Calculate stats
         const lastAttempt = attempts[0];
         const bestAttempt = attempts.reduce((best, a) => a.percentage > best.percentage ? a : best, attempts[0]);
         const averageScore = Math.round(attempts.reduce((sum, a) => sum + a.percentage, 0) / attempts.length);
-        
+
         // Collect weak topics from wrong answers
         const weakTopics = new Set();
         attempts.forEach(attempt => {
@@ -1145,7 +1169,7 @@ app.get('/api/quiz-stats/:guideId', requireAuth, async (req, res) => {
                 attempt.answers.weak_topics.forEach(topic => weakTopics.add(topic));
             }
         });
-        
+
         const stats = {
             last_score: lastAttempt.percentage,
             last_score_date: lastAttempt.created_at,
@@ -1155,9 +1179,9 @@ app.get('/api/quiz-stats/:guideId', requireAuth, async (req, res) => {
             weak_topics: Array.from(weakTopics).slice(0, 3),
             needs_review: lastAttempt.percentage < 70
         };
-        
+
         res.json({ success: true, stats });
-        
+
     } catch (err) {
         console.error("Quiz stats error:", err);
         res.status(500).json({ success: false, error: err.message });
@@ -1171,18 +1195,18 @@ app.get('/api/all-quiz-attempts', requireAuth, async (req, res) => {
     console.log("🔥 /api/all-quiz-attempts endpoint HIT!"); // 👈 ADD THIS LINE
     try {
         console.log(`📊 Fetching all quiz attempts for user ${req.user.id}`);
-        
+
         const { data, error } = await supabaseAdmin
             .from('quiz_attempts')
             .select('*')
             .eq('user_id', req.user.id)
             .order('created_at', { ascending: false });
-            
+
         if (error) throw error;
-        
+
         console.log(`✅ Found ${data?.length || 0} quiz attempts`);
         res.json({ success: true, attempts: data || [] });
-        
+
     } catch (err) {
         console.error("Fetch all attempts error:", err);
         res.status(500).json({ success: false, error: err.message });
@@ -1323,22 +1347,22 @@ app.delete('/api/delete-account', requireAuth, async (req, res) => {
     try {
         const userId = req.user.id;
         console.log(`🗑️ Deleting account for user ${userId}`);
-        
+
         // Delete all user data
         await supabaseAdmin.from('quiz_attempts').delete().eq('user_id', userId);
         await supabaseAdmin.from('study_guides').delete().eq('user_id', userId);
         await supabaseAdmin.from('ai_usage').delete().eq('user_id', userId);
         await supabaseAdmin.from('transactions').delete().eq('user_id', userId);
         await supabaseAdmin.from('profiles').delete().eq('id', userId);
-        
+
         // Delete the user from auth (this is the final step)
         const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-        
+
         if (error) throw error;
-        
+
         console.log(`✅ Account deleted for user ${userId}`);
         res.json({ success: true });
-        
+
     } catch (err) {
         console.error("Delete account error:", err);
         res.status(500).json({ success: false, error: err.message });
