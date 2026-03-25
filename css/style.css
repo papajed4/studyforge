@@ -698,24 +698,3 @@ input[title]:hover::before {
         transform: translateY(-4px);
     }
 }
-
-@media (max-width: 768px) {
-    #authModal .modal-content {
-        max-height: 85vh !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        margin: 1rem !important;
-        padding: 1.25rem !important;
-    }
-    
-    #verificationStep {
-        display: block !important;
-        margin-top: 1rem;
-    }
-    
-    .code-input {
-        width: 42px !important;
-        height: 42px !important;
-        font-size: 1.25rem !important;
-    }
-}
