@@ -299,30 +299,43 @@ app.get('/api/test', (req, res) => {
 // Condense study guide
 app.post('/api/condense', requireAuth, async (req, res) => {
     try {
-        const { content } = req.body;
+        const { content, language } = req.body;
 
-        const usageCount = await checkUsageLimit(req.user.id);
-        const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('plan, pro_expires_at')
-            .eq('id', req.user.id)
-            .single();
-
-        // After getting the content, detect language
-        const detectedLanguage = req.body.language || 'en';
-        console.log(`🌐 Responding in language: ${detectedLanguage}`);
-
-        const now = new Date();
-        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
-
-        if (!isProActive && usageCount >= 5) {
-            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
+        // Validate content first
+        if (!content) {
+            return res.status(400).json({ success: false, error: "No content provided" });
+        }
+        if (content.length > 60000) {
+            return res.status(400).json({ success: false, error: "Content too long" });
         }
 
-        if (!content) return res.status(400).json({ success: false, error: "No content provided" });
-        if (content.length > 60000) return res.status(400).json({ success: false, error: "Content too long" });
+        // 🔥 FIX: Atomic usage check (no race condition)
+        const { data: canProceed, error: rpcError } = await supabaseAdmin.rpc(
+            'check_and_increment_usage',
+            {
+                user_id: req.user.id,
+                max_limit: 5,
+                request_type: 'condense'
+            }
+        );
 
-        // Then update the prompt to include language instruction
+        if (rpcError) {
+            console.error("Usage check error:", rpcError);
+            return res.status(500).json({ success: false, error: "Usage check failed" });
+        }
+
+        if (!canProceed) {
+            return res.status(403).json({
+                success: false,
+                error: "Daily limit reached. Upgrade to Pro."
+            });
+        }
+
+        // Detect language
+        const detectedLanguage = language || 'en';
+        console.log(`🌐 Responding in language: ${detectedLanguage}`);
+
+        // AI prompt
         const prompt = `
 You are a structured academic formatting engine. 
 IMPORTANT: Respond in ${detectedLanguage} language.
@@ -391,7 +404,8 @@ ${content}
 `;
 
         const resultText = await generateWithGemini(prompt);
-        await logUsage(req.user.id, "condense");
+
+        // Note: Usage already logged in the RPC function, so no need for separate logUsage() call
 
         res.json({ success: true, data: resultText });
 
@@ -406,22 +420,31 @@ app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { question, context } = req.body;
 
-        const usageCount = await checkUsageLimit(req.user.id);
-        const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('plan, pro_expires_at')
-            .eq('id', req.user.id)
-            .single();
-
-        const now = new Date();
-        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
-
-        if (!isProActive && usageCount >= 5) {
-            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
-        }
-
+        // Validate inputs first
         if (!question || !context) {
             return res.status(400).json({ success: false, error: "Missing question or context" });
+        }
+
+        // 🔥 FIX: Atomic usage check (no race condition)
+        const { data: canProceed, error: rpcError } = await supabaseAdmin.rpc(
+            'check_and_increment_usage',
+            {
+                user_id: req.user.id,
+                max_limit: 5,
+                request_type: 'chat'
+            }
+        );
+
+        if (rpcError) {
+            console.error("Usage check error:", rpcError);
+            return res.status(500).json({ success: false, error: "Usage check failed" });
+        }
+
+        if (!canProceed) {
+            return res.status(403).json({
+                success: false,
+                error: "Daily limit reached. Upgrade to Pro."
+            });
         }
 
         const prompt = `
@@ -441,7 +464,8 @@ ${question}
 `;
 
         const answer = await generateWithGemini(prompt);
-        await logUsage(req.user.id, "chat");
+
+        // Note: Usage already logged in the RPC function
 
         res.json({ success: true, data: answer || "I couldn't generate an answer." });
 
@@ -456,22 +480,35 @@ app.post('/api/exam-mode', requireAuth, async (req, res) => {
     try {
         const { content } = req.body;
 
-        const usageCount = await checkUsageLimit(req.user.id);
-        const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('plan, pro_expires_at')
-            .eq('id', req.user.id)
-            .single();
-
-        const now = new Date();
-        const isProActive = profile?.plan === "pro" && profile?.pro_expires_at && new Date(profile.pro_expires_at) > now;
-
-        if (!isProActive && usageCount >= 5) {
-            return res.status(403).json({ success: false, error: "Daily limit reached. Upgrade to Pro." });
+        // Validate content first
+        if (!content) {
+            return res.status(400).json({ success: false, error: "No content provided" });
+        }
+        if (content.length > 20000) {
+            return res.status(400).json({ success: false, error: "Content too long" });
         }
 
-        if (!content) return res.status(400).json({ success: false, error: "No content provided" });
-        if (content.length > 20000) return res.status(400).json({ success: false, error: "Content too long" });
+        // 🔥 FIX: Atomic usage check (no race condition)
+        const { data: canProceed, error: rpcError } = await supabaseAdmin.rpc(
+            'check_and_increment_usage',
+            {
+                user_id: req.user.id,
+                max_limit: 5,
+                request_type: 'exam'
+            }
+        );
+
+        if (rpcError) {
+            console.error("Usage check error:", rpcError);
+            return res.status(500).json({ success: false, error: "Usage check failed" });
+        }
+
+        if (!canProceed) {
+            return res.status(403).json({
+                success: false,
+                error: "Daily limit reached. Upgrade to Pro."
+            });
+        }
 
         const prompt = `
 You are an academic exam-setting engine.
@@ -506,7 +543,8 @@ ${content}
 `;
 
         const resultText = await generateWithGemini(prompt);
-        await logUsage(req.user.id, "exam");
+
+        // Note: Usage already logged in the RPC function
 
         res.json({ success: true, data: resultText });
 
@@ -1368,6 +1406,42 @@ app.delete('/api/delete-account', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+// ============================================
+// PRO EXPIRY CRON JOB (Runs every day at midnight)
+// ============================================
+const cron = require('node-cron');
+
+async function expireProUsers() {
+    try {
+        console.log('🕐 Running pro expiry check...');
+
+        const { data, error } = await supabaseAdmin
+            .from('profiles')
+            .update({
+                plan: 'free',
+                pro_expires_at: null
+            })
+            .eq('plan', 'pro')
+            .lt('pro_expires_at', new Date().toISOString());
+
+        if (error) {
+            console.error('❌ Expiry cron error:', error.message);
+        } else {
+            console.log(`✅ Expired pro users check completed`);
+        }
+    } catch (err) {
+        console.error('❌ Cron job error:', err.message);
+    }
+}
+
+// Schedule: Run every day at midnight (server time)
+cron.schedule('0 0 * * *', () => {
+    expireProUsers();
+});
+
+// Also run once on server startup (optional)
+setTimeout(expireProUsers, 5000);
 
 // Catch-all route for 404 - add at the END of your routes
 app.use((req, res) => {

@@ -1256,6 +1256,67 @@
                 </ul>
             </div>
 
+            <!-- ============================================ -->
+            <!-- KEYBOARD SHORTCUT HELP MODAL -->
+            <!-- ============================================ -->
+            <div id="shortcutHelpModal"
+                class="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] hidden transition-opacity duration-300">
+                <div
+                    class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-keyboard text-indigo-600"></i>
+                            Keyboard Shortcuts
+                        </h3>
+                        <button onclick="closeShortcutHelp()"
+                            class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+                            <i class="fa-solid fa-times text-slate-400"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Generate Study Guide</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Enter</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Exam Mode</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + E</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Study Mode</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + S</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Export PDF</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + P</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Copy to Clipboard</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + C</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Search Library</span>
+                            <code
+                                class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + K</code>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span class="text-sm text-slate-600">Show Shortcuts</span>
+                            <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">?</code>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mt-4 text-center">
+                        ⌘ = Command (Mac) | Ctrl = Control (Windows)
+                    </p>
+                </div>
+            </div>
+
             <!-- Buttons -->
             <div class="flex gap-3">
                 <button onclick="closeProOverlay()"

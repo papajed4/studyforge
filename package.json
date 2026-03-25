@@ -22,6 +22,7 @@
     "jsonwebtoken": "^9.0.3",
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "officeparser": "^6.0.4",
     "pdf-image": "^2.0.0",
     "pdf-parse": "^1.1.4",

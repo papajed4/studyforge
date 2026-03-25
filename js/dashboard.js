@@ -40,7 +40,6 @@ function getSupabase() {
 // GOOGLE ANALYTICS EVENT TRACKING
 // ============================================
 
-// Track page views
 function trackPageView(pageName) {
     if (typeof gtag !== 'undefined') {
         gtag('event', 'page_view', {
@@ -50,7 +49,6 @@ function trackPageView(pageName) {
     }
 }
 
-// Track generate
 function trackGenerate(guideTitle, contentLength) {
     if (typeof gtag !== 'undefined') {
         gtag('event', 'generate_guide', {
@@ -61,7 +59,6 @@ function trackGenerate(guideTitle, contentLength) {
     }
 }
 
-// Track upgrade
 function trackUpgrade(plan) {
     if (typeof gtag !== 'undefined') {
         gtag('event', 'upgrade', {
@@ -84,7 +81,6 @@ window.showSection = function (section) {
         analytics: document.getElementById('analyticsSection')
     };
 
-    // Find current visible section
     let currentSection = null;
     for (let key in sections) {
         if (sections[key] && !sections[key].classList.contains('hidden')) {
@@ -95,11 +91,8 @@ window.showSection = function (section) {
 
     const targetSection = sections[section];
     if (!targetSection) return;
-
-    // If same section, do nothing
     if (currentSection === targetSection) return;
 
-    // Animate out current section
     if (currentSection) {
         currentSection.style.animation = 'fadeOut 0.15s ease forwards';
         setTimeout(() => {
@@ -108,7 +101,6 @@ window.showSection = function (section) {
         }, 150);
     }
 
-    // Animate in target section
     setTimeout(() => {
         targetSection.classList.remove('hidden');
         targetSection.style.animation = 'fadeSlideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
@@ -117,7 +109,6 @@ window.showSection = function (section) {
         }, 300);
     }, currentSection ? 150 : 0);
 
-    // Update nav buttons
     const navButtons = {
         generate: document.getElementById('navGenerate'),
         saved: document.getElementById('navSaved'),
@@ -135,7 +126,6 @@ window.showSection = function (section) {
         navButtons[section].className = "flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold transition-all active:bg-indigo-100";
     }
 
-    // Load data based on section
     if (section === 'saved') loadSavedGuides();
     if (section === 'analytics' && typeof loadAnalytics === 'function') loadAnalytics();
     if (section === 'account') {
@@ -144,14 +134,12 @@ window.showSection = function (section) {
     }
     if (section === 'generate' && window.loadWelcomeName) window.loadWelcomeName();
 
-    // Update mobile title
     const mobileTitle = document.getElementById('mobileSectionTitle');
     if (mobileTitle) {
         const titles = { generate: 'Generate', saved: 'My Study Guides', account: 'Account', analytics: 'Analytics' };
         mobileTitle.textContent = titles[section] || 'Dashboard';
     }
 
-    // Close sidebar on mobile
     if (window.innerWidth < 768) toggleSidebar();
 };
 
@@ -184,7 +172,6 @@ window.initiateCondense = async function () {
     const input = document.getElementById('courseInput')?.value.trim();
     const ytInput = document.getElementById('youtubeInput')?.value.trim();
 
-    // Language detection from pasted text
     if (input && !ytInput && !currentDetectedLanguage) {
         const hasGermanChars = /[äöüß]/i.test(input);
         const hasFrenchChars = /[éèêëàâç]/i.test(input);
@@ -880,10 +867,8 @@ window.loadSavedGuides = async function () {
             if (count) count.textContent = userLibrary.length;
             if (empty) empty.classList.add('hidden');
 
-            // 👇 ADD THIS LINE RIGHT HERE - after getting userLibrary
             const quizStats = await fetchQuizStatsForGuides(userLibrary);
 
-            // Group by subject
             const groupedBySubject = {};
             userLibrary.forEach(guide => {
                 const subject = guide.subject || 'Uncategorized';
@@ -891,7 +876,6 @@ window.loadSavedGuides = async function () {
                 groupedBySubject[subject].push(guide);
             });
 
-            // Render guides grouped by subject
             let html = '';
 
             for (const subject in groupedBySubject) {
@@ -904,12 +888,10 @@ window.loadSavedGuides = async function () {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 `;
 
-                // 👇 REPLACE THE ENTIRE groupedBySubject[subject].forEach LOOP with the enhanced version
                 groupedBySubject[subject].forEach(guide => {
                     const date = new Date(guide.created_at).toLocaleDateString();
-                    const stats = quizStats[guide.id];  // 👈 GET STATS FOR THIS GUIDE
+                    const stats = quizStats[guide.id];
 
-                    // Build tags HTML
                     let tagsHtml = '';
                     if (guide.tags && guide.tags.length > 0) {
                         guide.tags.slice(0, 3).forEach(tag => {
@@ -920,7 +902,6 @@ window.loadSavedGuides = async function () {
                         }
                     }
 
-                    // Build analytics badge
                     let analyticsBadge = '';
                     if (stats) {
                         let badgeColor = '';
@@ -1016,7 +997,6 @@ window.loadSavedGuides = async function () {
 
             if (grid) grid.innerHTML = html;
         } else {
-            // No guides found
             if (empty) empty.classList.remove('hidden');
             if (count) count.textContent = '0';
         }
@@ -1279,7 +1259,6 @@ function extractQuizQuestions() {
         }
     }
 
-    // Add from Key Concepts if needed...
     while (questions.length < targetQuestions && keyConceptsSection && keyConceptsSection[1]) {
         const lines = keyConceptsSection[1].split('\n');
         for (let i = 0; i < lines.length && questions.length < targetQuestions; i++) {
@@ -1299,7 +1278,6 @@ function extractQuizQuestions() {
         }
     }
 
-    // Add from Definitions if needed...
     while (questions.length < targetQuestions && definitionsSection && definitionsSection[1]) {
         const lines = definitionsSection[1].split('\n');
         for (let i = 0; i < lines.length && questions.length < targetQuestions; i++) {
@@ -1319,7 +1297,6 @@ function extractQuizQuestions() {
         }
     }
 
-    // Add from sentences as last resort...
     while (questions.length < targetQuestions) {
         const sentences = fullCourseContext.split(/[.!?]\s+/).filter(s => s.length > 30 && s.length < 200);
         for (let i = 0; i < sentences.length && questions.length < targetQuestions; i++) {
@@ -1807,14 +1784,12 @@ async function loadProfileData() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Set name and email
     const nameInput = document.getElementById('profileName');
     const emailInput = document.getElementById('profileEmail');
 
     if (nameInput) nameInput.value = user.user_metadata?.full_name || '';
     if (emailInput) emailInput.value = user.email || '';
 
-    // Check if user is Pro first
     const token = await window.getAuthToken?.();
     if (token) {
         try {
@@ -1829,7 +1804,6 @@ async function loadProfileData() {
                 if (isPro) {
                     usageSpan.innerHTML = '♾️ Unlimited';
                 } else {
-                    // Load usage for free users
                     const usageRes = await fetch('/api/usage', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1844,7 +1818,6 @@ async function loadProfileData() {
         }
     }
 
-    // Load account info for plan and expiry
     if (window.loadAccountInfo) window.loadAccountInfo();
 }
 
@@ -2066,56 +2039,91 @@ document.addEventListener('keydown', function (e) {
     if (e.key === '?' && !isTyping) { e.preventDefault(); showShortcutHelp(); return; }
 });
 
-function showShortcutHelp() {
-    const shortcuts = [
-        { keys: `${cmdKey} + Enter`, action: 'Generate Study Guide' },
-        { keys: `${cmdKey} + Shift + E`, action: 'Exam Mode' },
-        { keys: `${cmdKey} + Shift + S`, action: 'Study Mode' },
-        { keys: `${cmdKey} + Shift + P`, action: 'Export PDF' },
-        { keys: `${cmdKey} + Shift + C`, action: 'Copy to Clipboard' },
-        { keys: `${cmdKey} + K`, action: 'Search Library' },
-        { keys: `?`, action: 'Show Shortcuts' }
-    ];
+// ============================================
+// KEYBOARD SHORTCUT HELP MODAL
+// ============================================
+window.showShortcutHelp = function () {
+    console.log("Opening shortcut help");
 
-    let helpModal = document.getElementById('shortcutHelpModal');
-    if (!helpModal) {
-        helpModal = document.createElement('div');
-        helpModal.id = 'shortcutHelpModal';
-        helpModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-[200] hidden';
-        helpModal.innerHTML = `
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+    let modal = document.getElementById('shortcutHelpModal');
+
+    if (!modal) {
+        console.log("Creating modal");
+        modal = document.createElement('div');
+        modal.id = 'shortcutHelpModal';
+        modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-[200] hidden';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-keyboard text-indigo-600"></i> Keyboard Shortcuts</h3>
-                    <button onclick="closeShortcutHelp()" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times text-slate-400"></i></button>
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-keyboard text-indigo-600"></i> 
+                        Keyboard Shortcuts
+                    </h3>
+                    <button onclick="closeShortcutHelp()" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+                        <i class="fa-solid fa-times text-slate-400"></i>
+                    </button>
                 </div>
-                <div class="space-y-3 max-h-96 overflow-y-auto">
-                    ${shortcuts.map(s => `<div class="flex justify-between items-center py-2 border-b border-slate-100"><span class="text-sm text-slate-600">${s.action}</span><code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">${s.keys}</code></div>`).join('')}
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Generate Study Guide</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Enter</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Exam Mode</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + E</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Study Mode</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + S</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Export PDF</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + P</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Copy to Clipboard</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + Shift + C</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Search Library</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">⌘/Ctrl + K</code>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-sm text-slate-600">Show Shortcuts</span>
+                        <code class="px-2 py-1 bg-slate-100 rounded text-xs font-mono text-indigo-600">?</code>
+                    </div>
                 </div>
-                <p class="text-xs text-slate-400 mt-4 text-center">${isMac ? '⌘ = Command' : 'Ctrl = Control'}</p>
+                <p class="text-xs text-slate-400 mt-4 text-center">
+                    ⌘ = Command (Mac) | Ctrl = Control (Windows)
+                </p>
             </div>
         `;
-        document.body.appendChild(helpModal);
-        helpModal.addEventListener('click', (e) => { if (e.target === helpModal) closeShortcutHelp(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && helpModal && !helpModal.classList.contains('hidden')) closeShortcutHelp(); });
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeShortcutHelp();
+        });
     }
 
-    helpModal.classList.remove('hidden');
-    gsap.fromTo(helpModal, { opacity: 0 }, { opacity: 1, duration: 0.2 });
-    gsap.fromTo(helpModal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: "back.out(1.2)" });
-}
+    modal.classList.remove('hidden');
 
-window.closeShortcutHelp = function () { const modal = document.getElementById('shortcutHelpModal'); if (modal) modal.classList.add('hidden'); };
-
-function addShortcutHint() {
-    const footer = document.querySelector('footer');
-    if (footer && !document.getElementById('shortcutHintContainer')) {
-        const hint = document.createElement('div');
-        hint.id = 'shortcutHintContainer';
-        hint.className = 'text-center mt-4 text-xs text-slate-400';
-        hint.innerHTML = `<i class="fa-regular fa-keyboard mr-1"></i> Press <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono">?</kbd> for shortcuts`;
-        footer.insertBefore(hint, footer.firstChild);
+    if (window.gsap) {
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.2 });
+        gsap.fromTo(modal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25 });
     }
-}
+};
+
+window.closeShortcutHelp = function () {
+    const modal = document.getElementById('shortcutHelpModal');
+    if (!modal) return;
+
+    if (window.gsap) {
+        gsap.to(modal.firstElementChild, { scale: 0.95, opacity: 0, duration: 0.15, onComplete: () => modal.classList.add('hidden') });
+        gsap.to(modal, { opacity: 0, duration: 0.15 });
+    } else {
+        modal.classList.add('hidden');
+    }
+};
 
 // ============================================
 // ANALYTICS DASHBOARD
@@ -2159,18 +2167,15 @@ async function loadAnalytics() {
         const attempts = data.attempts;
         const guides = userLibrary;
 
-        // Calculate overall stats
         const totalQuizzes = attempts.length;
         const avgScore = Math.round(attempts.reduce((sum, a) => sum + a.percentage, 0) / totalQuizzes);
 
-        // Calculate mastery rate (guides with at least one 70%+ score)
         const masteredGuides = new Set();
         attempts.forEach(a => {
             if (a.percentage >= 70) masteredGuides.add(a.guide_id);
         });
         const masteryRate = guides.length > 0 ? Math.round((masteredGuides.size / guides.length) * 100) : 0;
 
-        // Collect weak topics
         const weakTopicsSet = new Set();
         attempts.forEach(a => {
             if (a.answers && a.answers.weak_topics) {
@@ -2178,13 +2183,11 @@ async function loadAnalytics() {
             }
         });
 
-        // Update stats cards
         document.getElementById('avgScore').textContent = `${avgScore}%`;
         document.getElementById('totalQuizzes').textContent = totalQuizzes;
         document.getElementById('masteryRate').textContent = `${masteryRate}%`;
         document.getElementById('weakTopicsCount').textContent = weakTopicsSet.size;
 
-        // Subject breakdown
         const subjectScores = {};
         guides.forEach(guide => {
             const subject = guide.subject || 'Uncategorized';
@@ -2227,7 +2230,6 @@ async function loadAnalytics() {
         }
         document.getElementById('subjectBreakdown').innerHTML = subjectHtml;
 
-        // Recent performance (last 5 attempts)
         const recentAttempts = [...attempts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
         let recentHtml = '';
         recentAttempts.forEach(attempt => {
@@ -2256,7 +2258,6 @@ async function loadAnalytics() {
         });
         document.getElementById('recentPerformance').innerHTML = recentHtml;
 
-        // Recommendations (weak topics and low-score guides)
         const weakGuides = [];
         attempts.forEach(a => {
             if (a.percentage < 60 && a.guide_id) {
@@ -2312,23 +2313,60 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initFileUpload();
 
-    setTimeout(function () {
+    let sessionCheckAttempts = 0;
+    const MAX_SESSION_CHECKS = 5;
+
+    async function checkSessionAndRedirect() {
         const supabase = getSupabase();
-        if (!supabase) { console.log("Supabase not ready"); return; }
-        supabase.auth.getSession().then(result => { if (!result.data.session) window.location.href = "/"; }).catch(err => console.error("Auth error:", err));
-    }, 500);
+
+        if (!supabase) {
+            console.log("Supabase not ready, retrying...");
+            if (sessionCheckAttempts < MAX_SESSION_CHECKS) {
+                sessionCheckAttempts++;
+                setTimeout(checkSessionAndRedirect, 500);
+            }
+            return;
+        }
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                console.log("No session found, checking again...");
+                if (sessionCheckAttempts < MAX_SESSION_CHECKS) {
+                    sessionCheckAttempts++;
+                    setTimeout(checkSessionAndRedirect, 500);
+                } else {
+                    console.log("No session after multiple attempts, redirecting to home");
+                    window.location.href = "/";
+                }
+            } else {
+                console.log("Session verified, dashboard ready");
+                if (typeof loadWelcomeName === 'function') loadWelcomeName();
+                if (typeof loadProgressStats === 'function') loadProgressStats();
+            }
+        } catch (err) {
+            console.error("Auth error:", err);
+            if (sessionCheckAttempts < MAX_SESSION_CHECKS) {
+                sessionCheckAttempts++;
+                setTimeout(checkSessionAndRedirect, 500);
+            } else {
+                window.location.href = "/";
+            }
+        }
+    }
+
+    setTimeout(checkSessionAndRedirect, 800);
 
     loadLastGenerated();
     loadProgressStats();
     setTimeout(addShortcutHint, 1000);
 
-    //Initialize timer
     initTimer();
 });
 
 // Add page load transition
 document.addEventListener('DOMContentLoaded', function () {
-    // Add fade-in to main content on page load
     const mainContent = document.querySelector('main');
     if (mainContent) {
         mainContent.style.animation = 'pageFadeIn 0.4s ease-out';
@@ -2362,7 +2400,6 @@ let ambientContext = null;
 let ambientSource = null;
 let ambientGain = null;
 
-// Create audio context (starts suspended until user interacts)
 function getAudioContext() {
     if (!ambientContext) {
         ambientContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2370,7 +2407,6 @@ function getAudioContext() {
     return ambientContext;
 }
 
-// Generate white noise
 function generateWhiteNoise(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2384,7 +2420,6 @@ function generateWhiteNoise(duration) {
     return buffer;
 }
 
-// Generate brown noise (deeper, more soothing)
 function generateBrownNoise(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2402,7 +2437,6 @@ function generateBrownNoise(duration) {
     return buffer;
 }
 
-// Generate rain-like sound
 function generateRainSound(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2420,7 +2454,6 @@ function generateRainSound(duration) {
     return buffer;
 }
 
-// Generate lo-fi style
 function generateLofiSound(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2441,7 +2474,6 @@ function generateLofiSound(duration) {
     return buffer;
 }
 
-// Generate cafe ambience
 function generateCafeSound(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2461,7 +2493,6 @@ function generateCafeSound(duration) {
     return buffer;
 }
 
-// Generate nature sounds
 function generateNatureSound(duration) {
     const ctx = getAudioContext();
     const sampleRate = ctx.sampleRate;
@@ -2481,7 +2512,6 @@ function generateNatureSound(duration) {
     return buffer;
 }
 
-// Generate sound based on type
 function generateAmbientSound(type, duration = 10) {
     switch (type) {
         case 'whiteNoise':
@@ -2501,7 +2531,6 @@ function generateAmbientSound(type, duration = 10) {
     }
 }
 
-// Play ambient sound
 window.playAmbientSound = function () {
     const select = document.getElementById('ambientSelect');
     if (!select) return;
@@ -2521,7 +2550,6 @@ window.playAmbientSound = function () {
         return;
     }
 
-    // Stop current if playing
     if (ambientSource) {
         try {
             ambientSource.stop();
@@ -2568,14 +2596,12 @@ window.playAmbientSound = function () {
     }
 };
 
-// Change ambient type
 window.changeAmbientSound = function () {
     if (ambientPlaying) {
         playAmbientSound();
     }
 };
 
-// Stop ambient sound
 window.stopAmbientSound = function () {
     if (ambientSource) {
         try {
@@ -2589,7 +2615,6 @@ window.stopAmbientSound = function () {
     if (window.showToast) window.showToast("🔇 Ambient sound stopped", "success");
 };
 
-// Load saved ambient settings
 function loadAmbientSettings() {
     const savedAmbient = localStorage.getItem('ambientType');
     const savedPlaying = localStorage.getItem('ambientPlaying');
@@ -2603,7 +2628,6 @@ function loadAmbientSettings() {
         }
     }
 
-    // Add click listener to initialize audio context on first user interaction
     const initAudio = function () {
         const ctx = getAudioContext();
         if (ctx.state === 'suspended') {
@@ -2618,7 +2642,6 @@ function loadAmbientSettings() {
     document.addEventListener('keydown', initAudio);
 }
 
-// Sound effects
 function playTimerEndSound() {
     const sound = document.getElementById('timerSound');
     if (sound) {
@@ -2627,7 +2650,6 @@ function playTimerEndSound() {
     }
 }
 
-// Toggle auto-start
 function toggleAutoStart() {
     autoStart = !autoStart;
     document.getElementById('autoStartText').innerHTML = autoStart ? 'Auto On' : 'Auto';
@@ -2636,7 +2658,6 @@ function toggleAutoStart() {
     localStorage.setItem('timerAutoStart', autoStart);
 }
 
-// Set custom duration
 window.setCustomDuration = function (minutes) {
     if (timerRunning) {
         pauseTimer();
@@ -2659,7 +2680,6 @@ window.setCustomDuration = function (minutes) {
     localStorage.setItem('timerDuration', minutes);
 };
 
-// Load saved timer data
 function loadTimerData() {
     const savedSessions = localStorage.getItem('timerSessions');
     const savedFocus = localStorage.getItem('todayFocusMinutes');
@@ -2705,14 +2725,12 @@ function loadTimerData() {
     updateTimerStats();
 }
 
-// Update session counter
 function updateSessionCounter() {
     const sessionNum = (sessionsCompleted % 4) + 1;
     const counter = document.getElementById('sessionCounter');
     if (counter) counter.innerHTML = `Session ${sessionNum}/4`;
 }
 
-// Update timer stats display
 function updateTimerStats() {
     const todayEl = document.getElementById('todayFocus');
     const streakEl = document.getElementById('focusStreak');
@@ -2720,7 +2738,6 @@ function updateTimerStats() {
     if (streakEl) streakEl.innerText = focusStreak;
 }
 
-// Update timer display
 function updateTimerDisplay() {
     const minutes = Math.floor(timerSeconds / 60);
     const seconds = timerSeconds % 60;
@@ -2728,7 +2745,6 @@ function updateTimerDisplay() {
     if (display) display.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// Play notification
 function playNotification() {
     playTimerEndSound();
 
@@ -2740,7 +2756,6 @@ function playNotification() {
     }
 }
 
-// Complete session
 function completeSession() {
     if (currentMode === 'focus') {
         todayFocusMinutes += currentDuration;
@@ -2785,7 +2800,6 @@ function completeSession() {
     }
 }
 
-// Start timer
 window.startTimer = function () {
     if (timerRunning) return;
 
@@ -2820,7 +2834,6 @@ window.startTimer = function () {
     }
 };
 
-// Pause timer
 window.pauseTimer = function () {
     if (!timerRunning) return;
 
@@ -2839,7 +2852,6 @@ window.pauseTimer = function () {
     }
 };
 
-// Reset timer
 window.resetTimer = function () {
     clearInterval(timerInterval);
     timerRunning = false;
@@ -2860,7 +2872,17 @@ window.resetTimer = function () {
     }
 };
 
-// Initialize timer
+function addShortcutHint() {
+    const footer = document.querySelector('footer');
+    if (footer && !document.getElementById('shortcutHintContainer')) {
+        const hint = document.createElement('div');
+        hint.id = 'shortcutHintContainer';
+        hint.className = 'text-center mt-4 text-xs text-slate-400';
+        hint.innerHTML = `<i class="fa-regular fa-keyboard mr-1"></i> Press <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono">?</kbd> for shortcuts`;
+        footer.insertBefore(hint, footer.firstChild);
+    }
+}
+
 function initTimer() {
     loadTimerData();
     loadAmbientSettings();

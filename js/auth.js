@@ -184,6 +184,9 @@ window.switchAuthTab = function (tab) {
 // ============================================
 // SIGNUP / LOGIN FUNCTIONS
 // ============================================
+// ============================================
+// SIGNUP WITH VERIFICATION STEP (FIXED)
+// ============================================
 window.handleSignup = async function () {
     const supabase = getSupabase();
     if (!supabase) {
@@ -191,17 +194,36 @@ window.handleSignup = async function () {
         return;
     }
 
+    // Get the signup button
+    const signupBtn = document.querySelector('#signupForm button');
+    const originalText = signupBtn.innerText;
+
+    // Show loading state
+    signupBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Creating account...';
+    signupBtn.disabled = true;
+    signupBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
     const name = document.getElementById('signupName')?.value;
     const email = document.getElementById('signupEmail')?.value;
     const password = document.getElementById('signupPassword')?.value;
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
         showToast("Please fill all fields");
+
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         return;
     }
 
     if (password.length < 6) {
         showToast("Password must be at least 6 characters");
+
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         return;
     }
 
@@ -216,19 +238,59 @@ window.handleSignup = async function () {
 
         if (error) {
             showToast(error.message);
+
+            // Restore button
+            signupBtn.innerHTML = originalText;
+            signupBtn.disabled = false;
+            signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             return;
         }
 
-        showToast("Signup successful! Check your email to confirm.", "success");
-        window.toggleAuthModal();
+        // 🔥 FIX: Store pending signup data for verification
+        window.pendingSignup = {
+            email: email,
+            password: password,
+            name: name
+        };
+
+        // 🔥 FIX: Show verification step instead of closing modal
+        showToast("Verification code sent to your email!", "success");
+
+        // Hide signup step 1, show verification step
+        const signupStep1 = document.getElementById('signupStep1');
+        const verificationStep = document.getElementById('verificationStep');
+        const verificationEmail = document.getElementById('verificationEmail');
+
+        if (signupStep1) signupStep1.classList.add('hidden');
+        if (verificationStep) verificationStep.classList.remove('hidden');
+        if (verificationEmail) verificationEmail.innerText = email;
+
+        // Clear any existing code inputs
+        const codeInputs = document.querySelectorAll('.code-input');
+        codeInputs.forEach(input => {
+            input.value = '';
+        });
+
+        // Focus first input
+        if (codeInputs[0]) codeInputs[0].focus();
+
+        // Restore button (verification step has its own verify button)
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
 
     } catch (err) {
         showToast(err.message);
+
+        // Restore button
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
     }
 };
 
 // ============================================
-// LOGIN WITH LOADING STATE
+// LOGIN WITH FIXED REDIRECT (NO RACE CONDITION)
 // ============================================
 window.handleLogin = async function () {
     const supabase = getSupabase();
@@ -277,27 +339,43 @@ window.handleLogin = async function () {
 
         showToast("Login successful!", "success");
         window.toggleAuthModal();
-        await window.updateAuthUI(); // Force update
 
-        // In handleLogin function, before redirect
-        if (window.location.pathname.includes('dashboard.html')) {
-            // Add fade out effect before redirect
+        // 🔥 FIX 1: Wait for UI to update
+        await window.updateAuthUI();
+
+        // 🔥 FIX 2: Small delay to ensure session is saved to localStorage
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // 🔥 FIX 3: Verify session exists before redirect
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+            // Smooth fade out effect
             document.body.style.opacity = '0';
             document.body.style.transition = 'opacity 0.3s ease';
             setTimeout(() => {
                 window.location.href = '/dashboard.html';
             }, 300);
         } else {
-            window.location.href = '/dashboard.html';
-        }
+            // Session not ready - try one more time
+            console.log("Session not ready, retrying...");
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if (window.updateAuthUI) window.updateAuthUI();
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
 
-        setTimeout(() => {
-            if (!window.location.pathname.includes('dashboard.html')) {
-                window.location.href = '/dashboard.html';
+            if (retrySession) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
+            } else {
+                showToast("Login succeeded but session not ready. Please refresh the page.", "error");
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             }
-        }, 1200);
+        }
 
     } catch (err) {
         showToast(err.message);
@@ -499,7 +577,7 @@ let pendingSignup = {
 // HANDLE SIGNUP WITH VERIFICATION
 // ============================================
 // ============================================
-// SIGNUP WITH LOADING STATE
+// SIGNUP WITH VERIFICATION STEP (FIXED)
 // ============================================
 window.handleSignup = async function () {
     const supabase = getSupabase();
@@ -523,8 +601,6 @@ window.handleSignup = async function () {
 
     if (!email || !password || !name) {
         showToast("Please fill all fields");
-
-        // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
         signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
@@ -533,8 +609,6 @@ window.handleSignup = async function () {
 
     if (password.length < 6) {
         showToast("Password must be at least 6 characters");
-
-        // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
         signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
@@ -552,26 +626,67 @@ window.handleSignup = async function () {
 
         if (error) {
             showToast(error.message);
-
-            // Restore button
             signupBtn.innerHTML = originalText;
             signupBtn.disabled = false;
             signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             return;
         }
 
-        showToast("Signup successful! Check your email to confirm.", "success");
-        window.toggleAuthModal();
+        // ✅ Store pending signup data
+        window.pendingSignup = {
+            email: email,
+            password: password,
+            name: name
+        };
 
-        // Restore button (in case modal closes)
+        // ✅ Show verification step - KEEP MODAL OPEN
+        showToast("Verification code sent to your email!", "success");
+
+        // Hide signup step 1, show verification step
+        const signupStep1 = document.getElementById('signupStep1');
+        const verificationStep = document.getElementById('verificationStep');
+        const verificationEmail = document.getElementById('verificationEmail');
+
+        if (signupStep1) signupStep1.classList.add('hidden');
+        if (verificationStep) {
+            verificationStep.classList.remove('hidden');
+        } else {
+            console.error("verificationStep element not found!");
+            showToast("Error: Verification form missing. Please contact support.");
+            window.toggleAuthModal();
+            signupBtn.innerHTML = originalText;
+            signupBtn.disabled = false;
+            signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            return;
+        }
+
+        if (verificationEmail) verificationEmail.innerText = email;
+
+        // Clear any existing code inputs
+        const codeInputs = document.querySelectorAll('.code-input');
+        codeInputs.forEach(input => {
+            input.value = '';
+        });
+
+        // Focus first input
+        if (codeInputs[0]) codeInputs[0].focus();
+
+        // ✅ IMPORTANT: Make sure modal is visible
+        const modal = document.getElementById('authModal');
+        if (modal && modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            if (window.gsap) {
+                gsap.to(modal, { opacity: 1, duration: 0.3 });
+            }
+        }
+
+        // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
         signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');
 
     } catch (err) {
         showToast(err.message);
-
-        // Restore button
         signupBtn.innerHTML = originalText;
         signupBtn.disabled = false;
         signupBtn.classList.remove('opacity-75', 'cursor-not-allowed');

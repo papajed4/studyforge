@@ -1097,14 +1097,23 @@
     <!-- Scripts - Order matters! -->
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
-    <script>
-        // Check if backend is awake
-        (function checkBackend() {
-            // Show wake screen immediately
-            const wakeScreen = document.getElementById('wakeScreen');
-            wakeScreen.style.display = 'flex';
 
-            // Try to ping backend
+    <script>
+        // ============================================
+        // WAKE SCREEN WITH DELAY (FIXED)
+        // ============================================
+        (function checkBackend() {
+            const wakeScreen = document.getElementById('wakeScreen');
+            let showTimer = null;
+            let backendChecked = false;
+
+            // Only show wake screen if backend takes > 3 seconds
+            showTimer = setTimeout(() => {
+                if (!backendChecked) {
+                    wakeScreen.style.display = 'flex';
+                }
+            }, 3000);
+
             let attempts = 0;
             const maxAttempts = 30;
 
@@ -1114,7 +1123,9 @@
                     cache: 'no-cache'
                 })
                     .then(() => {
-                        // Backend is awake! Hide wake screen
+                        // Backend is awake!
+                        backendChecked = true;
+                        clearTimeout(showTimer);
                         wakeScreen.style.display = 'none';
                     })
                     .catch(() => {
@@ -1123,7 +1134,9 @@
                             // Try again in 2 seconds
                             setTimeout(pingBackend, 2000);
                         } else {
-                            // Give up after 60 seconds, show site anyway
+                            // Give up after 60 seconds, hide wake screen
+                            backendChecked = true;
+                            clearTimeout(showTimer);
                             wakeScreen.style.display = 'none';
                         }
                     });
@@ -1133,6 +1146,7 @@
             setTimeout(pingBackend, 1000);
         })();
     </script>
+
     <script>
         // Force auth UI update after page loads
         document.addEventListener('DOMContentLoaded', async function () {
