@@ -77,11 +77,19 @@ const apiLimiter = rateLimit({
 });
 app.use("/api/", apiLimiter);
 
+// Increase timeout for large file uploads (OCR can take 2-3 minutes)
+app.use((req, res, next) => {
+    req.setTimeout(180000); // 3 minutes
+    res.setTimeout(180000); // 3 minutes
+    next();
+});
+
 // File Upload Configuration
 const storage = multer.memoryStorage();
+
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 20 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['.pdf', '.docx', '.pptx', '.jpg', '.jpeg', '.png'];
         const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf('.'));

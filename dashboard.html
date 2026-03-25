@@ -1332,6 +1332,55 @@
             <p class="text-xs text-slate-400 mt-4">Cancel anytime • No long-term commitment</p>
         </div>
     </div>
+    <!-- ============================================ -->
+    <!-- UPLOAD PROGRESS MODAL (FANCY) -->
+    <!-- ============================================ -->
+    <div id="uploadProgressModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[300] hidden transition-all duration-300">
+        <div
+            class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center transform transition-all duration-300 scale-95">
+            <!-- Animated Icon -->
+            <div class="mb-6">
+                <div class="w-24 h-24 mx-auto relative">
+                    <div class="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-75"></div>
+                    <div
+                        class="relative w-24 h-24 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-file-lines text-white text-3xl animate-bounce"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-2xl font-bold text-slate-800 mb-2" id="uploadTitle">Processing your file...</h3>
+
+            <!-- Message -->
+            <p class="text-slate-500 mb-6" id="uploadMessage">
+                This may take 30-60 seconds depending on file size.
+            </p>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200 rounded-full h-2 mb-6 overflow-hidden">
+                <div id="uploadProgressBar"
+                    class="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                    style="width: 0%"></div>
+            </div>
+
+            <!-- Tips -->
+            <div class="bg-indigo-50 rounded-xl p-4 text-left">
+                <p class="text-xs text-indigo-600 font-medium mb-2">
+                    <i class="fa-regular fa-lightbulb mr-1"></i> StudyForge Tip:
+                </p>
+                <p class="text-xs text-indigo-700" id="uploadTip">
+                    For fastest results, paste text directly instead of uploading images.
+                </p>
+            </div>
+
+            <!-- Cancel Button (Optional) -->
+            <button onclick="cancelUpload()" class="mt-4 text-sm text-slate-400 hover:text-slate-600 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
     <!-- Shortcut hint (optional) -->
     <div id="shortcutHintContainer" class="text-center mt-4 text-xs text-slate-400"></div>
     <!-- Toast Notification -->

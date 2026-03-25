@@ -1705,7 +1705,107 @@ function updateAutoSaveIndicator() {
 }
 
 // ============================================
-// FILE UPLOAD HANDLER
+// FANCY UPLOAD PROGRESS MODAL
+// ============================================
+let currentUploadController = null;
+
+function showUploadModal(fileType, fileSize) {
+    const modal = document.getElementById('uploadProgressModal');
+    const title = document.getElementById('uploadTitle');
+    const message = document.getElementById('uploadMessage');
+    const tip = document.getElementById('uploadTip');
+    const progressBar = document.getElementById('uploadProgressBar');
+
+    if (progressBar) progressBar.style.width = '0%';
+
+    // Customize based on file type
+    if (fileType === 'pdf') {
+        title.innerHTML = '<i class="fa-regular fa-file-pdf mr-2"></i> Reading your PDF...';
+        message.innerHTML = 'This may take 1-3 minutes depending on file size and your connection.';
+        tip.innerHTML = 'For scanned PDFs, make sure text is clear. This works best with good internet.';
+    } else if (fileType === 'image') {
+        title.innerHTML = '<i class="fa-regular fa-image mr-2"></i> Analyzing image...';
+        message.innerHTML = 'Processing your image. This may take 1-2 minutes.';
+        tip.innerHTML = 'For best results, use clear, well-lit photos of handwritten notes.';
+    } else if (fileType === 'docx') {
+        title.innerHTML = '<i class="fa-regular fa-file-word mr-2"></i> Reading document...';
+        message.innerHTML = 'Extracting text from your document. Please wait.';
+        tip.innerHTML = 'Documents with images may take a little longer to process.';
+    } else {
+        title.innerHTML = '<i class="fa-regular fa-file-lines mr-2"></i> Processing your file...';
+        message.innerHTML = 'This may take a moment. Thanks for your patience!';
+        tip.innerHTML = 'For fastest results, paste text directly into the text area.';
+    }
+
+    // Add file size warning if large
+    if (fileSize) {
+        const sizeMB = (fileSize / 1024 / 1024).toFixed(1);
+        if (sizeMB > 5) {
+            message.innerHTML = `This file is ${sizeMB}MB. Processing may take 2-3 minutes on slower connections.`;
+        } else if (sizeMB > 2) {
+            message.innerHTML = `This file is ${sizeMB}MB. Processing may take 1-2 minutes.`;
+        }
+    }
+
+    // Animate progress bar (slow, steady)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 8;
+        if (progress > 85) progress = 85; // Never reach 100 until actually done
+        if (progressBar) progressBar.style.width = progress + '%';
+    }, 2000);
+
+    modal.dataset.progressInterval = progressInterval;
+    modal.classList.remove('hidden');
+
+    if (window.gsap) {
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        gsap.fromTo(modal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 });
+    }
+}
+
+function updateUploadProgress(percentage) {
+    const progressBar = document.getElementById('uploadProgressBar');
+    if (progressBar) {
+        progressBar.style.width = Math.min(percentage, 95) + '%';
+    }
+}
+
+function hideUploadModal(success = true) {
+    const modal = document.getElementById('uploadProgressModal');
+    const progressInterval = modal?.dataset.progressInterval;
+    if (progressInterval) clearInterval(parseInt(progressInterval));
+
+    if (modal) {
+        if (window.gsap) {
+            gsap.to(modal.firstElementChild, {
+                scale: 0.95, opacity: 0, duration: 0.2, onComplete: () => {
+                    modal.classList.add('hidden');
+                    if (modal.firstElementChild) modal.firstElementChild.style.opacity = '';
+                }
+            });
+            gsap.to(modal, { opacity: 0, duration: 0.2 });
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    // Reset progress bar
+    const progressBar = document.getElementById('uploadProgressBar');
+    if (progressBar) progressBar.style.width = '0%';
+}
+
+function cancelUpload() {
+    if (currentUploadController) {
+        currentUploadController.abort();
+        currentUploadController = null;
+    }
+    hideUploadModal(false);
+    if (window.showToast) window.showToast("Upload cancelled.", "error");
+}
+
+// ============================================
+// FILE UPLOAD HANDLER (NO CLIENT TIMEOUT - WAITS FOR SERVER)
 // ============================================
 function initFileUpload() {
     const fileUpload = document.getElementById('fileUpload');
@@ -1732,6 +1832,8 @@ function initFileUpload() {
         const formData = new FormData();
         formData.append('file', file);
 
+        let progressInterval = null;
+
         try {
             const token = await window.getAuthToken?.();
             if (!token) {
@@ -1739,15 +1841,43 @@ function initFileUpload() {
                 return;
             }
 
+            // Detect file type
+            let fileType = 'file';
+            const fileName = file.name.toLowerCase();
+            if (fileName.endsWith('.pdf')) fileType = 'pdf';
+            else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) fileType = 'image';
+            else if (fileName.endsWith('.docx')) fileType = 'docx';
+
+            // Show fancy modal with file type info
+            showUploadModal(fileType, file.size);
+
+            // Simulate progress animation (slow and steady for better UX)
+            progressInterval = setInterval(() => {
+                updateUploadProgress(Math.random() * 15 + 35); // Stays between 35-50%
+            }, 2000);
+
+            // Make the upload request — NO client-side timeout!
             const response = await fetch('/api/upload-file', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
+            // Clear intervals
+            clearInterval(progressInterval);
+
+            // Update progress to 100% before hiding
+            updateUploadProgress(100);
+
+            // Small delay to show completion
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             const data = await response.json();
 
             if (data.success && data.text) {
+                // Hide modal with success
+                hideUploadModal(true);
+
                 document.getElementById('courseInput').value = data.text;
                 if (data.language) {
                     currentDetectedLanguage = data.language;
@@ -1757,11 +1887,24 @@ function initFileUpload() {
                     if (window.showToast) window.showToast(`✅ File uploaded! ${data.text.length} characters extracted.`, "success");
                 }
             } else {
+                hideUploadModal(false);
                 if (window.showToast) window.showToast(data.error || "Failed to extract text");
             }
         } catch (err) {
+            clearInterval(progressInterval);
             console.error(err);
-            if (window.showToast) window.showToast("Upload failed");
+
+            // Hide modal with error
+            hideUploadModal(false);
+
+            // Better error messages for different scenarios
+            if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                if (window.showToast) window.showToast("Network error. Check your connection and try again.", "error");
+            } else if (err.message.includes('413') || err.message.includes('too large')) {
+                if (window.showToast) window.showToast("File too large. Maximum size is 20MB.", "error");
+            } else {
+                if (window.showToast) window.showToast("Upload failed. Try pasting text directly or use a smaller file.");
+            }
         } finally {
             e.target.value = '';
             if (label) {
