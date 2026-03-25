@@ -694,13 +694,15 @@ window.handleSignup = async function () {
 };
 
 // ============================================
-// VERIFY CODE AND COMPLETE SIGNUP
+// VERIFY SIGNUP CODE (FIXED)
 // ============================================
 window.verifySignupCode = async function () {
     const supabase = getSupabase();
-    if (!supabase) return;
+    if (!supabase) {
+        showToast("Authentication system not ready");
+        return;
+    }
 
-    // Get the 6-digit code
     const inputs = document.querySelectorAll('.code-input');
     const token = Array.from(inputs).map(input => input.value).join('');
 
@@ -712,41 +714,46 @@ window.verifySignupCode = async function () {
     try {
         showToast("Verifying code...", "success");
 
+        // 🔥 FIX: Use email + token correctly
         const { data, error } = await supabase.auth.verifyOtp({
-            email: pendingSignup.email,
+            email: window.pendingSignup.email,
             token: token,
             type: 'signup'
         });
 
         if (error) {
+            console.error("Verification error:", error);
             showToast("Invalid code: " + error.message);
             return;
         }
 
         showToast("Email verified! Logging you in...", "success");
 
-        // Now sign them in with the stored credentials
+        // Sign them in automatically
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: pendingSignup.email,
-            password: pendingSignup.password
+            email: window.pendingSignup.email,
+            password: window.pendingSignup.password
         });
 
         if (signInError) {
-            showToast("Auto-login failed. Please log in manually.");
-            window.location.href = '/';
+            showToast("Auto-login failed. Please log in manually.", "error");
+            window.toggleAuthModal();
             return;
         }
 
         // Clear pending data
-        pendingSignup = { email: '', password: '', name: '' };
+        window.pendingSignup = { email: '', password: '', name: '' };
 
         // Close modal and go to dashboard
         window.toggleAuthModal();
+        
+        // Add small delay then redirect
         setTimeout(() => {
             window.location.href = '/dashboard.html';
         }, 1500);
 
     } catch (err) {
+        console.error("Verification error:", err);
         showToast("Verification error: " + err.message);
     }
 };
