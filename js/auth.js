@@ -261,6 +261,22 @@ window.handleSignup = async function () {
         const verificationStep = document.getElementById('verificationStep');
         const verificationEmail = document.getElementById('verificationEmail');
 
+        // Scroll to verification step on mobile
+        setTimeout(() => {
+            if (verificationStep) {
+                verificationStep.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }, 100);
+
+        // Make sure modal is visible
+        const modal = document.getElementById('authModal');
+        if (modal && modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+        }
+
         if (signupStep1) signupStep1.classList.add('hidden');
         if (verificationStep) verificationStep.classList.remove('hidden');
         if (verificationEmail) verificationEmail.innerText = email;
@@ -746,7 +762,7 @@ window.verifySignupCode = async function () {
 
         // Close modal and go to dashboard
         window.toggleAuthModal();
-        
+
         // Add small delay then redirect
         setTimeout(() => {
             window.location.href = '/dashboard.html';
