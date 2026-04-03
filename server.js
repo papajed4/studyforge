@@ -17,6 +17,7 @@ const https = require('https');
 const crypto = require('crypto');
 const Tesseract = require('tesseract.js');
 const { fromBuffer } = require('pdf2pic'); // For converting PDF pages to images
+const cron = require('node-cron');
 
 // ============================================
 // CONFIGURATION
@@ -149,6 +150,194 @@ async function generateWithGemini(promptText) {
             throw new Error("AI request timed out after 30 seconds.");
         }
         throw error;
+    }
+}
+
+// ============================================
+// WEBHOOK RETRY LOGIC
+// ============================================
+
+async function saveFailedWebhook(payload, webhookType) {
+    try {
+        const nextRetry = new Date();
+        nextRetry.setMinutes(nextRetry.getMinutes() + 5);
+
+        const { error } = await supabaseAdmin
+            .from('failed_webhooks')
+            .insert({
+                payload: payload,
+                webhook_type: webhookType,
+                attempts: 0,
+                max_attempts: 5,
+                next_retry: nextRetry.toISOString(),
+                status: 'pending'
+            });
+
+        if (error) {
+            console.error("Failed to save webhook:", error);
+        } else {
+            console.log(`💾 Saved failed ${webhookType} webhook for retry`);
+        }
+    } catch (err) {
+        console.error("Error saving failed webhook:", err);
+    }
+}
+
+async function processFailedWebhooks() {
+    console.log("🔄 Processing failed webhooks...", new Date().toISOString());
+
+    try {
+        const { data: webhooks, error } = await supabaseAdmin
+            .from('failed_webhooks')
+            .select('*')
+            .eq('status', 'pending')
+            .lt('next_retry', new Date().toISOString())
+            .order('created_at', { ascending: true })
+            .limit(10);
+
+        if (error) {
+            console.error("Error fetching failed webhooks:", error);
+            return;
+        }
+
+        if (!webhooks || webhooks.length === 0) {
+            return;
+        }
+
+        console.log(`📨 Processing ${webhooks.length} failed webhooks...`);
+
+        for (const webhook of webhooks) {
+            let success = false;
+
+            try {
+                if (webhook.webhook_type === 'paystack') {
+                    const event = webhook.payload;
+                    const data = event.data;
+                    const reference = data.reference;
+                    const userId = data.metadata?.user_id;
+
+                    if (!userId) continue;
+
+                    const { data: existing } = await supabaseAdmin
+                        .from('transactions')
+                        .select('id')
+                        .eq('reference', reference)
+                        .maybeSingle();
+
+                    if (existing) {
+                        success = true;
+                    } else {
+                        const expiryDate = new Date();
+                        const billingMode = data.metadata?.billing_mode || 'monthly';
+
+                        if (billingMode === "yearly") {
+                            expiryDate.setDate(expiryDate.getDate() + 365);
+                        } else {
+                            expiryDate.setDate(expiryDate.getDate() + 30);
+                        }
+
+                        await supabaseAdmin.from('transactions').insert([{
+                            user_id: userId,
+                            reference: reference,
+                            amount: data.amount,
+                            currency: data.currency,
+                            status: "success",
+                            created_at: new Date().toISOString()
+                        }]);
+
+                        await supabaseAdmin.from('profiles').update({
+                            plan: "pro",
+                            pro_expires_at: expiryDate.toISOString()
+                        }).eq('id', userId);
+
+                        console.log(`✅ Retry: Upgraded user ${userId}`);
+                        success = true;
+                    }
+                } else if (webhook.webhook_type === 'flutterwave') {
+                    const data = webhook.payload.data;
+                    const txRef = data.tx_ref;
+                    const userId = data.meta?.user_id;
+                    const billingMode = data.meta?.billing_mode || 'monthly';
+
+                    if (!userId) continue;
+
+                    const { data: existing } = await supabaseAdmin
+                        .from('transactions')
+                        .select('id')
+                        .eq('reference', txRef)
+                        .maybeSingle();
+
+                    if (existing) {
+                        success = true;
+                    } else {
+                        const expiryDate = new Date();
+                        if (billingMode === "yearly") {
+                            expiryDate.setDate(expiryDate.getDate() + 365);
+                        } else {
+                            expiryDate.setDate(expiryDate.getDate() + 30);
+                        }
+
+                        await supabaseAdmin.from('transactions').insert([{
+                            user_id: userId,
+                            reference: txRef,
+                            amount: data.amount * 100,
+                            currency: data.currency,
+                            status: "success",
+                            processor: "flutterwave",
+                            created_at: new Date().toISOString()
+                        }]);
+
+                        await supabaseAdmin.from('profiles').update({
+                            plan: "pro",
+                            pro_expires_at: expiryDate.toISOString()
+                        }).eq('id', userId);
+
+                        console.log(`✅ Retry: Upgraded user ${userId} via Flutterwave`);
+                        success = true;
+                    }
+                }
+
+                if (success) {
+                    await supabaseAdmin
+                        .from('failed_webhooks')
+                        .update({ status: 'success', updated_at: new Date().toISOString() })
+                        .eq('id', webhook.id);
+                    console.log(`✅ Webhook ${webhook.id} processed successfully`);
+                } else {
+                    const newAttempts = webhook.attempts + 1;
+                    const nextRetry = new Date();
+
+                    if (newAttempts >= webhook.max_attempts) {
+                        await supabaseAdmin
+                            .from('failed_webhooks')
+                            .update({
+                                status: 'failed',
+                                attempts: newAttempts,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', webhook.id);
+                        console.error(`❌ Webhook ${webhook.id} failed after ${newAttempts} attempts`);
+                    } else {
+                        const delayMinutes = Math.pow(2, newAttempts) * 5;
+                        nextRetry.setMinutes(nextRetry.getMinutes() + delayMinutes);
+
+                        await supabaseAdmin
+                            .from('failed_webhooks')
+                            .update({
+                                attempts: newAttempts,
+                                next_retry: nextRetry.toISOString(),
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', webhook.id);
+                        console.log(`⏳ Webhook ${webhook.id} retry in ${delayMinutes} min (attempt ${newAttempts}/${webhook.max_attempts})`);
+                    }
+                }
+            } catch (err) {
+                console.error(`Error processing webhook ${webhook.id}:`, err);
+            }
+        }
+    } catch (err) {
+        console.error("Error in processFailedWebhooks:", err);
     }
 }
 
@@ -1321,6 +1510,7 @@ app.post('/api/paystack-webhook', async (req, res) => {
 
     } catch (err) {
         console.error("Webhook error:", err.message);
+        await saveFailedWebhook(req.body, 'paystack');
         res.sendStatus(500);
     }
 });
@@ -1382,6 +1572,7 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
 
     } catch (err) {
         console.error("Flutterwave webhook error:", err.message);
+        await saveFailedWebhook(req.body, 'flutterwave');
         res.sendStatus(500);
     }
 });
@@ -1418,7 +1609,6 @@ app.delete('/api/delete-account', requireAuth, async (req, res) => {
 // ============================================
 // PRO EXPIRY CRON JOB (Runs every day at midnight)
 // ============================================
-const cron = require('node-cron');
 
 async function expireProUsers() {
     try {
@@ -1447,9 +1637,20 @@ async function expireProUsers() {
 cron.schedule('0 0 * * *', () => {
     expireProUsers();
 });
+// Process failed webhooks every 10 minutes
+cron.schedule('*/10 * * * *', () => {
+    processFailedWebhooks();
+});
 
-// Also run once on server startup (optional)
-setTimeout(expireProUsers, 5000);
+// Run once on startup
+setTimeout(() => {
+    processFailedWebhooks();
+}, 10000);
+
+// Also run once on server startup to catch any missed expiries
+setTimeout(() => {
+    expireProUsers();
+}, 5000);
 
 // Catch-all route for 404 - add at the END of your routes
 app.use((req, res) => {
