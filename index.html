@@ -28,6 +28,13 @@
     <meta name="twitter:description"
         content="Turn your lecture notes into exam-ready study guides, flashcards, and quizzes with one click. Free tier available.">
 
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="StudyForge">
+    <link rel="apple-touch-icon" href="/icons/512.png">
+
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/">
 
@@ -1171,6 +1178,20 @@
                 }, 300);
             });
         });
+    </script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 
