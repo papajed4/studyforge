@@ -210,15 +210,25 @@ window.initiateCondense = async function () {
         let contentToSend = input;
 
         if (ytInput && !input) {
-            const ytResponse = await fetch("/api/youtube-transcript", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: ytInput })
-            });
-            const ytData = await ytResponse.json();
-            if (ytData.success) {
-                contentToSend = ytData.text;
-                document.getElementById('courseInput').value = ytData.text;
+            try {
+                const ytResponse = await fetch("/api/youtube-transcript", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: ytInput })
+                });
+                const ytData = await ytResponse.json();
+                if (ytData.success) {
+                    contentToSend = ytData.text;
+                    document.getElementById('courseInput').value = ytData.text;
+                } else {
+                    throw new Error(ytData.error || "Failed to get transcript");
+                }
+            } catch (ytErr) {
+                window.showToast?.("YouTube transcript failed: " + ytErr.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                loading.classList.add('hidden');
+                return;
             }
         }
 
@@ -1166,12 +1176,14 @@ window.startFlashcardMode = function () {
 
     document.getElementById('studyModeIcon').textContent = '🃏';
     document.getElementById('studyModeTitleText').textContent = 'Flashcard Mode';
-    document.getElementById('studyModeSubtitle').textContent = studyModeData.items.length + ' cards • Click to flip';
+    document.getElementById('studyModeSubtitle').textContent = studyModeData.items.length + ' cards • Click to flip • Swipe ← →';
     document.getElementById('flashcardUI').classList.remove('hidden');
     document.getElementById('quizUI').classList.add('hidden');
 
     if (studyModeData.items.length > 0) showCurrentFlashcard();
     openStudyMode();
+
+    setTimeout(() => initTouchSwipe(), 100);
 };
 
 window.startQuizMode = function () {
@@ -1400,6 +1412,85 @@ function showCurrentQuizQuestion() {
     document.getElementById('cardCounter').textContent = `${studyModeData.currentIndex + 1} / ${studyModeData.items.length}`;
     const progress = ((studyModeData.currentIndex + 1) / studyModeData.items.length) * 100;
     document.getElementById('studyProgressBar').style.width = progress + '%';
+}
+
+// ============================================
+// TOUCH SWIPE FOR FLASHCARDS (MOBILE)
+// ============================================
+let touchStartX = 0;
+let touchEndX = 0;
+let touchStartY = 0;
+let touchEndY = 0;
+let isSwiping = false;
+
+function initTouchSwipe() {
+    const flashcard = document.getElementById('flashcard');
+    if (!flashcard) return;
+
+    // Remove existing listeners to avoid duplicates
+    flashcard.removeEventListener('touchstart', handleTouchStart);
+    flashcard.removeEventListener('touchmove', handleTouchMove);
+    flashcard.removeEventListener('touchend', handleTouchEnd);
+
+    // Add new listeners
+    flashcard.addEventListener('touchstart', handleTouchStart);
+    flashcard.addEventListener('touchmove', handleTouchMove);
+    flashcard.addEventListener('touchend', handleTouchEnd);
+}
+
+function handleTouchStart(e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+    isSwiping = true;
+}
+
+function handleTouchMove(e) {
+    if (!isSwiping) return;
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+
+    // Prevent page scroll while swiping on flashcard
+    const deltaX = Math.abs(touchEndX - touchStartX);
+    const deltaY = Math.abs(touchEndY - touchStartY);
+    if (deltaX > deltaY && deltaX > 20) {
+        e.preventDefault();
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!isSwiping) return;
+    isSwiping = false;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    // Only trigger if horizontal swipe (ignore diagonal)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+        if (deltaX > 0) {
+            // Swipe right → previous card
+            previousCard();
+            showToastIfNeeded('⬅️ Swiped to previous', 'success');
+        } else {
+            // Swipe left → next card
+            nextCard();
+            showToastIfNeeded('➡️ Swiped to next', 'success');
+        }
+    }
+
+    // Reset values
+    touchStartX = 0;
+    touchEndX = 0;
+    touchStartY = 0;
+    touchEndY = 0;
+}
+
+function showToastIfNeeded(msg, type) {
+    // Only show toast on first swipe to not annoy user
+    const swipeToastShown = localStorage.getItem('swipeToastShown');
+    if (!swipeToastShown) {
+        if (window.showToast) window.showToast(msg, type);
+        localStorage.setItem('swipeToastShown', 'true');
+    }
 }
 
 window.flipCard = function () {
