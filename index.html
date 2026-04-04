@@ -22,6 +22,10 @@
     <meta property="og:url" content="https://studyforge.site/">
     <meta property="og:image" content="https://studyforge.site/og-image.png">
 
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="StudyForge AI - AI Study Tool for Students">
@@ -34,6 +38,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="StudyForge">
     <link rel="apple-touch-icon" href="/icons/512.png">
+
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/">
@@ -72,7 +77,7 @@
     <!-- Paystack -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
 
-    <!-- Flutterwave --->
+    <!-- Flutterwave -->
     <script src="https://checkout.flutterwave.com/v3.js"></script>
 
     <link rel="canonical" href="https://studyforge.site/">
@@ -520,30 +525,30 @@
 
             <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
 
-                <!-- Metric 1 -->
+                <!-- Metric 1 - Study Guides Generated -->
                 <div>
                     <h3 class="text-4xl font-extrabold text-slate-900">
-                        <span class="counter" data-target="842">0</span>+
+                        <span id="statStudyGuides" class="counter" data-target="0">0</span>+
                     </h3>
                     <p class="text-slate-500 mt-2 text-sm font-medium">
                         Study Guides Generated
                     </p>
                 </div>
 
-                <!-- Metric 2 -->
+                <!-- Metric 2 - Active Students -->
                 <div>
                     <h3 class="text-4xl font-extrabold text-slate-900">
-                        <span class="counter" data-target="216">0</span>+
+                        <span id="statActiveUsers" class="counter" data-target="0">0</span>+
                     </h3>
                     <p class="text-slate-500 mt-2 text-sm font-medium">
                         Active Students
                     </p>
                 </div>
 
-                <!-- Metric 3 -->
+                <!-- Metric 3 - Pages Condensed -->
                 <div>
                     <h3 class="text-4xl font-extrabold text-slate-900">
-                        <span class="counter" data-target="6740">0</span>+
+                        <span id="statPagesCondensed" class="counter" data-target="0">0</span>+
                     </h3>
                     <p class="text-slate-500 mt-2 text-sm font-medium">
                         Pages Condensed
@@ -554,42 +559,173 @@
 
             <div class="text-center mt-8">
                 <p class="text-xs text-slate-400">
-                    Metrics updated weekly based on platform activity.
+                    Metrics updated in real-time from platform activity.
                 </p>
             </div>
 
         </section>
 
-        <!-- Feature Grid -->
-        <div id="features" class="grid md:grid-cols-3 gap-6 mt-20">
-            <!-- Feature 1 -->
-            <div class="glass-panel p-6 rounded-2xl feature-card">
-                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-layer-group text-blue-600 text-xl"></i>
-                </div>
-                <h3 class="text-lg font-bold text-slate-800 mb-2">Smart Study Sections</h3>
-                <p class="text-slate-500 text-sm">Automatically breaks down dense lectures into digestible, titled
-                    sections for easy reading.</p>
-            </div>
+        <!-- Features Bento Grid -->
+        <div id="features" class="mt-20">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            <!-- Feature 2 -->
-            <div class="glass-panel p-6 rounded-2xl feature-card">
-                <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-clipboard-check text-purple-600 text-xl"></i>
+                <!-- ROW 1: Smart Study Sections (2 cols) + AI Deep Clarification (1 col) -->
+                <div
+                    class="md:col-span-2 glass-panel rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="p-6 md:p-8">
+                        <div class="flex items-start justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-layer-group text-indigo-600 text-xl"></i>
+                            </div>
+                            <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">AI-Powered</span>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-3">Smart Study Sections</h3>
+                        <p class="text-slate-500 text-sm md:text-base leading-relaxed">
+                            Our AI automatically identifies key concepts, definitions, and supporting evidence from your
+                            transcripts and lecture notes, organizing them into logical, thematic blocks.
+                        </p>
+                    </div>
+                    <div class="h-32 bg-gradient-to-r from-indigo-50 to-purple-50 flex items-center justify-center">
+                        <div class="flex gap-4">
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-solid fa-brain text-indigo-500 text-2xl"></i>
+                            </div>
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-solid fa-chart-line text-purple-500 text-2xl"></i>
+                            </div>
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-solid fa-lightbulb text-amber-500 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-lg font-bold text-slate-800 mb-2">Exam-Ready Questions</h3>
-                <p class="text-slate-500 text-sm">Generates relevant practice problems and active recall prompts based
-                    on the core material.</p>
-            </div>
 
-            <!-- Feature 3 -->
-            <div class="glass-panel p-6 rounded-2xl feature-card">
-                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-comments text-indigo-600 text-xl"></i>
+                <div
+                    class="glass-panel rounded-2xl p-6 md:p-8 group hover:shadow-xl transition-all duration-300 flex flex-col">
+                    <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-comments text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">AI Deep Clarification</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed flex-1">
+                        Don't understand a concept? Chat directly with your course material. Our AI explains complex
+                        topics in simple terms based on your source material.
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-indigo-600 text-sm">
+                        <span>24/7 AI Tutor</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
                 </div>
-                <h3 class="text-lg font-bold text-slate-800 mb-2">AI Deep Clarification Chat</h3>
-                <p class="text-slate-500 text-sm">Don't understand a concept? Chat directly with the course material to
-                    get instant clarity.</p>
+
+                <!-- ROW 2: Exam-Ready Questions (1 col) + Seamless Integration (2 cols) -->
+                <div
+                    class="glass-panel rounded-2xl p-6 md:p-8 group hover:shadow-xl transition-all duration-300 flex flex-col">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-clipboard-check text-emerald-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Exam-Ready Questions</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed flex-1">
+                        Instantly generate mock exams, multiple-choice quizzes, and short-answer prompts that mirror
+                        real university-level testing.
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-emerald-600 text-sm">
+                        <span>Active Recall</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                </div>
+
+                <div
+                    class="md:col-span-2 glass-panel rounded-2xl p-6 md:p-8 group hover:shadow-xl transition-all duration-300">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-cloud-arrow-up text-amber-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-3">Seamless Integration</h3>
+                            <p class="text-slate-500 text-sm md:text-base leading-relaxed">
+                                Upload PDFs, Word docs, PowerPoints, images, or YouTube links. We extract the text and
+                                forge it into your study pack.
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">PDF</span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">DOCX</span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">PPTX</span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">JPG/PNG</span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">YouTube</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-brands fa-google-drive text-2xl text-blue-500"></i>
+                            </div>
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-brands fa-youtube text-2xl text-red-500"></i>
+                            </div>
+                            <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                <i class="fa-solid fa-file-pdf text-2xl text-red-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 3: Smart Flashcards (2 cols) + Progress Tracking (1 col) -->
+                <div
+                    class="md:col-span-2 glass-panel rounded-2xl p-6 md:p-8 group hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-regular fa-rectangle-ad text-rose-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">Smart Flashcards</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed max-w-2xl">
+                                Auto-generated flashcards from your notes. Swipe to review, mark difficulty, and let
+                                spaced repetition help you remember.
+                            </p>
+                            <div class="flex gap-4 mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                                        <i class="fa-solid fa-hand-peace text-rose-500 text-sm"></i>
+                                    </div>
+                                    <span class="text-xs text-slate-600">Swipe to navigate</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                                        <i class="fa-solid fa-brain text-rose-500 text-sm"></i>
+                                    </div>
+                                    <span class="text-xs text-slate-600">Active recall</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                                        <i class="fa-solid fa-chart-line text-rose-500 text-sm"></i>
+                                    </div>
+                                    <span class="text-xs text-slate-600">Spaced repetition</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 md:p-8 group hover:shadow-xl transition-all duration-300">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-chart-simple text-cyan-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Progress Tracking</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Track your study streaks, quiz scores, and weak topics. See your improvement over time with
+                        detailed analytics.
+                    </p>
+                    <div class="flex gap-3 mt-4">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <i class="fa-solid fa-fire-flame-curved text-cyan-500 text-sm"></i>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-line text-cyan-500 text-sm"></i>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <i class="fa-solid fa-trophy text-cyan-500 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -687,13 +823,15 @@
                         </li>
                     </ul>
 
-                    <button onclick="handleUpgradeClick()"
+                    <!-- DYNAMIC BUTTON AND PRICE TEXT -->
+                    <button id="proTrialButton" onclick="handleUpgradeClick('monthly')"
                         class="upgrade-btn w-full bg-indigo-600 hover:bg-indigo-700 transition-all text-white py-3 rounded-xl font-semibold shadow-md shadow-indigo-500/20">
-                        Upgrade to Pro
+                        Start 3-Day Free Trial
                     </button>
 
-                    <p class="text-xs text-slate-500 mt-4 text-center">
-                        Cancel anytime. No long-term commitment.
+                    <p class="text-xs text-slate-500 mt-2 text-center">
+                        Then <span id="trialPriceValue">$8.99</span>/<span id="trialPeriodText">month</span> • Cancel
+                        anytime
                     </p>
 
                 </div>
@@ -1192,6 +1330,87 @@
                     });
             });
         }
+    </script>
+    <script>
+        // ============================================
+        // FETCH REAL STATS FROM DATABASE
+        // ============================================
+        async function fetchRealStats() {
+            try {
+                // Add cache-busting timestamp to prevent caching
+                const response = await fetch('/api/stats?_=' + Date.now());
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("📊 Stats received:", data);
+
+                if (data.success && data.stats) {
+                    // Update counter targets
+                    const studyGuidesEl = document.getElementById('statStudyGuides');
+                    const activeUsersEl = document.getElementById('statActiveUsers');
+                    const pagesCondensedEl = document.getElementById('statPagesCondensed');
+
+                    if (studyGuidesEl) {
+                        studyGuidesEl.setAttribute('data-target', data.stats.study_guides);
+                        studyGuidesEl.innerText = '0';
+                    }
+                    if (activeUsersEl) {
+                        activeUsersEl.setAttribute('data-target', data.stats.active_users);
+                        activeUsersEl.innerText = '0';
+                    }
+                    if (pagesCondensedEl) {
+                        pagesCondensedEl.setAttribute('data-target', data.stats.pages_condensed);
+                        pagesCondensedEl.innerText = '0';
+                    }
+
+                    // Animate counters
+                    const counters = document.querySelectorAll('.counter');
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.getAttribute('data-target'));
+                        if (isNaN(target) || target === 0) return;
+
+                        let current = 0;
+                        const duration = 2000; // 2 seconds
+                        const stepTime = 20; // milliseconds
+                        const steps = duration / stepTime;
+                        const increment = target / steps;
+
+                        const updateCount = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.innerText = Math.floor(current).toLocaleString();
+                                requestAnimationFrame(updateCount);
+                            } else {
+                                counter.innerText = target.toLocaleString();
+                            }
+                        };
+
+                        setTimeout(() => {
+                            updateCount();
+                        }, 100);
+                    });
+                } else {
+                    console.warn("No stats data received");
+                }
+            } catch (err) {
+                console.error("Failed to fetch stats:", err);
+                // Set fallback values
+                const studyGuidesEl = document.getElementById('statStudyGuides');
+                const activeUsersEl = document.getElementById('statActiveUsers');
+                const pagesCondensedEl = document.getElementById('statPagesCondensed');
+                if (studyGuidesEl) studyGuidesEl.innerText = '0';
+                if (activeUsersEl) activeUsersEl.innerText = '0';
+                if (pagesCondensedEl) pagesCondensedEl.innerText = '0';
+            }
+        }
+
+        // Call when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchRealStats();
+        });
     </script>
 </body>
 

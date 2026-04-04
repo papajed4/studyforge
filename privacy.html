@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - StudyForge AI | Student Data Protection & Security</title>
+    <title>Privacy Policy - StudyForge AI | Student Data Protection</title>
 
     <!-- SEO Meta Tags -->
     <meta name="description"
@@ -31,6 +31,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/privacy.html">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,13 +49,15 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        html {
-            scroll-behavior: smooth;
         }
 
         .container-custom {
@@ -90,8 +98,19 @@
             left: 0;
             color: #6366f1;
         }
+
+        /* Mobile touch targets */
+        button,
+        [onclick],
+        .cursor-pointer,
+        a {
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
+        }
     </style>
-        <script type="application/ld+json">
+
+    <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -111,13 +130,13 @@
       }
     }
     </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTT4Z32YH"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-KJTT4Z32YH');
     </script>
 </head>
@@ -130,18 +149,41 @@
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2 group">
                     <div
-                        class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
                         <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
                     </div>
                     <span class="text-xl font-bold text-slate-900">Study<span
                             class="text-indigo-600">Forge</span></span>
                 </a>
 
-                <div class="flex items-center gap-6">
-                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
-                    </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition">Home</a>
+                    <a href="/features.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Features</a>
+                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
+                    <a href="/about.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">About</a>
+                    <button onclick="handleDashboardClick()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
+                        Dashboard
+                    </button>
                 </div>
+
+                <button
+                    class="md:hidden text-slate-700 text-2xl w-12 h-12 flex items-center justify-center rounded-lg active:bg-slate-100"
+                    onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <a href="/" class="block text-slate-600 hover:text-indigo-600 py-2">Home</a>
+                <a href="/features.html" class="block text-slate-600 hover:text-indigo-600 py-2">Features</a>
+                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Pricing</a>
+                <a href="/about.html" class="block text-slate-600 hover:text-indigo-600 py-2">About</a>
+                <button onclick="handleDashboardClick()"
+                    class="block bg-indigo-600 text-white px-4 py-3 rounded-xl text-center font-semibold w-full cursor-pointer">
+                    Dashboard
+                </button>
             </div>
         </div>
     </nav>
@@ -160,8 +202,7 @@
             <p class="text-slate-500">
                 Last updated: <span class="font-medium">March 2026</span>
             </p>
-            <p class="text-sm text-slate-400 mt-2">Your privacy matters to us. This policy explains how StudyForge AI
-                protects your student data.</p>
+            <p class="text-sm text-slate-400 mt-2">Your privacy matters. This policy explains how StudyForge protects your data.</p>
         </div>
     </section>
 
@@ -174,17 +215,16 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-database text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">1. Information We Collect from Students</h2>
+                <h2 class="text-2xl font-bold text-slate-800">1. Information We Collect</h2>
             </div>
             <p class="text-slate-600 mb-4 leading-relaxed">
-                As an AI study tool, we collect information you provide directly to us when you create an account, use
-                our study guide generator, or contact us for support. This includes:
+                When you use StudyForge, we collect information you provide directly to us:
             </p>
             <ul class="custom-list text-slate-600 space-y-2 mb-4">
-                <li>Email address and account credentials for secure access to our AI study tool</li>
-                <li>Payment information (processed securely by Paystack and Flutterwave, PCI-DSS compliant)</li>
-                <li>Lecture notes, PDFs, and content you upload to our study guide generator</li>
-                <li>Usage data and preferences to improve your study experience</li>
+                <li>Email address and account credentials for secure access</li>
+                <li>Payment information (processed securely by Flutterwave, PCI-DSS compliant)</li>
+                <li>Lecture notes, PDFs, and content you upload</li>
+                <li>Usage data and preferences to improve your experience</li>
             </ul>
         </div>
 
@@ -194,17 +234,17 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-chart-simple text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">2. How We Use Your Student Data</h2>
+                <h2 class="text-2xl font-bold text-slate-800">2. How We Use Your Data</h2>
             </div>
             <p class="text-slate-600 mb-4 leading-relaxed">
-                We use the information we collect to provide and improve StudyForge's AI study features:
+                We use your information to provide and improve StudyForge's features:
             </p>
             <ul class="custom-list text-slate-600 space-y-2 mb-4">
-                <li>Provide and improve StudyForge's AI study guide generator and flashcard maker</li>
-                <li>Process your student subscriptions and payments securely</li>
-                <li>Communicate with you about your account and study progress</li>
-                <li>Analyze usage to enhance our AI study assistant features</li>
-                <li>Protect against unauthorized access to your study materials</li>
+                <li>Provide and improve our AI study guide generator</li>
+                <li>Process your subscriptions and payments securely</li>
+                <li>Communicate with you about your account and progress</li>
+                <li>Analyze usage to enhance our AI features</li>
+                <li>Protect against unauthorized access</li>
             </ul>
         </div>
 
@@ -214,20 +254,19 @@
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
                     <i class="fa-solid fa-lock text-emerald-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">3. Student Data Security</h2>
+                <h2 class="text-2xl font-bold text-slate-800">3. Data Security</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
                 We implement industry-standard security measures including 256-bit encryption, secure servers, and
                 regular security audits. Your payment information is never stored on our servers – it's processed
-                directly by Paystack and Flutterwave, PCI-DSS compliant payment processors trusted by thousands of
-                businesses.
+                directly by Flutterwave, a PCI-DSS compliant payment processor.
             </p>
-            <div class="mt-4 flex items-center gap-2 text-xs text-emerald-600">
+            <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-emerald-600">
                 <i class="fa-solid fa-circle-check"></i>
                 <span>PCI-DSS Compliant Payment Processing</span>
-                <span class="text-slate-300 mx-2">•</span>
+                <span class="text-slate-300 mx-2 hidden sm:inline">•</span>
                 <i class="fa-solid fa-shield"></i>
-                <span>256-bit Encryption for Your Study Data</span>
+                <span>256-bit Encryption for Your Data</span>
             </div>
         </div>
 
@@ -237,16 +276,16 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-cloud text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">4. Third-Party Services Used by StudyForge</h2>
+                <h2 class="text-2xl font-bold text-slate-800">4. Third-Party Services</h2>
             </div>
             <p class="text-slate-600 mb-4 leading-relaxed">
-                We use trusted third-party services to operate our AI study tool:
+                We use trusted third-party services to operate StudyForge:
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 <div class="bg-white rounded-xl p-4 border border-slate-100 text-center hover-card">
                     <i class="fa-solid fa-money-bill text-indigo-600 text-2xl mb-2 block"></i>
-                    <span class="text-sm font-medium text-slate-700">Paystack</span>
-                    <p class="text-xs text-slate-400 mt-1">Secure Payment Processing for Student Subscriptions</p>
+                    <span class="text-sm font-medium text-slate-700">Flutterwave</span>
+                    <p class="text-xs text-slate-400 mt-1">Secure Payment Processing</p>
                 </div>
                 <div class="bg-white rounded-xl p-4 border border-slate-100 text-center hover-card">
                     <i class="fa-solid fa-database text-indigo-600 text-2xl mb-2 block"></i>
@@ -267,23 +306,18 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-scale-balanced text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">5. Your Privacy Rights as a Student</h2>
+                <h2 class="text-2xl font-bold text-slate-800">5. Your Privacy Rights</h2>
             </div>
             <p class="text-slate-600 mb-4 leading-relaxed">
-                You have the right to access, correct, or delete your personal data from our AI study tool. Contact us
-                at <a href="mailto:privacy@studyforge.site"
-                    class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a> for assistance with your
-                student data.
+                You have the right to access, correct, or delete your personal data. Contact us at
+                <a href="mailto:privacy@studyforge.site" class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a>
+                for assistance.
             </p>
             <div class="flex flex-wrap gap-3 mt-4">
-                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i
-                        class="fa-regular fa-eye mr-1"></i> Access Your Study Data</span>
-                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i
-                        class="fa-regular fa-pen-to-square mr-1"></i> Correct Your Information</span>
-                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i
-                        class="fa-regular fa-trash-can mr-1"></i> Delete Your Account & Data</span>
-                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i
-                        class="fa-regular fa-download mr-1"></i> Export Your Study Materials</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-eye mr-1"></i> Access Your Data</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-pen-to-square mr-1"></i> Correct Information</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-trash-can mr-1"></i> Delete Account</span>
+                <span class="px-3 py-1.5 bg-slate-100 rounded-full text-xs text-slate-600"><i class="fa-regular fa-download mr-1"></i> Export Your Data</span>
             </div>
         </div>
 
@@ -293,22 +327,19 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-envelope text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">6. Contact Our Privacy Team</h2>
+                <h2 class="text-2xl font-bold text-slate-800">6. Contact Us</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                Questions about this Privacy Policy or how StudyForge protects your student data? Contact us at <a
-                    href="mailto:privacy@studyforge.site"
-                    class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a>
+                Questions about this Privacy Policy? Contact us at
+                <a href="mailto:privacy@studyforge.site" class="text-indigo-600 hover:text-indigo-700">privacy@studyforge.site</a>
             </p>
-            <p class="text-sm text-slate-500 mt-2">We typically respond within 24 hours to all privacy-related
-                inquiries.</p>
+            <p class="text-sm text-slate-500 mt-2">We typically respond within 24 hours.</p>
         </div>
 
         <!-- Last Updated Notice -->
         <div class="mt-12 pt-6 border-t border-slate-100 text-center">
             <p class="text-xs text-slate-400">
-                <i class="fa-regular fa-clock mr-1"></i> This privacy policy is effective as of March 2026. We may
-                update this policy from time to time to reflect changes in our AI study tool.
+                <i class="fa-regular fa-clock mr-1"></i> This privacy policy is effective as of March 2026.
             </p>
         </div>
     </div>
@@ -322,16 +353,65 @@
                     <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
                 </div>
                 <div class="flex gap-6">
-                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy
-                        Policy</a>
-                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms of
-                        Service</a>
-                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact
-                        Support</a>
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = "https://drkgygcoaisvjfppbuxx.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Handle dashboard click
+        async function handleDashboardClick() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
+            } else {
+                window.location.href = '/?auth=true';
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Make functions globally available
+        window.handleDashboardClick = handleDashboardClick;
+        window.toggleMobileMenu = toggleMobileMenu;
+
+        // Animate sections on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.mb-12, .bg-slate-50');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.5s ease';
+                observer.observe(section);
+            });
+        });
+    </script>
 </body>
 
 </html>

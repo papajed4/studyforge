@@ -31,6 +31,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/features.html">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,6 +48,9 @@
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -88,34 +97,45 @@
         .float-animation {
             animation: float 5s ease-in-out infinite;
         }
+
+        /* Mobile touch targets */
+        button,
+        [onclick],
+        .cursor-pointer,
+        a {
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
+        }
     </style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "StudyForge AI",
-  "description": "AI study tool with one-click study guide generation, handwriting OCR, smart flashcards, quiz generator, and exam prediction mode.",
-  "applicationCategory": "EducationalApplication",
-  "operatingSystem": "Web",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "100"
-  }
-}
-</script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "StudyForge AI",
+      "description": "AI study tool with one-click study guide generation, handwriting OCR, smart flashcards, quiz generator, and exam prediction mode.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "100"
+      }
+    }
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTT4Z32YH"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-KJTT4Z32YH');
     </script>
 </head>
@@ -137,12 +157,11 @@
 
                 <div class="hidden md:flex items-center gap-8">
                     <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition">Home</a>
-                    <a href="/features.html" class="text-sm font-medium text-indigo-600">AI Study Tool Features</a>
-                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Student
-                        Pricing</a>
+                    <a href="/features.html" class="text-sm font-medium text-indigo-600">Features</a>
+                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
                     <a href="/about.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">About</a>
                     <button onclick="handleDashboardClick()"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
                         Dashboard
                     </button>
                 </div>
@@ -157,11 +176,11 @@
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="hidden md:hidden mt-4 pt-4 border-t border-slate-100 space-y-3">
                 <a href="/" class="block text-slate-600 hover:text-indigo-600 py-2">Home</a>
-                <a href="/features.html" class="block text-indigo-600 font-medium py-2">AI Study Tool Features</a>
-                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Student Pricing</a>
+                <a href="/features.html" class="block text-indigo-600 font-medium py-2">Features</a>
+                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Pricing</a>
                 <a href="/about.html" class="block text-slate-600 hover:text-indigo-600 py-2">About</a>
                 <button onclick="handleDashboardClick()"
-                    class="block bg-indigo-600 text-white px-4 py-2 rounded-xl text-center font-semibold w-full cursor-pointer">
+                    class="block bg-indigo-600 text-white px-4 py-3 rounded-xl text-center font-semibold w-full cursor-pointer">
                     Dashboard
                 </button>
             </div>
@@ -181,16 +200,15 @@
         <div class="container-custom relative text-center max-w-4xl mx-auto">
             <div
                 class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
-                <i class="fa-solid fa-sparkle text-indigo-500 text-xs"></i>
-                <span class="text-xs font-semibold text-indigo-700">Powerful AI Study Tool Features</span>
+                <i class="fa-solid fa-bolt text-indigo-500 text-xs"></i>
+                <span class="text-xs font-semibold text-indigo-700">AI-Powered Study Tool</span>
             </div>
             <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-                Everything you need to <span class="text-indigo-600">ace your exams</span> with our AI study guide
-                generator
+                Everything you need to <span class="text-indigo-600">ace your exams</span>
             </h1>
             <p class="text-lg text-slate-500 max-w-2xl mx-auto">
-                One platform with all the study tools you need. No more jumping between apps. Our AI study assistant
-                does it all.
+                One-click study guide generation, smart flashcards, AI tutor chat, and detailed analytics.
+                All in one platform.
             </p>
         </div>
     </section>
@@ -199,10 +217,9 @@
     <section class="py-16">
         <div class="container-custom">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Study smarter with AI-powered study tools
-                </h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Powerful AI study features</h2>
                 <p class="text-slate-500 max-w-2xl mx-auto">Everything you need to transform messy notes into exam-ready
-                    knowledge with our AI study guide generator</p>
+                    knowledge</p>
             </div>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -213,9 +230,9 @@
                         class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition">
                         <i class="fa-solid fa-bolt text-indigo-600 text-xl group-hover:text-white transition"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">One-Click Study Guide Generation</h3>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">One-Click Study Guide</h3>
                     <p class="text-slate-500">No prompting required. Just paste your notes and get a complete study pack
-                        instantly with our AI study guide generator.</p>
+                        instantly.</p>
                 </div>
 
                 <!-- Feature 2: Smart Flashcards -->
@@ -223,11 +240,12 @@
                     class="feature-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
                     <div
                         class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition">
-                        <i class="fa-regular fa-cards text-indigo-600 text-xl group-hover:text-white transition"></i>
+                        <i
+                            class="fa-regular fa-rectangle-ad text-indigo-600 text-xl group-hover:text-white transition"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Smart Flashcards for Active Recall</h3>
-                    <p class="text-slate-500">Active recall flashcards that adapt to your learning pace. Flip, remember,
-                        master with our flashcard maker.</p>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Smart Flashcards</h3>
+                    <p class="text-slate-500">Active recall flashcards with spaced repetition. Flip, remember, master.
+                    </p>
                 </div>
 
                 <!-- Feature 3: Quiz Generator -->
@@ -239,8 +257,8 @@
                             class="fa-regular fa-question-circle text-indigo-600 text-xl group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-800 mb-2">AI Quiz Generator</h3>
-                    <p class="text-slate-500">Auto-generated practice questions that test your understanding. Get
-                        instant feedback and explanations from our quiz generator.</p>
+                    <p class="text-slate-500">Auto-generated practice questions with instant feedback and explanations.
+                    </p>
                 </div>
 
                 <!-- Feature 4: AI Tutor Chat -->
@@ -252,7 +270,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-800 mb-2">AI Tutor Chat</h3>
                     <p class="text-slate-500">Ask questions about your course material. Get instant, context-aware
-                        explanations from our AI tutor.</p>
+                        explanations 24/7.</p>
                 </div>
 
                 <!-- Feature 5: Exam Mode -->
@@ -260,11 +278,11 @@
                     class="feature-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
                     <div
                         class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition">
-                        <i class="fa-regular fa-eye text-indigo-600 text-xl group-hover:text-white transition"></i>
+                        <i
+                            class="fa-solid fa-pen-to-square text-indigo-600 text-xl group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-800 mb-2">Exam Prediction Mode</h3>
-                    <p class="text-slate-500">Practice with exam-style questions and predict likely test topics.
-                        Simulate the real exam environment with our exam mode.</p>
+                    <p class="text-slate-500">Practice with exam-style questions and predict likely test topics.</p>
                 </div>
 
                 <!-- Feature 6: Smart Library -->
@@ -276,7 +294,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-800 mb-2">Smart Study Library</h3>
                     <p class="text-slate-500">All your study guides organized with tags and subjects. Find anything
-                        instantly with our smart library system.</p>
+                        instantly.</p>
                 </div>
             </div>
         </div>
@@ -286,14 +304,13 @@
     <section class="py-16 bg-slate-50">
         <div class="container-custom">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Advanced AI study features for serious
-                    students
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Advanced features for serious students
                 </h2>
-                <p class="text-slate-500 max-w-2xl mx-auto">Go beyond basic study tools with powerful analytics,
-                    handwriting OCR, and study timer features</p>
+                <p class="text-slate-500 max-w-2xl mx-auto">Go beyond basic study tools with powerful analytics and
+                    study features</p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-12">
+            <div class="grid md:grid-cols-2 gap-8">
                 <!-- Analytics Card -->
                 <div class="bg-white rounded-2xl p-8 shadow-md border border-slate-100 hover:shadow-xl transition-all">
                     <div class="flex items-center gap-3 mb-4">
@@ -303,38 +320,86 @@
                         </div>
                         <h3 class="text-xl font-bold text-slate-800">Study Analytics Dashboard</h3>
                     </div>
-                    <p class="text-slate-500 mb-4">Track your progress across subjects with our study analytics.
-                        Identify weak topics and see your improvement over time.</p>
+                    <p class="text-slate-500 mb-4">Track your progress across subjects. Identify weak topics and see
+                        your improvement over time.</p>
                     <ul class="space-y-2 text-sm text-slate-600">
                         <li class="flex items-center gap-2"><i class="fa-regular fa-chart-line text-indigo-500"></i>
                             Subject performance breakdown</li>
-                        <li class="flex items-center gap-2"><i class="fa-regular fa-lightbulb text-indigo-500"></i> Weak
-                            topic identification</li>
-                        <li class="flex items-center gap-2"><i class="fa-regular fa-trophy text-indigo-500"></i> Mastery
-                            rate tracking</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-lightbulb text-indigo-500"></i>
+                            Weak topic identification</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-trophy text-indigo-500"></i>
+                            Mastery rate tracking</li>
                         <li class="flex items-center gap-2"><i class="fa-regular fa-clock text-indigo-500"></i> Study
-                            streak counter and time saved</li>
+                            streak counter</li>
                     </ul>
                 </div>
 
-                <!-- Handwriting OCR Card -->
+                <!-- Study Timer Card -->
                 <div class="bg-white rounded-2xl p-8 shadow-md border border-slate-100 hover:shadow-xl transition-all">
                     <div class="flex items-center gap-3 mb-4">
                         <div
                             class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-                            <i class="fa-regular fa-pen-to-square text-white text-xl"></i>
+                            <i class="fa-solid fa-hourglass-half text-white text-xl"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800">Handwriting OCR Technology</h3>
+                        <h3 class="text-xl font-bold text-slate-800">Pomodoro Study Timer</h3>
                     </div>
-                    <p class="text-slate-500 mb-4">Upload photos of your handwritten notes. Our AI handwriting OCR reads
-                        them and creates digital study guides automatically.</p>
+                    <p class="text-slate-500 mb-4">Stay focused with built-in Pomodoro timer. Track your study sessions
+                        and build consistency.</p>
                     <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-play text-indigo-500"></i> Focus
+                            timer with breaks</li>
+                        <li class="flex items-center gap-2"><i
+                                class="fa-solid fa-fire-flame-curved text-indigo-500"></i>
+                            Daily focus minutes tracking</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-chart-line text-indigo-500"></i>
+                            Study streak counter</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-headphones text-indigo-500"></i>
+                            Ambient sounds for focus</li>
+                    </ul>
+                </div>
+
+                <!-- File Upload Card -->
+                <div class="bg-white rounded-2xl p-8 shadow-md border border-slate-100 hover:shadow-xl transition-all">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                            <i class="fa-solid fa-cloud-upload-alt text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800">Multi-Format Upload</h3>
+                    </div>
+                    <p class="text-slate-500 mb-4">Upload any file type. Our AI extracts text and creates study
+                        materials automatically.</p>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-file-pdf text-indigo-500"></i> PDF,
+                            DOCX, PPTX support</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-image text-indigo-500"></i> JPG,
+                            PNG image OCR</li>
+                        <li class="flex items-center gap-2"><i class="fa-brands fa-youtube text-indigo-500"></i>
+                            YouTube transcript extraction</li>
                         <li class="flex items-center gap-2"><i class="fa-regular fa-language text-indigo-500"></i>
-                            Supports German, French, Spanish, English</li>
-                        <li class="flex items-center gap-2"><i class="fa-regular fa-image text-indigo-500"></i> Works
-                            with photos and scanned PDFs</li>
-                        <li class="flex items-center gap-2"><i class="fa-regular fa-cloud text-indigo-500"></i> No
-                            manual transcription needed</li>
+                            Multi-language OCR (German, French, Spanish)</li>
+                    </ul>
+                </div>
+
+                <!-- Progress Tracking Card -->
+                <div class="bg-white rounded-2xl p-8 shadow-md border border-slate-100 hover:shadow-xl transition-all">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-simple text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800">Progress Tracking</h3>
+                    </div>
+                    <p class="text-slate-500 mb-4">Visualize your learning journey with detailed progress metrics.</p>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-calendar-check text-indigo-500"></i>
+                            Weekly activity heatmap</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-clock text-indigo-500"></i> Hours
+                            saved counter</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-flag-checkered text-indigo-500"></i>
+                            Quiz performance tracking</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-star text-indigo-500"></i>
+                            Mastery rate per subject</li>
                     </ul>
                 </div>
             </div>
@@ -345,8 +410,8 @@
     <section class="py-16">
         <div class="container-custom">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How our AI study tool works</h2>
-                <p class="text-slate-500">Three simple steps to smarter studying with StudyForge</p>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How it works</h2>
+                <p class="text-slate-500">Three simple steps to smarter studying</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
@@ -355,102 +420,22 @@
                         <i class="fa-regular fa-upload text-indigo-600 text-2xl"></i>
                     </div>
                     <h3 class="text-lg font-bold text-slate-800 mb-2">1. Upload Your Notes</h3>
-                    <p class="text-sm text-slate-500">Paste notes, upload PDFs, or take a photo of handwritten notes.
-                        Our AI study tool accepts any format.</p>
+                    <p class="text-sm text-slate-500">Paste text, upload PDFs, or take a photo of handwritten notes.</p>
                 </div>
                 <div class="text-center">
                     <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-wand-magic text-indigo-600 text-2xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">2. AI Generates Study Materials</h3>
-                    <p class="text-sm text-slate-500">Our study guide generator creates summaries, flashcards, practice
-                        questions, and revision sheets instantly.</p>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">2. AI Generates Study Pack</h3>
+                    <p class="text-sm text-slate-500">Our AI creates summaries, flashcards, questions, and revision
+                        sheets.</p>
                 </div>
                 <div class="text-center">
                     <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-brain text-indigo-600 text-2xl"></i>
                     </div>
                     <h3 class="text-lg font-bold text-slate-800 mb-2">3. Master Your Subjects</h3>
-                    <p class="text-sm text-slate-500">Study with flashcards, take quizzes, and track your progress with
-                        detailed analytics.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Comparison Table -->
-    <section class="py-16 bg-slate-50">
-        <div class="container-custom">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Free vs Pro AI Study Tool Plans</h2>
-                <p class="text-slate-500">Everything you need. Plus more for serious students.</p>
-            </div>
-
-            <div class="max-w-3xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                    <div
-                        class="grid grid-cols-3 p-4 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
-                        <div>Study Tool Features</div>
-                        <div class="text-center">Free Plan</div>
-                        <div class="text-center text-indigo-600">Pro Student Subscription</div>
-                    </div>
-                    <div class="divide-y divide-slate-100">
-                        <div class="grid grid-cols-3 p-4">
-                            <div>AI study guide generations per day</div>
-                            <div class="text-center">5</div>
-                            <div class="text-center font-semibold text-indigo-600">Unlimited</div>
-                        </div>
-                        <div class="grid grid-cols-3 p-4">
-                            <div>Exam prediction mode</div>
-                            <div class="text-center">✓</div>
-                            <div class="text-center font-semibold text-indigo-600">Unlimited</div>
-                        </div>
-                        <div class="grid grid-cols-3 p-4">
-                            <div>AI tutor chat</div>
-                            <div class="text-center">✓</div>
-                            <div class="text-center font-semibold text-indigo-600">Unlimited</div>
-                        </div>
-                        <div class="grid grid-cols-3 p-4">
-                            <div>Priority processing for study materials</div>
-                            <div class="text-center">—</div>
-                            <div class="text-center font-semibold text-indigo-600">✓</div>
-                        </div>
-                        <div class="grid grid-cols-3 p-4">
-                            <div>Study analytics dashboard</div>
-                            <div class="text-center">Basic</div>
-                            <div class="text-center font-semibold text-indigo-600">Advanced with weak topic detection
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-3 p-4">
-                            <div>Handwriting OCR</div>
-                            <div class="text-center">✓</div>
-                            <div class="text-center font-semibold text-indigo-600">✓ (All languages)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="py-16">
-        <div class="container-custom">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div>
-                    <div class="text-3xl font-bold text-indigo-600">1,000+</div>
-                    <div class="text-sm text-slate-500">Study Guides Created</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-indigo-600">500+</div>
-                    <div class="text-sm text-slate-500">Active Students Using Our AI Study Tool</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-indigo-600">94%</div>
-                    <div class="text-sm text-slate-500">Report Better Grades</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-indigo-600">24/7</div>
-                    <div class="text-sm text-slate-500">AI Tutor Support</div>
+                    <p class="text-sm text-slate-500">Study with flashcards, take quizzes, and track your progress.</p>
                 </div>
             </div>
         </div>
@@ -459,9 +444,9 @@
     <!-- CTA Section -->
     <section class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div class="container-custom text-center text-white">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to study smarter with the best AI study tool?</h2>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to study smarter?</h2>
             <p class="text-indigo-100 mb-8 max-w-2xl mx-auto">Join thousands of students who are already acing their
-                exams with StudyForge AI study guide generator</p>
+                exams with StudyForge</p>
             <button onclick="handleDashboardClick()"
                 class="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold hover:shadow-lg transition-all cursor-pointer">
                 Start Free Today <i class="fa-solid fa-arrow-right"></i>
@@ -479,38 +464,62 @@
                     <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
                 </div>
                 <div class="flex gap-6">
-                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy
-                        Policy</a>
-                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms of
-                        Service</a>
-                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact AI
-                        Study Tool Support</a>
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-
         // Initialize Supabase client
         const supabaseUrl = "https://drkgygcoaisvjfppbuxx.supabase.co";
         const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
 
         // Handle dashboard clicks - check auth first
         async function handleDashboardClick() {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
-                window.location.href = '/dashboard.html';
+                // Smooth transition
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
             } else {
                 window.location.href = '/?auth=true';
             }
         }
+
+        // Animate feature cards on scroll
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.querySelectorAll('.feature-card');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.5s ease';
+                observer.observe(card);
+            });
+        });
     </script>
 </body>
 

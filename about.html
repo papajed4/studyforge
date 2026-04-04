@@ -31,6 +31,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/about.html">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,13 +49,27 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        html {
-            scroll-behavior: smooth;
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .container-custom {
+                padding: 0 2rem;
+            }
         }
 
         .gradient-text {
@@ -68,43 +88,42 @@
             box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.15);
         }
 
-        .container-custom {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .container-custom {
-                padding: 0 2rem;
-            }
+        /* Mobile touch targets */
+        button,
+        [onclick],
+        .cursor-pointer,
+        a {
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
         }
     </style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "AboutPage",
-  "name": "About StudyForge",
-  "description": "Learn about StudyForge AI, the AI study tool built to help students study smarter, not longer.",
-  "mainEntity": {
-    "@type": "Organization",
-    "name": "StudyForge AI",
-    "founder": {
-      "@type": "Person",
-      "name": "Jedidiah"
-    },
-    "foundingDate": "2026",
-    "areaServed": "Worldwide"
-  }
-}
-</script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "name": "About StudyForge",
+      "description": "Learn about StudyForge AI, the AI study tool built to help students study smarter, not longer.",
+      "mainEntity": {
+        "@type": "Organization",
+        "name": "StudyForge AI",
+        "founder": {
+          "@type": "Person",
+          "name": "Jedidiah"
+        },
+        "foundingDate": "2026",
+        "areaServed": "Worldwide"
+      }
+    }
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTT4Z32YH"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-KJTT4Z32YH');
     </script>
 </head>
@@ -117,18 +136,41 @@
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2 group">
                     <div
-                        class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
                         <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
                     </div>
                     <span class="text-xl font-bold text-slate-900">Study<span
                             class="text-indigo-600">Forge</span></span>
                 </a>
 
-                <div class="flex items-center gap-6">
-                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
-                    </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition">Home</a>
+                    <a href="/features.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Features</a>
+                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
+                    <a href="/about.html" class="text-sm font-medium text-indigo-600">About</a>
+                    <button onclick="handleDashboardClick()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
+                        Dashboard
+                    </button>
                 </div>
+
+                <button
+                    class="md:hidden text-slate-700 text-2xl w-12 h-12 flex items-center justify-center rounded-lg active:bg-slate-100"
+                    onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <a href="/" class="block text-slate-600 hover:text-indigo-600 py-2">Home</a>
+                <a href="/features.html" class="block text-slate-600 hover:text-indigo-600 py-2">Features</a>
+                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Pricing</a>
+                <a href="/about.html" class="block text-indigo-600 font-medium py-2">About</a>
+                <button onclick="handleDashboardClick()"
+                    class="block bg-indigo-600 text-white px-4 py-3 rounded-xl text-center font-semibold w-full cursor-pointer">
+                    Dashboard
+                </button>
             </div>
         </div>
     </nav>
@@ -139,11 +181,10 @@
             <div
                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
                 <i class="fa-solid fa-rocket text-indigo-500 text-xs"></i>
-                <span class="text-xs font-semibold text-indigo-700">The Story Behind StudyForge AI</span>
+                <span class="text-xs font-semibold text-indigo-700">The Story Behind StudyForge</span>
             </div>
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-                Building an AI study tool that helps students <span class="gradient-text">study smarter, not
-                    longer</span>
+                Building an AI study tool that helps students <span class="gradient-text">study smarter, not longer</span>
             </h1>
             <p class="text-lg text-slate-500 max-w-2xl mx-auto">
                 StudyForge was founded with a simple mission: turn overwhelming lecture materials into structured,
@@ -240,25 +281,22 @@
                 <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
                     <i class="fa-solid fa-graduation-cap text-indigo-500 text-xl mb-3"></i>
                     <h3 class="font-semibold text-slate-800 mb-2">Student-First</h3>
-                    <p class="text-sm text-slate-500">Every feature in our AI study tool is built with students' needs
-                        in mind</p>
+                    <p class="text-sm text-slate-500">Every feature is built with students' needs in mind</p>
                 </div>
                 <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
                     <i class="fa-solid fa-wand-magic text-indigo-500 text-xl mb-3"></i>
                     <h3 class="font-semibold text-slate-800 mb-2">Simplicity</h3>
-                    <p class="text-sm text-slate-500">No prompt engineering required – just paste your notes and go</p>
+                    <p class="text-sm text-slate-500">No prompt engineering – just paste your notes and go</p>
                 </div>
                 <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
                     <i class="fa-solid fa-universal-access text-indigo-500 text-xl mb-3"></i>
                     <h3 class="font-semibold text-slate-800 mb-2">Accessibility</h3>
-                    <p class="text-sm text-slate-500">Free tier available so every student can benefit from AI study
-                        tools</p>
+                    <p class="text-sm text-slate-500">Free tier so every student can benefit</p>
                 </div>
                 <div class="bg-white rounded-xl p-6 border border-slate-100 hover-card">
                     <i class="fa-solid fa-arrows-spin text-indigo-500 text-xl mb-3"></i>
                     <h3 class="font-semibold text-slate-800 mb-2">Continuous Improvement</h3>
-                    <p class="text-sm text-slate-500">We're always making StudyForge better based on student feedback
-                    </p>
+                    <p class="text-sm text-slate-500">Always improving based on student feedback</p>
                 </div>
             </div>
         </div>
@@ -281,7 +319,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-slate-800 mb-1">Jedidiah</h3>
-                        <p class="text-sm text-indigo-600 mb-4">Founder & Developer of StudyForge</p>
+                        <p class="text-sm text-indigo-600 mb-4">Founder & Developer</p>
                         <p class="text-slate-600 leading-relaxed">
                             Jedidiah is a self-taught developer and entrepreneur. He built StudyForge from scratch –
                             handling everything from frontend design to backend development, AI integration, and payment
@@ -306,10 +344,10 @@
                         class="inline-flex items-center justify-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition">
                         <i class="fa-regular fa-envelope"></i> Email Us
                     </a>
-                    <a href="/dashboard.html"
-                        class="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition">
+                    <button onclick="handleDashboardClick()"
+                        class="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer">
                         <i class="fa-solid fa-arrow-right"></i> Try StudyForge Free
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -324,16 +362,65 @@
                     <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
                 </div>
                 <div class="flex gap-6">
-                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy
-                        Policy</a>
-                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms of
-                        Service</a>
-                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact
-                        Us</a>
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = "https://drkgygcoaisvjfppbuxx.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Handle dashboard click
+        async function handleDashboardClick() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
+            } else {
+                window.location.href = '/?auth=true';
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Make functions globally available
+        window.handleDashboardClick = handleDashboardClick;
+        window.toggleMobileMenu = toggleMobileMenu;
+
+        // Animate sections on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.py-16, .py-12, .bg-slate-50');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.5s ease';
+                observer.observe(section);
+            });
+        });
+    </script>
 </body>
 
 </html>

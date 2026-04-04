@@ -1427,12 +1427,10 @@ function initTouchSwipe() {
     const flashcard = document.getElementById('flashcard');
     if (!flashcard) return;
 
-    // Remove existing listeners to avoid duplicates
     flashcard.removeEventListener('touchstart', handleTouchStart);
     flashcard.removeEventListener('touchmove', handleTouchMove);
     flashcard.removeEventListener('touchend', handleTouchEnd);
 
-    // Add new listeners
     flashcard.addEventListener('touchstart', handleTouchStart);
     flashcard.addEventListener('touchmove', handleTouchMove);
     flashcard.addEventListener('touchend', handleTouchEnd);
@@ -1449,7 +1447,6 @@ function handleTouchMove(e) {
     touchEndX = e.changedTouches[0].screenX;
     touchEndY = e.changedTouches[0].screenY;
 
-    // Prevent page scroll while swiping on flashcard
     const deltaX = Math.abs(touchEndX - touchStartX);
     const deltaY = Math.abs(touchEndY - touchStartY);
     if (deltaX > deltaY && deltaX > 20) {
@@ -1464,33 +1461,28 @@ function handleTouchEnd(e) {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
 
-    // Only trigger if horizontal swipe (ignore diagonal)
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
         if (deltaX > 0) {
-            // Swipe right → previous card
             previousCard();
-            showToastIfNeeded('⬅️ Swiped to previous', 'success');
+            const swipeToastShown = localStorage.getItem('swipeToastShown');
+            if (!swipeToastShown) {
+                if (window.showToast) window.showToast('⬅️ Swiped to previous', 'success');
+                localStorage.setItem('swipeToastShown', 'true');
+            }
         } else {
-            // Swipe left → next card
             nextCard();
-            showToastIfNeeded('➡️ Swiped to next', 'success');
+            const swipeToastShown = localStorage.getItem('swipeToastShown');
+            if (!swipeToastShown) {
+                if (window.showToast) window.showToast('➡️ Swiped to next', 'success');
+                localStorage.setItem('swipeToastShown', 'true');
+            }
         }
     }
 
-    // Reset values
     touchStartX = 0;
     touchEndX = 0;
     touchStartY = 0;
     touchEndY = 0;
-}
-
-function showToastIfNeeded(msg, type) {
-    // Only show toast on first swipe to not annoy user
-    const swipeToastShown = localStorage.getItem('swipeToastShown');
-    if (!swipeToastShown) {
-        if (window.showToast) window.showToast(msg, type);
-        localStorage.setItem('swipeToastShown', 'true');
-    }
 }
 
 window.flipCard = function () {
@@ -1809,7 +1801,6 @@ function showUploadModal(fileType, fileSize) {
 
     if (progressBar) progressBar.style.width = '0%';
 
-    // Customize based on file type
     if (fileType === 'pdf') {
         title.innerHTML = '<i class="fa-regular fa-file-pdf mr-2"></i> Reading your PDF...';
         message.innerHTML = 'This may take 1-3 minutes depending on file size and your connection.';
@@ -1828,7 +1819,6 @@ function showUploadModal(fileType, fileSize) {
         tip.innerHTML = 'For fastest results, paste text directly into the text area.';
     }
 
-    // Add file size warning if large
     if (fileSize) {
         const sizeMB = (fileSize / 1024 / 1024).toFixed(1);
         if (sizeMB > 5) {
@@ -1838,11 +1828,10 @@ function showUploadModal(fileType, fileSize) {
         }
     }
 
-    // Animate progress bar (slow, steady)
     let progress = 0;
     const progressInterval = setInterval(() => {
         progress += Math.random() * 8;
-        if (progress > 85) progress = 85; // Never reach 100 until actually done
+        if (progress > 85) progress = 85;
         if (progressBar) progressBar.style.width = progress + '%';
     }, 2000);
 
@@ -1881,7 +1870,6 @@ function hideUploadModal(success = true) {
         }
     }
 
-    // Reset progress bar
     const progressBar = document.getElementById('uploadProgressBar');
     if (progressBar) progressBar.style.width = '0%';
 }
@@ -1932,43 +1920,32 @@ function initFileUpload() {
                 return;
             }
 
-            // Detect file type
             let fileType = 'file';
             const fileName = file.name.toLowerCase();
             if (fileName.endsWith('.pdf')) fileType = 'pdf';
             else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) fileType = 'image';
             else if (fileName.endsWith('.docx')) fileType = 'docx';
 
-            // Show fancy modal with file type info
             showUploadModal(fileType, file.size);
 
-            // Simulate progress animation (slow and steady for better UX)
             progressInterval = setInterval(() => {
-                updateUploadProgress(Math.random() * 15 + 35); // Stays between 35-50%
+                updateUploadProgress(Math.random() * 15 + 35);
             }, 2000);
 
-            // Make the upload request — NO client-side timeout!
             const response = await fetch('/api/upload-file', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
-            // Clear intervals
             clearInterval(progressInterval);
-
-            // Update progress to 100% before hiding
             updateUploadProgress(100);
-
-            // Small delay to show completion
             await new Promise(resolve => setTimeout(resolve, 300));
 
             const data = await response.json();
 
             if (data.success && data.text) {
-                // Hide modal with success
                 hideUploadModal(true);
-
                 document.getElementById('courseInput').value = data.text;
                 if (data.language) {
                     currentDetectedLanguage = data.language;
@@ -1984,11 +1961,8 @@ function initFileUpload() {
         } catch (err) {
             clearInterval(progressInterval);
             console.error(err);
-
-            // Hide modal with error
             hideUploadModal(false);
 
-            // Better error messages for different scenarios
             if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
                 if (window.showToast) window.showToast("Network error. Check your connection and try again.", "error");
             } else if (err.message.includes('413') || err.message.includes('too large')) {
@@ -2209,6 +2183,346 @@ document.addEventListener('click', function (e) {
         if (modal && !modal.contains(e.target)) closeProOverlay();
     }
 });
+
+// ============================================
+// ONBOARDING FUNCTIONS (Step by Step)
+// ============================================
+let selectedStudyLevel = null;
+let selectedStudyGoal = null;
+
+function showOnboardingModal() {
+    const modal = document.getElementById('onboardingModal');
+    if (!modal) return;
+
+    document.getElementById('onboardingStep1').classList.remove('hidden');
+    document.getElementById('onboardingStep2').classList.add('hidden');
+    document.getElementById('onboardingStep3').classList.add('hidden');
+    document.getElementById('onboardingStep4').classList.add('hidden');
+    selectedStudyLevel = null;
+    selectedStudyGoal = null;
+
+    const levelBtn = document.getElementById('studyLevelContinueBtn');
+    const goalBtn = document.getElementById('studyGoalContinueBtn');
+    if (levelBtn) {
+        levelBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        levelBtn.disabled = true;
+    }
+    if (goalBtn) {
+        goalBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        goalBtn.disabled = true;
+    }
+
+    modal.classList.remove('hidden');
+    if (window.gsap) {
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        gsap.fromTo(modal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 });
+    }
+}
+
+function nextOnboardingStep() {
+    document.getElementById('onboardingStep1').classList.add('hidden');
+    document.getElementById('onboardingStep2').classList.remove('hidden');
+}
+
+function goToNextQuestion() {
+    if (!selectedStudyLevel) return;
+    document.getElementById('onboardingStep2').classList.add('hidden');
+    document.getElementById('onboardingStep3').classList.remove('hidden');
+}
+
+function selectStudyLevel(level) {
+    selectedStudyLevel = level;
+
+    document.querySelectorAll('.study-level-option').forEach(btn => {
+        btn.classList.remove('border-indigo-500', 'bg-indigo-50');
+        btn.classList.add('border-slate-200');
+    });
+    event.target.classList.remove('border-slate-200');
+    event.target.classList.add('border-indigo-500', 'bg-indigo-50');
+
+    const btn = document.getElementById('studyLevelContinueBtn');
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    btn.disabled = false;
+}
+
+function selectStudyGoal(goal) {
+    selectedStudyGoal = goal;
+
+    document.querySelectorAll('.study-goal-option').forEach(btn => {
+        btn.classList.remove('border-indigo-500', 'bg-indigo-50');
+        btn.classList.add('border-slate-200');
+    });
+    event.target.classList.remove('border-slate-200');
+    event.target.classList.add('border-indigo-500', 'bg-indigo-50');
+
+    const btn = document.getElementById('studyGoalContinueBtn');
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    btn.disabled = false;
+}
+
+async function completeOnboarding() {
+    if (!selectedStudyLevel || !selectedStudyGoal) return;
+
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/complete-onboarding', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                study_level: selectedStudyLevel,
+                study_goal: selectedStudyGoal
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('onboardingStep3').classList.add('hidden');
+            document.getElementById('onboardingStep4').classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("Onboarding completion error:", err);
+    }
+}
+
+function closeOnboardingModal() {
+    const modal = document.getElementById('onboardingModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    setTimeout(() => showTrialModal(), 500);
+}
+
+async function checkOnboarding() {
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/account', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        console.log("Account check:", data);
+
+        // Only show trial modal if:
+        // 1. User is on free plan
+        // 2. User has NOT used a trial before
+        // 3. User is not already Pro
+        if (data.plan === 'free' && !data.trial_used) {
+            setTimeout(() => {
+                showTrialModal();
+            }, 1000);
+        }
+    } catch (err) {
+        console.error("Check error:", err);
+    }
+}
+
+// ============================================
+// TRIAL FUNCTIONS (FIXED - WITH FREE AND PAID OPTIONS)
+// ============================================
+
+// Show the trial selection modal
+window.showTrialModal = async function () {
+    const modal = document.getElementById('trialModal');
+    if (!modal) return;
+
+    // Get localized pricing for display
+    try {
+        let userCountry = localStorage.getItem('userCountry') || 'US';
+        const response = await fetch('/api/pricing-local?country=' + userCountry);
+        const pricing = await response.json();
+
+        const monthlyPriceEl = document.getElementById('monthlyPriceDisplay');
+        const yearlyPriceEl = document.getElementById('yearlyPriceDisplay');
+
+        if (monthlyPriceEl) {
+            monthlyPriceEl.innerText = pricing.monthly_display || '$8.99';
+        }
+        if (yearlyPriceEl) {
+            yearlyPriceEl.innerText = pricing.yearly_display || '$86.30';
+        }
+    } catch (err) {
+        console.error("Failed to load pricing:", err);
+        const monthlyPriceEl = document.getElementById('monthlyPriceDisplay');
+        const yearlyPriceEl = document.getElementById('yearlyPriceDisplay');
+        if (monthlyPriceEl) monthlyPriceEl.innerText = '$8.99';
+        if (yearlyPriceEl) yearlyPriceEl.innerText = '$86.30';
+    }
+
+    modal.classList.remove('hidden');
+    if (window.gsap) {
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        gsap.fromTo(modal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 });
+    }
+};
+
+// Close trial modal
+window.closeTrialModal = function () {
+    const modal = document.getElementById('trialModal');
+    if (modal) {
+        if (window.gsap) {
+            gsap.to(modal.firstElementChild, { scale: 0.95, opacity: 0, duration: 0.2, onComplete: () => modal.classList.add('hidden') });
+            gsap.to(modal, { opacity: 0, duration: 0.2 });
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+};
+
+// START FREE TRIAL (No card required)
+window.startFreeTrial = async function () {
+    const token = await window.getAuthToken?.();
+    if (!token) {
+        window.showToast?.("Please sign in first", "error");
+        return;
+    }
+
+    window.closeTrialModal();
+    window.showToast?.("Starting your free trial...", "success");
+
+    try {
+        const response = await fetch('/api/start-free-trial', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ trial_type: 'free' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            window.showToast?.(`🎉 Free trial activated! You have ${data.trial_days} days of Pro features!`, "success");
+
+            // Update UI to show Pro status
+            if (window.loadAccountInfo) window.loadAccountInfo();
+            if (window.loadUsage) window.loadUsage();
+
+            // Reload the page to show Pro features
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            window.showToast?.(data.error || "Failed to start trial", "error");
+        }
+    } catch (err) {
+        console.error("Free trial error:", err);
+        window.showToast?.("Error starting trial. Please try again.", "error");
+    }
+};
+
+// START PAID TRIAL (With card authorization)
+window.startPaidTrial = async function (planType) {
+    const token = await window.getAuthToken?.();
+    if (!token) {
+        window.showToast?.("Please sign in first", "error");
+        return;
+    }
+
+    const userCountry = localStorage.getItem('userCountry') || 'US';
+
+    window.closeTrialModal();
+
+    // Show loading modal
+    if (window.showBillingModal) {
+        window.showBillingModal('loading', 'Starting your trial', 'Redirecting to payment authorization...');
+    }
+
+    try {
+        const response = await fetch('/api/initialize-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                country: userCountry,
+                billingMode: planType
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store trial info
+            localStorage.setItem('pendingTrial', JSON.stringify({
+                type: planType,
+                trialDays: planType === 'monthly' ? 3 : 7,
+                processor: data.processor
+            }));
+
+            window.showToast?.("Redirecting to complete authorization...", "success");
+            setTimeout(() => {
+                window.location.href = data.authorization_url;
+            }, 1500);
+        } else {
+            if (window.closeBillingModal) window.closeBillingModal();
+            window.showToast?.(data.error || "Failed to start trial. Please try again.", "error");
+        }
+    } catch (err) {
+        if (window.closeBillingModal) window.closeBillingModal();
+        console.error("Paid trial error:", err);
+        window.showToast?.("Error starting trial. Please try again.", "error");
+    }
+};
+
+// Skip trial (stay on free plan)
+window.skipTrial = function () {
+    window.closeTrialModal();
+    window.showToast?.("You can upgrade anytime from the pricing page!", "success");
+};
+
+// Handle trial selection from modal buttons
+window.handleTrialSelect = function (planType) {
+    if (planType === 'free') {
+        window.startFreeTrial();
+    } else if (planType === 'monthly') {
+        window.startPaidTrial('monthly');
+    } else if (planType === 'yearly') {
+        window.startPaidTrial('yearly');
+    }
+};
+
+// Load trial banner if user has active trial
+async function loadTrialBanner() {
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/account', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.trial_active && data.trial_days_left > 0) {
+            const banner = document.getElementById('trialBanner');
+            const daysLeftSpan = document.getElementById('trialDaysLeft');
+            if (banner && daysLeftSpan) {
+                daysLeftSpan.innerText = data.trial_days_left;
+                banner.classList.remove('hidden');
+            }
+        }
+    } catch (err) {
+        console.error("Trial banner error:", err);
+    }
+}
+
+function cancelTrial() {
+    if (confirm("Are you sure you want to cancel your trial? You'll lose Pro access immediately.")) {
+        window.showToast?.("Cancelling trial...", "success");
+    }
+}
+
+function upgradeNow() {
+    window.showTrialModal();
+}
 
 // ============================================
 // KEYBOARD SHORTCUTS
@@ -2578,6 +2892,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Session verified, dashboard ready");
                 if (typeof loadWelcomeName === 'function') loadWelcomeName();
                 if (typeof loadProgressStats === 'function') loadProgressStats();
+                loadTrialBanner();
             }
         } catch (err) {
             console.error("Auth error:", err);
@@ -2597,6 +2912,11 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(addShortcutHint, 1000);
 
     initTimer();
+
+    // Show trial modal after a delay (only for free users who haven't used trial)
+    setTimeout(() => {
+        checkOnboarding();
+    }, 1500);
 });
 
 // Add page load transition
@@ -3127,5 +3447,94 @@ function initTimer() {
         Notification.requestPermission();
     }
 }
+
+// ============================================
+// BILLING RESULT MODAL FUNCTIONS
+// ============================================
+
+window.showBillingModal = function (type, title, message) {
+    const modal = document.getElementById('billingResultModal');
+    const successIcon = document.getElementById('billingSuccessIcon');
+    const errorIcon = document.getElementById('billingErrorIcon');
+    const loadingIcon = document.getElementById('billingLoadingIcon');
+    const titleEl = document.getElementById('billingModalTitle');
+    const messageEl = document.getElementById('billingModalMessage');
+    const button = document.getElementById('billingModalButton');
+
+    if (!modal) return;
+
+    // Reset all icons
+    successIcon.classList.add('hidden');
+    errorIcon.classList.add('hidden');
+    loadingIcon.classList.add('hidden');
+    button.classList.add('hidden');
+
+    if (type === 'success') {
+        successIcon.classList.remove('hidden');
+        titleEl.textContent = title || 'Payment Successful! 🎉';
+        messageEl.textContent = message || 'Your payment has been processed successfully. You now have full access to Pro features!';
+        button.classList.remove('hidden');
+    } else if (type === 'error') {
+        errorIcon.classList.remove('hidden');
+        titleEl.textContent = title || 'Payment Failed';
+        messageEl.textContent = message || 'Your billing could not be processed. You have been downgraded to the Free plan. Please update your payment method.';
+        button.classList.remove('hidden');
+    } else if (type === 'loading') {
+        loadingIcon.classList.remove('hidden');
+        titleEl.textContent = title || 'Processing Your Payment';
+        messageEl.textContent = message || 'Please wait while we confirm your subscription...';
+        button.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+
+    if (window.gsap) {
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        gsap.fromTo(modal.firstElementChild, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 });
+    }
+};
+
+window.closeBillingModal = function () {
+    const modal = document.getElementById('billingResultModal');
+    if (modal) {
+        if (window.gsap) {
+            gsap.to(modal.firstElementChild, { scale: 0.95, opacity: 0, duration: 0.2, onComplete: () => modal.classList.add('hidden') });
+            gsap.to(modal, { opacity: 0, duration: 0.2 });
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+};
+
+async function checkBillingStatus() {
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    // Check if we already showed a modal in this session
+    if (sessionStorage.getItem('billingModalShown')) return;
+
+    try {
+        const response = await fetch('/api/check-billing-status', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.show_success_modal) {
+            sessionStorage.setItem('billingModalShown', 'true');
+            window.showBillingModal('success', 'Welcome to Pro! 🎉', 'Your subscription is now active. Enjoy unlimited study guides, flashcards, and exam mode!');
+        } else if (data.show_failure_modal) {
+            sessionStorage.setItem('billingModalShown', 'true');
+            window.showBillingModal('error', 'Billing Failed', 'We couldn\'t process your payment. You\'ve been downgraded to the Free plan. Please update your payment method to continue enjoying Pro features.');
+        }
+    } catch (err) {
+        console.error("Billing status check error:", err);
+    }
+}
+
+
+// Call this after dashboard loads
+setTimeout(() => {
+    checkBillingStatus();
+}, 2000);
 
 console.log("✅ Dashboard JS fully loaded with all features!");

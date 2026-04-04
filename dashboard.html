@@ -8,13 +8,17 @@
     <!-- IMPORTANT: Add viewport meta for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 
-        <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="StudyForge">
     <link rel="apple-touch-icon" href="/icons/512.png">
-    
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -200,6 +204,31 @@
                         class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full transition font-medium">
                         Upgrade to Pro →
                     </button>
+                </div>
+            </div>
+            <!-- Trial Banner (Visible & Styled) -->
+            <div id="trialBanner"
+                class="hidden bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 mb-6 shadow-lg border border-amber-200">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fa-regular fa-gem text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-bold text-lg">🎉 Your <span id="trialDaysLeft">0</span>-day free
+                                trial is active!</p>
+                            <p class="text-white/90 text-sm">You're enjoying Pro features. Auto-bills after trial ends.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="cancelTrial()"
+                            class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-all">Cancel
+                            Trial</button>
+                        <button onclick="upgradeNow()"
+                            class="px-4 py-2 bg-white text-amber-600 rounded-lg text-sm font-semibold transition-all hover:shadow-md">Upgrade
+                            Now</button>
+                    </div>
                 </div>
             </div>
 
@@ -1339,6 +1368,242 @@
             <p class="text-xs text-slate-400 mt-4">Cancel anytime • No long-term commitment</p>
         </div>
     </div>
+
+
+    <!-- ============================================ -->
+    <!-- ONBOARDING MODAL (Shows once after signup) -->
+    <!-- ============================================ -->
+    <div id="onboardingModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[400] hidden transition-all duration-300">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+
+            <!-- Step 1: Welcome -->
+            <div id="onboardingStep1" class="text-center">
+                <div
+                    class="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                    <i class="fa-solid fa-rocket text-white text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Welcome to StudyForge!</h2>
+                <p class="text-slate-500 mb-6">Let's personalize your experience</p>
+                <button onclick="nextOnboardingStep()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-semibold transition-all">
+                    Get Started →
+                </button>
+            </div>
+
+            <!-- Step 2: What are you studying? -->
+            <div id="onboardingStep2" class="hidden">
+                <h2 class="text-xl font-bold text-slate-900 mb-2">What are you studying?</h2>
+                <p class="text-slate-500 text-sm mb-6">Select the option that best describes you</p>
+
+                <div class="space-y-3 mb-8">
+                    <button onclick="selectStudyLevel('highschool')"
+                        class="study-level-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-school text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">High School</div>
+                            <div class="text-xs text-slate-400">Preparing for exams and college</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyLevel('college')"
+                        class="study-level-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-building-columns text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">College / University</div>
+                            <div class="text-xs text-slate-400">Undergraduate or graduate student</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyLevel('professional')"
+                        class="study-level-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-briefcase text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Professional</div>
+                            <div class="text-xs text-slate-400">Certifications and career development</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyLevel('other')"
+                        class="study-level-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-graduation-cap text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Other</div>
+                            <div class="text-xs text-slate-400">Self-learning, hobby, or personal growth</div>
+                        </div>
+                    </button>
+                </div>
+
+                <button onclick="goToNextQuestion()" id="studyLevelContinueBtn"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold opacity-50 cursor-not-allowed transition-all"
+                    disabled>
+                    Continue →
+                </button>
+            </div>
+
+            <!-- Step 3: What's your main goal? -->
+            <div id="onboardingStep3" class="hidden">
+                <h2 class="text-xl font-bold text-slate-900 mb-2">What's your main goal?</h2>
+                <p class="text-slate-500 text-sm mb-6">Help us tailor your experience</p>
+
+                <div class="space-y-3 mb-8">
+                    <button onclick="selectStudyGoal('exam')"
+                        class="study-goal-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-file-lines text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Ace my exams</div>
+                            <div class="text-xs text-slate-400">Get top grades and crush test day</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyGoal('understanding')"
+                        class="study-goal-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-lightbulb text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Deep understanding</div>
+                            <div class="text-xs text-slate-400">Master concepts, not just memorize</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyGoal('grades')"
+                        class="study-goal-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-line text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Improve my grades</div>
+                            <div class="text-xs text-slate-400">Raise my GPA and performance</div>
+                        </div>
+                    </button>
+
+                    <button onclick="selectStudyGoal('time')"
+                        class="study-goal-option w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-left hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <i class="fa-solid fa-clock text-indigo-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-900">Save study time</div>
+                            <div class="text-xs text-slate-400">Study smarter, not longer</div>
+                        </div>
+                    </button>
+                </div>
+
+                <button onclick="completeOnboarding()" id="studyGoalContinueBtn"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold opacity-50 cursor-not-allowed transition-all"
+                    disabled>
+                    Continue →
+                </button>
+            </div>
+
+            <!-- Step 4: Confirmation -->
+            <div id="onboardingStep4" class="hidden text-center">
+                <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-check-circle text-green-600 text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">StudyForge is the right tool for you!</h2>
+                <p class="text-slate-500 mb-8">You're ready to start forging your study materials.</p>
+                <button onclick="closeOnboardingModal()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-semibold transition-all">
+                    Start Exploring
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+<!-- ============================================ -->
+<!-- TRIAL MODAL - FREE ONLY (NO PAYMENT) -->
+<!-- ============================================ -->
+<div id="trialModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[400] hidden transition-all duration-300">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95">
+        
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 mx-auto bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
+                <i class="fa-regular fa-gem text-white text-xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">Start Your Free Trial</h2>
+            <p class="text-xs text-slate-400 mt-1">3 days of Pro - No credit card needed</p>
+        </div>
+
+        <div class="bg-indigo-50 rounded-xl p-4 mb-5">
+            <p class="text-sm font-semibold text-indigo-800 mb-2">✨ You get:</p>
+            <ul class="space-y-2 text-sm text-slate-600">
+                <li class="flex items-center gap-2"><i class="fa-regular fa-infinity text-indigo-500"></i> Unlimited AI generations</li>
+                <li class="flex items-center gap-2"><i class="fa-regular fa-star text-indigo-500"></i> Unlimited exam mode</li>
+                <li class="flex items-center gap-2"><i class="fa-regular fa-message text-indigo-500"></i> Unlimited AI chat</li>
+            </ul>
+        </div>
+
+        <button onclick="startFreeTrial()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all">
+            Start 3-Day Free Trial
+        </button>
+
+        <div class="relative my-4">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+                <span class="px-2 bg-white text-slate-400">OR</span>
+            </div>
+        </div>
+
+        <button onclick="closeTrialModal()" class="w-full text-center text-slate-500 hover:text-slate-700 text-sm py-2 transition-colors">
+            No thanks, continue with Free plan
+        </button>
+    </div>
+</div>
+
+    <!-- ============================================ -->
+    <!-- BILLING RESULT MODAL (Success/Failure) -->
+    <!-- ============================================ -->
+    <div id="billingResultModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[500] hidden transition-all duration-300">
+        <div
+            class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center transform transition-all duration-300 scale-95 shadow-2xl">
+
+            <!-- Success Icon -->
+            <div id="billingSuccessIcon"
+                class="hidden w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-check-circle text-green-600 text-4xl"></i>
+            </div>
+
+            <!-- Error Icon -->
+            <div id="billingErrorIcon"
+                class="hidden w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-xmark-circle text-red-600 text-4xl"></i>
+            </div>
+
+            <!-- Loading Icon -->
+            <div id="billingLoadingIcon"
+                class="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-circle-notch fa-spin text-indigo-600 text-4xl"></i>
+            </div>
+
+            <h3 id="billingModalTitle" class="text-2xl font-bold text-slate-900 mb-3">Processing Your Payment</h3>
+
+            <p id="billingModalMessage" class="text-slate-500 mb-8 leading-relaxed">
+                Please wait while we confirm your subscription...
+            </p>
+
+            <button id="billingModalButton" onclick="closeBillingModal()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-semibold transition-all hidden">
+                Continue to Dashboard
+            </button>
+        </div>
+    </div>
+
     <!-- ============================================ -->
     <!-- UPLOAD PROGRESS MODAL (FANCY) -->
     <!-- ============================================ -->

@@ -29,22 +29,10 @@ const euroCountries = [
 const euroPricing = { symbol: "€", monthly: 8 };
 
 // ============================================
-// COUNTRY DETECTION - Test mode commented out
+// COUNTRY DETECTION
 // ============================================
 
 async function detectCountry() {
-
-    // // ===== TEST MODE - Comment out for production =====
-    // // Force different countries to test pricing
-    // const testCountry = localStorage.getItem('testCountry');
-    // if (testCountry) {
-    //     userCountry = testCountry;
-    //     console.log(`🧪 TEST MODE: Using forced country ${userCountry}`);
-    //     updatePricingUI();
-    //     updateModalPricing();
-    //     return;
-    // }
-
     console.log("🔍 Detecting country...");
 
     // Check localStorage first
@@ -66,12 +54,11 @@ async function detectCountry() {
     // Try to detect country using multiple methods
     let detectedCountry = null;
 
-    // Method 1: Check timezone for all countries
+    // Method 1: Check timezone
     try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         console.log("🕐 Timezone:", timezone);
 
-        // Map timezones to country codes
         if (timezone.includes('Lagos') || timezone.includes('Africa')) {
             detectedCountry = 'NG';
         } else if (timezone.includes('New_York') || timezone.includes('Chicago') || timezone.includes('Los_Angeles') || timezone.includes('Denver')) {
@@ -94,25 +81,16 @@ async function detectCountry() {
             detectedCountry = 'AU';
         } else if (timezone.includes('Tokyo')) {
             detectedCountry = 'JP';
-        } else if (timezone.includes('Seoul')) {
-            detectedCountry = 'KR';
-        } else if (timezone.includes('Shanghai') || timezone.includes('Beijing')) {
-            detectedCountry = 'CN';
-        } else if (timezone.includes('Moscow')) {
-            detectedCountry = 'RU';
-        } else if (timezone.includes('Sao_Paulo') || timezone.includes('Rio')) {
-            detectedCountry = 'BR';
         } else if (timezone.includes('Mumbai') || timezone.includes('Kolkata')) {
             detectedCountry = 'IN';
         }
     } catch (e) { }
 
-    // Method 2: Check language for all countries
+    // Method 2: Check language
     if (!detectedCountry) {
         const lang = navigator.language || '';
         console.log("🌐 Language:", lang);
 
-        // Map languages to country codes
         if (lang.includes('NG') || lang.includes('en-NG')) {
             detectedCountry = 'NG';
         } else if (lang.includes('US') || lang.includes('en-US')) {
@@ -135,29 +113,8 @@ async function detectCountry() {
             detectedCountry = 'AU';
         } else if (lang.includes('JP') || lang.includes('ja-JP')) {
             detectedCountry = 'JP';
-        } else if (lang.includes('KR') || lang.includes('ko-KR')) {
-            detectedCountry = 'KR';
-        } else if (lang.includes('CN') || lang.includes('zh-CN')) {
-            detectedCountry = 'CN';
-        } else if (lang.includes('RU') || lang.includes('ru-RU')) {
-            detectedCountry = 'RU';
-        } else if (lang.includes('BR') || lang.includes('pt-BR')) {
-            detectedCountry = 'BR';
         } else if (lang.includes('IN') || lang.includes('hi-IN')) {
             detectedCountry = 'IN';
-        }
-    }
-
-    // Method 3: Allow user to select if we're not sure
-    if (!detectedCountry) {
-        // Ask user their country (only once)
-        const wantsToSelect = confirm("🌍 Help us customize your experience!\n\nClick OK to select your country for accurate pricing.\nClick Cancel to continue with US pricing.");
-
-        if (wantsToSelect) {
-            const country = prompt("Enter your country code (e.g., NG for Nigeria, US for USA, GB for UK):", "NG");
-            if (country && country.trim()) {
-                detectedCountry = country.trim().toUpperCase();
-            }
         }
     }
 
@@ -222,6 +179,9 @@ function toggleBilling() {
 function updatePricingUI() {
     const priceEl = document.getElementById("proPrice");
     const perDayEl = document.getElementById("perDayPrice");
+    const trialPriceEl = document.getElementById("trialPriceValue");
+    const trialPeriodEl = document.getElementById("trialPeriodText");
+    const trialButton = document.getElementById("proTrialButton");
 
     if (!priceEl) return;
 
@@ -232,13 +192,28 @@ function updatePricingUI() {
     const symbol = pricing.symbol;
 
     if (billingMode === "monthly") {
+        // Monthly pricing
         priceEl.innerText = `${symbol}${monthlyPrice}`;
         if (perDayEl) perDayEl.innerText = "Billed monthly";
+
+        // Update trial button and text
+        if (trialButton) trialButton.innerHTML = "Start 3-Day Free Trial";
+        if (trialButton) trialButton.setAttribute("onclick", "handleUpgradeClick('monthly')");
+        if (trialPriceEl) trialPriceEl.innerText = `${symbol}${monthlyPrice}`;
+        if (trialPeriodEl) trialPeriodEl.innerText = "month";
+
     } else {
+        // Yearly pricing
         const yearlyPrice = (monthlyPrice * 12 * 0.8).toFixed(2);
         const perDay = (yearlyPrice / 365).toFixed(2);
         priceEl.innerText = `${symbol}${yearlyPrice}`;
         if (perDayEl) perDayEl.innerText = `≈ ${symbol}${perDay} per day (billed yearly)`;
+
+        // Update trial button and text for yearly
+        if (trialButton) trialButton.innerHTML = "Start 7-Day Free Trial";
+        if (trialButton) trialButton.setAttribute("onclick", "handleUpgradeClick('yearly')");
+        if (trialPriceEl) trialPriceEl.innerText = `${symbol}${yearlyPrice}`;
+        if (trialPeriodEl) trialPeriodEl.innerText = "year";
     }
 }
 
@@ -331,33 +306,33 @@ window.toggleModalBilling = function () {
 };
 
 // ============================================
-// HANDLE UPGRADE CLICK - With Pro plan check
+// UPGRADE CLICK WITH PLAN TYPE (FIXED)
 // ============================================
-// ============================================
-// UPGRADE CLICK WITH LOADING STATE
-// ============================================
-window.handleUpgradeClick = async function () {
+window.handleUpgradeClick = async function (plan = 'monthly') {
     // Get the upgrade button that was clicked
-    const upgradeBtn = event.target.closest('button');
-    const originalText = upgradeBtn.innerText;
+    const upgradeBtn = event?.target?.closest('button') || document.querySelector('.upgrade-btn');
+    const originalText = upgradeBtn?.innerText || 'Upgrade to Pro';
 
     // Show loading state
-    upgradeBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Preparing payment...';
-    upgradeBtn.disabled = true;
-    upgradeBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    if (upgradeBtn) {
+        upgradeBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Preparing payment...';
+        upgradeBtn.disabled = true;
+        upgradeBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    }
 
     const token = await window.getAuthToken?.();
     if (!token) {
         window.showToast?.("Please sign in first.");
-
-        // Restore button
-        upgradeBtn.innerHTML = originalText;
-        upgradeBtn.disabled = false;
-        upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        if (upgradeBtn) {
+            upgradeBtn.innerHTML = originalText;
+            upgradeBtn.disabled = false;
+            upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
         return;
     }
 
     try {
+        // Check if user already has Pro
         const response = await fetch("/api/account", {
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -367,20 +342,23 @@ window.handleUpgradeClick = async function () {
         if (accountData.success && accountData.plan === "pro") {
             const expiryDate = accountData.expires_at ? new Date(accountData.expires_at).toLocaleDateString() : 'N/A';
             window.showToast?.(`✅ You are already on Pro plan! Expires: ${expiryDate}`, "success");
-
-            // Restore button
-            upgradeBtn.innerHTML = originalText;
-            upgradeBtn.disabled = false;
-            upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            if (upgradeBtn) {
+                upgradeBtn.innerHTML = originalText;
+                upgradeBtn.disabled = false;
+                upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
             return;
         }
 
+        // Get user's country for pricing
         if (!userCountry) {
             await detectCountry();
         }
 
-        localStorage.setItem("billingMode", billingMode);
+        // Store the plan type for trial length
+        localStorage.setItem("billingMode", plan);
 
+        // Initialize payment with plan type
         const initResponse = await fetch("/api/initialize-payment", {
             method: "POST",
             headers: {
@@ -389,7 +367,7 @@ window.handleUpgradeClick = async function () {
             },
             body: JSON.stringify({
                 country: userCountry,
-                billingMode: billingMode
+                billingMode: plan  // 'monthly' or 'yearly'
             })
         });
 
@@ -397,27 +375,27 @@ window.handleUpgradeClick = async function () {
 
         if (!data.success) {
             window.showToast?.("Payment failed to start: " + (data.error || "Unknown error"));
-
-            // Restore button
-            upgradeBtn.innerHTML = originalText;
-            upgradeBtn.disabled = false;
-            upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            if (upgradeBtn) {
+                upgradeBtn.innerHTML = originalText;
+                upgradeBtn.disabled = false;
+                upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
             return;
         }
 
         localStorage.setItem("paymentProcessor", data.processor);
 
-        // DON'T restore button - we're redirecting!
+        // Redirect to payment page
         window.location.href = data.authorization_url;
 
     } catch (err) {
         console.error("❌ Upgrade error:", err);
         window.showToast?.("Payment error: " + err.message);
-
-        // Restore button
-        upgradeBtn.innerHTML = originalText;
-        upgradeBtn.disabled = false;
-        upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        if (upgradeBtn) {
+            upgradeBtn.innerHTML = originalText;
+            upgradeBtn.disabled = false;
+            upgradeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
     }
 };
 
@@ -467,8 +445,6 @@ window.handleModalUpgrade = async function () {
 
         window.toggleUpgradeModal?.();
         window.handleUpgradeClick();
-
-        // Note: handleUpgradeClick will handle its own loading states
 
     } catch (err) {
         window.showToast?.("Error checking plan status: " + err.message);
@@ -542,11 +518,9 @@ window.loadUsage = async function () {
             if (warningBar && remainingSpan) {
                 remainingSpan.innerText = remaining;
 
-                // Show warning bar if less than 3 generations left
                 if (remaining <= 2) {
                     warningBar.classList.remove("hidden");
 
-                    // Change color based on urgency
                     if (remaining === 0) {
                         warningBar.classList.remove("bg-amber-50", "border-amber-500");
                         warningBar.classList.add("bg-red-50", "border-red-500");
@@ -577,7 +551,7 @@ window.loadUsage = async function () {
 };
 
 // ============================================
-// ACCOUNT FUNCTIONS - THIS IS IN MAIN.JS
+// ACCOUNT FUNCTIONS
 // ============================================
 window.loadAccountInfo = async function () {
     const token = await window.getAuthToken?.();
@@ -632,30 +606,25 @@ window.loadAccountInfo = async function () {
                 avatar.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-purple-600');
             }
 
-            // 👇 ADD THESE LINES - Show Pro badges
             const proBadge = document.getElementById('proBadge');
             const proActiveBadge = document.getElementById('proActiveBadge');
             if (proBadge) proBadge.classList.remove('hidden');
             if (proActiveBadge) proActiveBadge.classList.remove('hidden');
 
-            // Hide upgrade message
             const upgradeMessage = document.querySelector('#accountSection .bg-amber-50');
             if (upgradeMessage) {
                 upgradeMessage.classList.add('hidden');
             }
 
-            // Hide warning bar
             const warningBar = document.getElementById("usageWarningBar");
             if (warningBar) warningBar.classList.add("hidden");
 
         } else {
-            // 👇 ADD THESE LINES - Hide Pro badges for free users
             const proBadge = document.getElementById('proBadge');
             const proActiveBadge = document.getElementById('proActiveBadge');
             if (proBadge) proBadge.classList.add('hidden');
             if (proActiveBadge) proActiveBadge.classList.add('hidden');
 
-            // Show upgrade message
             const upgradeMessage = document.querySelector('#accountSection .bg-amber-50');
             if (upgradeMessage) {
                 upgradeMessage.classList.remove('hidden');
@@ -675,7 +644,7 @@ window.loadAccountInfo = async function () {
             }
         }
 
-        // Update upgrade button (existing code)
+        // Update upgrade button
         const upgradeBtn = document.querySelector('.upgrade-btn');
         if (upgradeBtn) {
             if (data.plan === "pro") {
@@ -749,7 +718,6 @@ window.saveName = async function () {
     const saveBtn = document.querySelector('#profileNameSection button');
     const originalText = saveBtn.innerText;
 
-    // Show loading state
     saveBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Saving...';
     saveBtn.disabled = true;
     saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
@@ -757,8 +725,6 @@ window.saveName = async function () {
     const newName = document.getElementById("updateNameInput")?.value;
     if (!newName) {
         window.showToast?.("Please enter a name");
-
-        // Restore button
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
         saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
@@ -776,8 +742,6 @@ window.saveName = async function () {
         }, 1500);
     } else {
         window.showToast?.("Error updating name.");
-
-        // Restore button
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
         saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
@@ -857,7 +821,7 @@ window.handleStartFreeClick = async function () {
 };
 
 // ============================================
-// FILE UPLOAD INIT - FIXED VERSION
+// FILE UPLOAD INIT
 // ============================================
 function initFileUpload() {
     const fileUpload = document.getElementById("fileUpload");
@@ -876,11 +840,9 @@ function initFileUpload() {
         const formData = new FormData();
         formData.append("file", file);
 
-        // Get upload label and store original text BEFORE try block
         const uploadLabel = document.querySelector('label[for="fileUpload"]');
         const originalLabelText = uploadLabel.innerHTML;
 
-        // Show loading state
         uploadLabel.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Uploading...';
         uploadLabel.style.pointerEvents = 'none';
         uploadLabel.classList.add('opacity-75');
@@ -892,8 +854,6 @@ function initFileUpload() {
             if (!token) {
                 window.showToast?.("Please sign in again.");
                 e.target.value = '';
-
-                // Restore upload label
                 uploadLabel.innerHTML = originalLabelText;
                 uploadLabel.style.pointerEvents = 'auto';
                 uploadLabel.classList.remove('opacity-75');
@@ -923,7 +883,6 @@ function initFileUpload() {
             window.showToast?.("Upload failed: " + err.message);
         } finally {
             e.target.value = '';
-            // Restore upload label
             if (uploadLabel) {
                 uploadLabel.innerHTML = originalLabelText;
                 uploadLabel.style.pointerEvents = 'auto';

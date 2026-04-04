@@ -31,6 +31,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/contact.html">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,13 +49,15 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        html {
-            scroll-behavior: smooth;
         }
 
         .container-custom {
@@ -79,8 +87,19 @@
             ring: 2px solid #6366f1;
             ring-offset: 2px;
         }
+
+        /* Mobile touch targets */
+        button,
+        [onclick],
+        .cursor-pointer,
+        a {
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
+        }
     </style>
-        <script type="application/ld+json">
+
+    <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -107,7 +126,6 @@
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-KJTT4Z32YH');
     </script>
 </head>
@@ -120,18 +138,42 @@
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2 group">
                     <div
-                        class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
                         <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
                     </div>
                     <span class="text-xl font-bold text-slate-900">Study<span
                             class="text-indigo-600">Forge</span></span>
                 </a>
 
-                <div class="flex items-center gap-6">
-                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
-                    </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition">Home</a>
+                    <a href="/features.html"
+                        class="text-sm text-slate-500 hover:text-indigo-600 transition">Features</a>
+                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
+                    <a href="/about.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">About</a>
+                    <button onclick="handleDashboardClick()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
+                        Dashboard
+                    </button>
                 </div>
+
+                <button
+                    class="md:hidden text-slate-700 text-2xl w-12 h-12 flex items-center justify-center rounded-lg active:bg-slate-100"
+                    onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <a href="/" class="block text-slate-600 hover:text-indigo-600 py-2">Home</a>
+                <a href="/features.html" class="block text-slate-600 hover:text-indigo-600 py-2">Features</a>
+                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Pricing</a>
+                <a href="/about.html" class="block text-slate-600 hover:text-indigo-600 py-2">About</a>
+                <button onclick="handleDashboardClick()"
+                    class="block bg-indigo-600 text-white px-4 py-3 rounded-xl text-center font-semibold w-full cursor-pointer">
+                    Dashboard
+                </button>
             </div>
         </div>
     </nav>
@@ -142,14 +184,13 @@
             <div
                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
                 <i class="fa-regular fa-message text-indigo-500 text-xs"></i>
-                <span class="text-xs font-semibold text-indigo-700">Student Support Available 24/7</span>
+                <span class="text-xs font-semibold text-indigo-700">Student Support Available</span>
             </div>
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-                Contact StudyForge AI Study Tool Support
+                Contact StudyForge Support
             </h1>
             <p class="text-lg text-slate-500 max-w-2xl mx-auto">
-                Have questions about our AI study tool? Need help with your study guide generator? We're here to help
-                students study smarter.
+                Have questions about our AI study tool? Need help? We're here to help students study smarter.
             </p>
         </div>
     </section>
@@ -162,7 +203,7 @@
             <div>
                 <div class="flex items-center gap-2 mb-6">
                     <i class="fa-regular fa-address-card text-indigo-600 text-xl"></i>
-                    <h2 class="text-2xl font-bold text-slate-800">Get Study Tool Support</h2>
+                    <h2 class="text-2xl font-bold text-slate-800">Get Support</h2>
                 </div>
 
                 <div class="space-y-6">
@@ -174,10 +215,10 @@
                         <div>
                             <h3 class="font-semibold text-slate-800 mb-1">Email Support</h3>
                             <a href="mailto:byforgelabs@outlook.com"
-                                class="text-slate-500 hover:text-indigo-600 transition text-sm">
+                                class="text-slate-500 hover:text-indigo-600 transition text-sm break-all">
                                 byforgelabs@outlook.com
                             </a>
-                            <p class="text-xs text-slate-400 mt-1">For questions about the AI study tool</p>
+                            <p class="text-xs text-slate-400 mt-1">Questions about the AI study tool</p>
                         </div>
                     </div>
 
@@ -202,9 +243,9 @@
                             <i class="fa-regular fa-clock text-indigo-600 text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-slate-800 mb-1">Fast Student Support</h3>
+                            <h3 class="font-semibold text-slate-800 mb-1">Fast Support</h3>
                             <p class="text-slate-500 text-sm">Response within 24 hours (usually faster)</p>
-                            <p class="text-xs text-slate-400 mt-1">7 days a week for student inquiries</p>
+                            <p class="text-xs text-slate-400 mt-1">7 days a week</p>
                         </div>
                     </div>
                 </div>
@@ -214,9 +255,9 @@
                     <div class="flex items-start gap-3">
                         <i class="fa-regular fa-lightbulb text-amber-500 mt-0.5"></i>
                         <p class="text-xs text-amber-700">
-                            <span class="font-semibold">Pro tip for faster support:</span> When reporting a problem with
-                            the AI study tool, include screenshots and details about what you were doing. This helps us
-                            help you faster!
+                            <span class="font-semibold">Pro tip:</span> When reporting a problem, include screenshots
+                            and
+                            details about what you were doing. This helps us help you faster!
                         </p>
                     </div>
                 </div>
@@ -228,8 +269,8 @@
                     <i class="fa-regular fa-paper-plane text-indigo-600 text-xl"></i>
                     <h2 class="text-2xl font-bold text-slate-800">Send Us a Message</h2>
                 </div>
-                <p class="text-sm text-slate-500 mb-4">Questions about our AI study tool? Feature requests? Feedback?
-                    We'd love to hear from you.</p>
+                <p class="text-sm text-slate-500 mb-4">Questions? Feature requests? Feedback? We'd love to hear from
+                    you.</p>
 
                 <form action="https://formspree.io/f/xwpgdkwj" method="POST" class="space-y-5">
                     <div>
@@ -252,17 +293,16 @@
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                            <i class="fa-regular fa-message mr-1 text-slate-400"></i> Message (about StudyForge AI study
-                            tool)
+                            <i class="fa-regular fa-message mr-1 text-slate-400"></i> Message
                         </label>
                         <textarea name="message" rows="5" required
                             class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition resize-none"
-                            placeholder="How can we help you with your study tool experience?"></textarea>
+                            placeholder="How can we help you?"></textarea>
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
-                        <i class="fa-regular fa-paper-plane mr-2"></i> Send Message to StudyForge Support
+                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer">
+                        <i class="fa-regular fa-paper-plane mr-2"></i> Send Message
                     </button>
                 </form>
 
@@ -275,13 +315,12 @@
         <!-- Alternative Contact -->
         <div class="text-center mt-12 pt-8 border-t border-slate-100">
             <p class="text-sm text-slate-500">
-                Prefer to email our study tool support directly?
+                Prefer to email us directly?
                 <a href="mailto:byforgelabs@outlook.com" class="text-indigo-600 hover:text-indigo-700 font-medium">
                     byforgelabs@outlook.com
                 </a>
             </p>
-            <p class="text-xs text-slate-400 mt-2">For technical issues, feature requests, or general questions about
-                the AI study tool</p>
+            <p class="text-xs text-slate-400 mt-2">For technical issues, feature requests, or general questions</p>
         </div>
     </div>
 
@@ -294,16 +333,65 @@
                     <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
                 </div>
                 <div class="flex gap-6">
-                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy
-                        Policy</a>
-                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms of
-                        Service</a>
-                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact
-                        Support</a>
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = "https://drkgygcoaisvjfppbuxx.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Handle dashboard click
+        async function handleDashboardClick() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
+            } else {
+                window.location.href = '/?auth=true';
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Make functions globally available
+        window.handleDashboardClick = handleDashboardClick;
+        window.toggleMobileMenu = toggleMobileMenu;
+
+        // Animate sections on scroll
+        document.addEventListener('DOMContentLoaded', function () {
+            const elements = document.querySelectorAll('.hover-card, .bg-white.rounded-2xl');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            elements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.5s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 
 </html>

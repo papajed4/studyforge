@@ -52,6 +52,31 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
 // ============================================
+// PRICING CONSTANTS (for server-side)
+// ============================================
+const pricingTable = {
+    NG: { symbol: "₦", monthly: 3500 },
+    US: { symbol: "$", monthly: 8.99 },
+    GB: { symbol: "£", monthly: 7.99 },
+    CA: { symbol: "C$", monthly: 11.99 },
+    DE: { symbol: "€", monthly: 8 },
+    FR: { symbol: "€", monthly: 8 },
+    IT: { symbol: "€", monthly: 8 },
+    ES: { symbol: "€", monthly: 8 },
+    NL: { symbol: "€", monthly: 8 },
+    AU: { symbol: "A$", monthly: 12.99 },
+    JP: { symbol: "¥", monthly: 1200 },
+    IN: { symbol: "₹", monthly: 699 }
+};
+
+const euroCountries = [
+    "FR", "DE", "ES", "IT", "NL", "BE", "PT", "IE", "AT", "FI",
+    "GR", "LU", "LV", "LT", "EE", "CY", "MT", "SK", "SI"
+];
+
+const euroPricing = { symbol: "€", monthly: 8 };
+
+// ============================================
 // MIDDLEWARE
 // ============================================
 app.use(cors());
@@ -955,7 +980,7 @@ app.post("/api/upload-file", requireAuth, upload.single("file"), async (req, res
 });
 
 // ============================================
-// INITIALIZE PAYMENT - WITH YEARLY LOGGING & RATE LIMITING
+// INITIALIZE PAYMENT - FLUTTERWAVE ONLY (MORE RELIABLE)
 // ============================================
 app.post("/api/initialize-payment", requireAuth, async (req, res) => {
     try {
@@ -965,93 +990,127 @@ app.post("/api/initialize-payment", requireAuth, async (req, res) => {
             return res.status(400).json({ success: false, error: "Invalid billing mode" });
         }
 
-        if (!country) {
-            return res.status(400).json({ success: false, error: "Country required" });
-        }
-
-        // 👇 ADD RATE LIMITING HERE 👇
-        // Check for too many payment attempts in last 5 minutes
-        const recentPayments = await supabaseAdmin
+        // Check for too many payment attempts
+        const { data: recentPayments } = await supabaseAdmin
             .from('transactions')
             .select('created_at')
             .eq('user_id', req.user.id)
             .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString());
 
-        if (recentPayments.data?.length > 3) {
-            console.log(`⚠️ User ${req.user.id} attempted too many payments: ${recentPayments.data.length} attempts in 5 min`);
+        if (recentPayments?.length > 3) {
             return res.status(429).json({
                 success: false,
-                error: "Too many payment attempts. Please wait a few minutes and try again."
+                error: "Too many payment attempts. Please wait a few minutes."
             });
         }
 
-        const pricing = getPricingByCountry(country);
-        let finalAmount = pricing.amount;
+        // Get pricing based on country
+        let amount, currency, symbol;
 
-        if (billingMode === "yearly") {
-            finalAmount = Math.round(pricing.amount * 12 * 0.8);
-            console.log("📅 Yearly pricing applied:", { original: pricing.amount, final: finalAmount });
+        if (country === 'NG') {
+            // Nigerian pricing in Naira
+            amount = billingMode === 'monthly' ? 3500 : 3500 * 12 * 0.8; // 20% discount for yearly
+            currency = "NGN";
+            symbol = "₦";
+        } else if (country === 'US') {
+            amount = billingMode === 'monthly' ? 8.99 : 86.30;
+            currency = "USD";
+            symbol = "$";
+        } else if (country === 'GB') {
+            amount = billingMode === 'monthly' ? 7.99 : 76.70;
+            currency = "GBP";
+            symbol = "£";
+        } else {
+            // Default to USD
+            amount = billingMode === 'monthly' ? 8.99 : 86.30;
+            currency = "USD";
+            symbol = "$";
         }
 
-        const metadata = {
-            user_id: req.user.id,
-            billing_mode: billingMode,
-            processor: pricing.processor,
-            country: country
+        // For Flutterwave, amount should be in whole units (not cents)
+        const flutterwaveAmount = amount;
+
+        const txRef = `SF-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+        console.log(`💰 Initializing ${billingMode} payment: ${amount} ${currency} for user ${req.user.id}`);
+
+        // Use Flutterwave
+        const payload = {
+            tx_ref: txRef,
+            amount: flutterwaveAmount,
+            currency: currency,
+            redirect_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html?payment=success`,
+            payment_options: "card,ussd,banktransfer, mobilemoney",
+            meta: {
+                user_id: req.user.id,
+                billing_mode: billingMode,
+                country: country
+            },
+            customer: {
+                email: req.user.email,
+                name: req.user.user_metadata?.full_name || req.user.email.split('@')[0]
+            },
+            customizations: {
+                title: "StudyForge AI Pro Plan",
+                description: billingMode === "yearly" ? "Yearly Subscription (Save 20%)" : "Monthly Subscription",
+                logo: "https://studyforge.site/logo.png"
+            }
         };
 
-        if (pricing.processor === "paystack") {
-            console.log(`💰 Using Paystack for ${country}`);
-
-            const response = await axios.post("https://api.paystack.co/transaction/initialize", {
-                email: req.user.email,
-                amount: finalAmount,
-                currency: pricing.currency,
-                metadata: metadata,
-                callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html`
-            }, {
-                headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
-            });
-
-            if (!response.data.status) {
-                return res.status(400).json({ success: false, error: "Payment initialization failed" });
-            }
-
-            return res.json({
-                success: true,
-                authorization_url: response.data.data.authorization_url,
-                processor: "paystack"
-            });
-
-        } else {
-            console.log(`💰 Using Flutterwave for ${country}`);
-
-            const flutterwaveResult = await initializeFlutterwavePayment(
-                req.user,
-                finalAmount,
-                pricing.currency,
-                billingMode
+        try {
+            const response = await axios.post(
+                "https://api.flutterwave.com/v3/payments",
+                payload,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    timeout: 10000
+                }
             );
 
-            if (!flutterwaveResult.success) {
-                return res.status(400).json({
-                    success: false,
-                    error: flutterwaveResult.error
+            console.log("Flutterwave response:", response.data.status);
+
+            if (response.data.status === "success") {
+                // Store transaction reference
+                await supabaseAdmin
+                    .from('transactions')
+                    .insert([{
+                        user_id: req.user.id,
+                        reference: txRef,
+                        amount: amount,
+                        currency: currency,
+                        status: "pending",
+                        processor: "flutterwave",
+                        metadata: { billing_mode: billingMode, country: country },
+                        created_at: new Date().toISOString()
+                    }]);
+
+                return res.json({
+                    success: true,
+                    authorization_url: response.data.data.link,
+                    processor: "flutterwave",
+                    tx_ref: txRef
                 });
+            } else {
+                throw new Error(response.data.message || "Flutterwave initialization failed");
             }
 
-            metadata.flutterwave_tx_ref = flutterwaveResult.tx_ref;
-
-            return res.json({
-                success: true,
-                authorization_url: flutterwaveResult.authorization_url,
-                processor: "flutterwave"
+        } catch (flutterError) {
+            console.error("Flutterwave error:", flutterError.response?.data || flutterError.message);
+            return res.status(400).json({
+                success: false,
+                error: flutterError.response?.data?.message || "Payment initialization failed. Please try again."
             });
         }
 
     } catch (error) {
         console.error("Payment Init Error:", error.message);
-        res.status(500).json({ success: false, error: "Payment initialization error" });
+        res.status(500).json({
+            success: false,
+            error: error.message || "Payment initialization error"
+        });
     }
 });
 
@@ -1158,6 +1217,479 @@ app.post('/api/verify-payment', requireAuth, async (req, res) => {
         });
     }
 });
+
+// ============================================
+// VERIFY TRIAL PAYMENT (Paystack Popup)
+// ============================================
+app.post('/api/verify-trial-payment', requireAuth, async (req, res) => {
+    try {
+        const { reference, planType } = req.body;
+
+        // Verify with Paystack
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+        });
+
+        const data = response.data.data;
+
+        if (data.status !== 'success') {
+            return res.status(400).json({ success: false, error: "Payment not successful" });
+        }
+
+        // Check if user already used a trial
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('trial_used')
+            .eq('id', req.user.id)
+            .single();
+
+        if (profile?.trial_used) {
+            return res.status(400).json({ success: false, error: "Trial already used" });
+        }
+
+        const trialDays = planType === 'monthly' ? 3 : 7;
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
+        // Activate trial
+        await supabaseAdmin.from('profiles').update({
+            trial_used: true,
+            trial_type: planType,
+            trial_start_date: new Date().toISOString(),
+            trial_end_date: trialEndDate.toISOString(),
+            plan: 'pro',
+            pro_expires_at: trialEndDate.toISOString()
+        }).eq('id', req.user.id);
+
+        res.json({ success: true, trial_days: trialDays });
+
+    } catch (err) {
+        console.error("Trial verification error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ============================================
+// COMPLETE ONBOARDING
+// ============================================
+app.post('/api/complete-onboarding', requireAuth, async (req, res) => {
+    try {
+        const { study_level, study_goal } = req.body;
+
+        const { error } = await supabaseAdmin
+            .from('profiles')
+            .update({
+                onboarding_completed: true,
+                study_level: study_level,
+                study_goal: study_goal
+            })
+            .eq('id', req.user.id);
+
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Onboarding error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ============================================
+// GET USER PROFILE (for onboarding check)
+// ============================================
+app.get('/api/profile', requireAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('profiles')
+            .select('onboarding_completed, trial_used, plan, pro_expires_at, trial_end_date, trial_type')
+            .eq('id', req.user.id)
+            .single();
+
+        if (error) {
+            // If no profile exists, create one
+            if (error.code === 'PGRST116') {
+                await supabaseAdmin
+                    .from('profiles')
+                    .insert({ id: req.user.id, plan: 'free', created_at: new Date().toISOString() });
+
+                return res.json({
+                    success: true,
+                    onboarding_completed: false,
+                    trial_used: false,
+                    plan: 'free'
+                });
+            }
+            throw error;
+        }
+
+        res.json({
+            success: true,
+            onboarding_completed: data.onboarding_completed || false,
+            trial_used: data.trial_used || false,
+            plan: data.plan || 'free',
+            trial_active: data.trial_end_date ? new Date(data.trial_end_date) > new Date() : false
+        });
+    } catch (err) {
+        console.error("Profile fetch error:", err);
+        res.json({
+            success: true,
+            onboarding_completed: false,
+            trial_used: false,
+            plan: 'free'
+        });
+    }
+});
+
+// ============================================
+// GET PUBLIC USAGE STATS (With multipliers)
+// ============================================
+app.get('/api/stats', async (req, res) => {
+    try {
+        console.log("📊 Public stats endpoint called");
+
+        // Get real data from database
+        const { data: guides, error: guidesError } = await supabaseAdmin
+            .from('study_guides')
+            .select('id, user_id, content');
+
+        if (guidesError) {
+            console.error("Guides error:", guidesError);
+            return res.json({
+                success: true,
+                stats: { study_guides: 1240, active_users: 40, pages_condensed: 2500 }
+            });
+        }
+
+        if (!guides || guides.length === 0) {
+            // If no data, show reasonable placeholder numbers
+            return res.json({
+                success: true,
+                stats: { study_guides: 1240, active_users: 40, pages_condensed: 2500 }
+            });
+        }
+
+        // Count unique users
+        const uniqueUsers = new Set();
+        guides.forEach(guide => {
+            if (guide.user_id) uniqueUsers.add(guide.user_id);
+        });
+
+        // Calculate total pages
+        let totalPages = 0;
+        guides.forEach(guide => {
+            if (guide.content) {
+                const wordCount = guide.content.split(/\s+/).length;
+                totalPages += Math.ceil(wordCount / 500);
+            }
+        });
+
+        // Apply multipliers:
+        // Study guides × 30, Active users × 4, Pages × 30
+        const stats = {
+            study_guides: Math.floor(guides.length * 30) || 1240,
+            active_users: Math.floor(uniqueUsers.size * 4) || 40,
+            pages_condensed: Math.floor(totalPages * 30) || 2500
+        };
+
+        console.log("📊 Real data:", { guides: guides.length, users: uniqueUsers.size, pages: totalPages });
+        console.log("📊 Display stats:", stats);
+
+        res.json({
+            success: true,
+            stats: stats
+        });
+
+    } catch (err) {
+        console.error("Stats error:", err);
+        // Fallback to reasonable numbers
+        res.json({
+            success: true,
+            stats: { study_guides: 1240, active_users: 40, pages_condensed: 2500 }
+        });
+    }
+});
+
+// ============================================
+// GET LOCALIZED PRICING FOR TRIAL MODAL
+// ============================================
+app.get('/api/pricing-local', async (req, res) => {
+    try {
+        let country = req.query.country || 'US';
+
+        let pricing = pricingTable[country] ||
+            (euroCountries.includes(country) ? euroPricing : pricingTable["US"]);
+
+        const monthlyPrice = pricing.monthly;
+        const symbol = pricing.symbol;
+        const yearlyPrice = (monthlyPrice * 12 * 0.8).toFixed(2);
+
+        let monthlyDisplay = `${symbol}${monthlyPrice}`;
+        let yearlyDisplay = `${symbol}${yearlyPrice}`;
+
+        // Special formatting for NGN (no decimal)
+        if (country === 'NG') {
+            monthlyDisplay = `${symbol}${monthlyPrice.toLocaleString()}`;
+            yearlyDisplay = `${symbol}${Math.round(monthlyPrice * 12 * 0.8).toLocaleString()}`;
+        }
+
+        res.json({
+            success: true,
+            monthly: monthlyPrice,
+            yearly: yearlyPrice,
+            monthly_display: monthlyDisplay,
+            yearly_display: yearlyDisplay,
+            symbol: symbol,
+            currency: pricing.currency
+        });
+
+    } catch (err) {
+        console.error("Pricing error:", err);
+        res.json({
+            success: true,
+            monthly: 8.99,
+            yearly: 86.30,
+            monthly_display: '$8.99',
+            yearly_display: '$86.30',
+            symbol: '$',
+            currency: 'USD'
+        });
+    }
+});
+
+// ============================================
+// TEST SUPABASE CONNECTION
+// ============================================
+app.get('/api/test-db', async (req, res) => {
+    try {
+        // Try a simple query
+        const { data, error, count } = await supabaseAdmin
+            .from('study_guides')
+            .select('*', { count: 'exact' });
+
+        console.log("TEST DB - Data length:", data?.length);
+        console.log("TEST DB - Count:", count);
+        console.log("TEST DB - Error:", error);
+
+        res.json({
+            success: true,
+            data_length: data?.length || 0,
+            count: count || 0,
+            error: error?.message || null,
+            sample: data?.slice(0, 2) || []
+        });
+
+    } catch (err) {
+        console.error("Test DB error:", err);
+        res.json({ error: err.message });
+    }
+});
+
+// ============================================
+// DEBUG STATS ENDPOINT (Temporary)
+// ============================================
+app.get('/api/debug-stats', async (req, res) => {
+    try {
+        // Try a simple count first
+        const { count, error } = await supabaseAdmin
+            .from('study_guides')
+            .select('*', { count: 'exact', head: true });
+
+        console.log("Debug - Count result:", { count, error });
+
+        // Also try to get one record
+        const { data, error2 } = await supabaseAdmin
+            .from('study_guides')
+            .select('*')
+            .limit(1);
+
+        console.log("Debug - Sample record:", { data, error2 });
+
+        res.json({
+            count: count || 0,
+            error: error?.message || null,
+            sample: data || [],
+            sampleError: error2?.message || null
+        });
+
+    } catch (err) {
+        console.error("Debug error:", err);
+        res.json({ error: err.message });
+    }
+});
+
+// ============================================
+// START FREE TRIAL (NO CARD REQUIRED)
+// ============================================
+// START FREE TRIAL (No card required)
+app.post('/api/start-free-trial', requireAuth, async (req, res) => {
+    try {
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('trial_used, plan')
+            .eq('id', req.user.id)
+            .single();
+
+        if (profile?.trial_used) {
+            return res.status(400).json({
+                success: false,
+                error: "You've already used your free trial."
+            });
+        }
+
+        if (profile?.plan === 'pro') {
+            return res.status(400).json({
+                success: false,
+                error: "You're already on Pro!"
+            });
+        }
+
+        const trialDays = 3;
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
+        await supabaseAdmin
+            .from('profiles')
+            .upsert({
+                id: req.user.id,
+                trial_used: true,
+                trial_type: 'free',
+                trial_start_date: new Date().toISOString(),
+                trial_end_date: trialEndDate.toISOString(),
+                plan: 'pro',
+                pro_expires_at: trialEndDate.toISOString()
+            });
+
+        res.json({ success: true, trial_days: trialDays });
+
+    } catch (err) {
+        console.error("Free trial error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ============================================
+// START PAID TRIAL (Card required - Paystack/Flutterwave)
+// ============================================
+app.post('/api/start-paid-trial', requireAuth, async (req, res) => {
+    try {
+        const { trial_type, plan, country } = req.body;
+
+        // Check if user already used a trial
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('trial_used')
+            .eq('id', req.user.id)
+            .single();
+
+        if (profile?.trial_used) {
+            return res.status(400).json({
+                success: false,
+                error: "You've already used your one-time trial."
+            });
+        }
+
+        const trialDays = trial_type === 'monthly' ? 5 : 10;
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
+        // Get pricing for the user's country
+        const pricing = getPricingByCountry(country || 'US');
+
+        // Store trial intent in database
+        const reference = `TRIAL-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+        await supabaseAdmin.from('transactions').insert([{
+            user_id: req.user.id,
+            reference: reference,
+            amount: 0,
+            currency: pricing.currency,
+            status: "pending",
+            type: "trial_authorization",
+            metadata: {
+                trial_type: trial_type,
+                plan: plan,
+                trial_days: trialDays,
+                trial_end_date: trialEndDate.toISOString(),
+                country: country
+            },
+            created_at: new Date().toISOString()
+        }]);
+
+        // Initialize payment with $0 authorization
+        let authorization_url;
+
+        if (pricing.processor === 'paystack') {
+            // For Paystack: $0 authorization (minimum 50 kobo for NGN, $0.01 for others)
+            const amountInCents = pricing.currency === 'NGN' ? 50 : 1;
+
+            const response = await axios.post("https://api.paystack.co/transaction/initialize", {
+                email: req.user.email,
+                amount: amountInCents,
+                currency: pricing.currency,
+                metadata: {
+                    user_id: req.user.id,
+                    type: 'trial_authorization',
+                    trial_type: trial_type,
+                    trial_days: trialDays
+                },
+                callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html?trial=success`
+            }, {
+                headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+            });
+
+            if (!response.data.status) {
+                return res.status(400).json({ success: false, error: "Failed to initialize trial" });
+            }
+
+            authorization_url = response.data.data.authorization_url;
+
+        } else {
+            // Flutterwave
+            const response = await axios.post("https://api.flutterwave.com/v3/payments", {
+                tx_ref: reference,
+                amount: 0,
+                currency: pricing.currency,
+                redirect_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html?trial=success`,
+                payment_options: "card",
+                meta: {
+                    user_id: req.user.id,
+                    type: 'trial_authorization',
+                    trial_type: trial_type,
+                    trial_days: trialDays
+                },
+                customer: {
+                    email: req.user.email,
+                    name: req.user.user_metadata?.full_name || req.user.email.split('@')[0]
+                },
+                customizations: {
+                    title: "StudyForge Free Trial",
+                    description: `Start your ${trialDays}-day free trial`,
+                    logo: "https://studyforge.site/logo.png"
+                }
+            }, {
+                headers: { 'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` }
+            });
+
+            if (response.data.status !== "success") {
+                return res.status(400).json({ success: false, error: "Failed to initialize trial" });
+            }
+
+            authorization_url = response.data.data.link;
+        }
+
+        res.json({
+            success: true,
+            authorization_url: authorization_url,
+            trial_days: trialDays,
+            processor: pricing.processor
+        });
+
+    } catch (error) {
+        console.error("Paid trial error:", error);
+        res.status(500).json({ success: false, error: "Failed to start trial" });
+    }
+});
+
 // ============================================
 // STUDY GUIDES ENDPOINTS - FIXED
 // ============================================
@@ -1296,26 +1828,50 @@ app.get('/api/account', requireAuth, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('profiles')
-            .select('plan, pro_expires_at')
+            .select('plan, pro_expires_at, trial_used, trial_type, trial_start_date, trial_end_date')
             .eq('id', req.user.id)
             .maybeSingle();
 
         if (error) {
-            return res.json({ success: true, plan: 'free', expires_at: null });
+            console.error("Account error:", error);
+            return res.json({ success: true, plan: 'free', expires_at: null, trial_used: false, trial_active: false, trial_days_left: 0 });
         }
 
         if (!data) {
             await supabaseAdmin
                 .from('profiles')
                 .insert({ id: req.user.id, plan: 'free', created_at: new Date().toISOString() });
-
-            return res.json({ success: true, plan: 'free', expires_at: null });
+            return res.json({ success: true, plan: 'free', expires_at: null, trial_used: false, trial_active: false, trial_days_left: 0 });
         }
 
-        res.json({ success: true, plan: data.plan || "free", expires_at: data.pro_expires_at || null });
+        // Calculate trial status correctly
+        let isTrialActive = false;
+        let trialDaysLeft = 0;
+
+        if (data.trial_used && data.trial_end_date) {
+            const now = new Date();
+            const trialEnd = new Date(data.trial_end_date);
+            isTrialActive = trialEnd > now;
+            if (isTrialActive) {
+                trialDaysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+            }
+        }
+
+        console.log(`Account check for ${req.user.id}: trial_used=${data.trial_used}, trial_end=${data.trial_end_date}, isActive=${isTrialActive}, daysLeft=${trialDaysLeft}`);
+
+        res.json({
+            success: true,
+            plan: data.plan || "free",
+            expires_at: data.pro_expires_at || null,
+            trial_used: data.trial_used || false,
+            trial_type: data.trial_type || null,
+            trial_active: isTrialActive,
+            trial_days_left: trialDaysLeft
+        });
 
     } catch (err) {
-        res.json({ success: true, plan: 'free', expires_at: null });
+        console.error("Account error:", err);
+        res.json({ success: true, plan: 'free', expires_at: null, trial_used: false, trial_active: false, trial_days_left: 0 });
     }
 });
 
@@ -1451,6 +2007,9 @@ app.get('/api/all-quiz-attempts', requireAuth, async (req, res) => {
 // ============================================
 // WEBHOOKS
 // ============================================
+// ============================================
+// PAYSTACK WEBHOOK (UPDATED FOR TRIALS)
+// ============================================
 app.post('/api/paystack-webhook', async (req, res) => {
     try {
         const hash = crypto
@@ -1469,7 +2028,50 @@ app.post('/api/paystack-webhook', async (req, res) => {
             const data = event.data;
             const reference = data.reference;
             const userId = data.metadata?.user_id;
+            const transactionType = data.metadata?.type;
+            const billingMode = data.metadata?.billing_mode || 'monthly';
+            const trialDays = data.metadata?.trial_days || (billingMode === 'monthly' ? 3 : 7);
 
+            // 🔥 NEW: Handle trial authorization
+            if (data.metadata?.trial_days || transactionType === 'trial_authorization') {
+                const { data: existing } = await supabaseAdmin
+                    .from('transactions')
+                    .select('id')
+                    .eq('reference', reference)
+                    .maybeSingle();
+
+                if (existing) return res.sendStatus(200);
+
+                const trialEndDate = new Date();
+                trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
+                // Update profile with trial info
+                await supabaseAdmin.from('profiles').update({
+                    trial_used: true,
+                    trial_type: billingMode,
+                    trial_start_date: new Date().toISOString(),
+                    trial_end_date: trialEndDate.toISOString(),
+                    plan: 'pro',
+                    pro_expires_at: trialEndDate.toISOString()
+                }).eq('id', userId);
+
+                // Store transaction
+                await supabaseAdmin.from('transactions').insert([{
+                    user_id: userId,
+                    reference: reference,
+                    amount: data.amount,
+                    currency: data.currency,
+                    status: "success",
+                    type: "trial_authorization",
+                    metadata: { trial_days: trialDays, billing_mode: billingMode },
+                    created_at: new Date().toISOString()
+                }]);
+
+                console.log(`✅ Trial started for user ${userId}, type: ${billingMode}, expires: ${trialEndDate.toDateString()}`);
+                return res.sendStatus(200);
+            }
+
+            // 🔥 Handle regular payment (existing users upgrading)
             if (!userId) return res.sendStatus(200);
 
             const { data: existing } = await supabaseAdmin
@@ -1481,8 +2083,6 @@ app.post('/api/paystack-webhook', async (req, res) => {
             if (existing) return res.sendStatus(200);
 
             const expiryDate = new Date();
-            const billingMode = data.metadata?.billing_mode;
-
             if (billingMode === "yearly") {
                 expiryDate.setDate(expiryDate.getDate() + 365);
             } else {
@@ -1503,7 +2103,7 @@ app.post('/api/paystack-webhook', async (req, res) => {
                 pro_expires_at: expiryDate.toISOString()
             }).eq('id', userId);
 
-            console.log(`✅ Webhook upgraded user ${userId}`);
+            console.log(`✅ Webhook upgraded user ${userId} until ${expiryDate.toDateString()}`);
         }
 
         res.sendStatus(200);
@@ -1515,6 +2115,9 @@ app.post('/api/paystack-webhook', async (req, res) => {
     }
 });
 
+// ============================================
+// FLUTTERWAVE WEBHOOK (WITH CARD TOKEN SAVING)
+// ============================================
 app.post('/api/flutterwave-webhook', async (req, res) => {
     try {
         const secretHash = process.env.FLUTTERWAVE_SECRET_HASH || "studyforge_secret";
@@ -1526,53 +2129,83 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
         }
 
         const event = req.body;
+        console.log("📨 Flutterwave webhook received:", event.event);
 
         if (event.event === "charge.completed" && event.data.status === "successful") {
             const data = event.data;
             const txRef = data.tx_ref;
             const userId = data.meta?.user_id;
-            const billingMode = data.meta?.billing_mode;
+            const billingMode = data.meta?.billing_mode || 'monthly';
 
-            if (!userId) return res.sendStatus(200);
+            if (!userId) {
+                console.log("No user_id in webhook");
+                return res.sendStatus(200);
+            }
 
+            // Check if already processed
             const { data: existing } = await supabaseAdmin
                 .from('transactions')
                 .select('id')
                 .eq('reference', txRef)
                 .maybeSingle();
 
-            if (existing) return res.sendStatus(200);
-
-            const expiryDate = new Date();
-            if (billingMode === "yearly") {
-                expiryDate.setDate(expiryDate.getDate() + 365);
-            } else {
-                expiryDate.setDate(expiryDate.getDate() + 30);
+            if (existing) {
+                console.log(`Transaction ${txRef} already processed`);
+                return res.sendStatus(200);
             }
 
-            await supabaseAdmin.from('transactions').insert([{
-                user_id: userId,
-                reference: txRef,
-                amount: data.amount * 100,
-                currency: data.currency,
-                status: "success",
-                processor: "flutterwave",
-                created_at: new Date().toISOString()
-            }]);
+            // Calculate expiry date
+            const expiryDate = new Date();
+            if (billingMode === "yearly") {
+                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            } else {
+                expiryDate.setMonth(expiryDate.getMonth() + 1);
+            }
 
-            await supabaseAdmin.from('profiles').update({
-                plan: "pro",
-                pro_expires_at: expiryDate.toISOString()
-            }).eq('id', userId);
+            // Get card token for recurring charges
+            const cardToken = data.card?.token;
+            
+            if (cardToken) {
+                console.log(`💳 Card token saved for user ${userId}`);
+            } else {
+                console.log(`⚠️ No card token received - recurring billing won't work`);
+            }
 
-            console.log(`✅ Flutterwave webhook upgraded user ${userId}`);
+            // Update user to Pro with token
+            await supabaseAdmin
+                .from('profiles')
+                .update({
+                    plan: "pro",
+                    pro_expires_at: expiryDate.toISOString(),
+                    subscription_id: txRef,
+                    flutterwave_token: cardToken,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', userId);
+
+            // Record successful transaction
+            await supabaseAdmin
+                .from('transactions')
+                .insert([{
+                    user_id: userId,
+                    reference: txRef,
+                    amount: data.amount,
+                    currency: data.currency,
+                    status: "success",
+                    processor: "flutterwave",
+                    billing_mode: billingMode,
+                    has_token: !!cardToken,
+                    expires_at: expiryDate.toISOString(),
+                    created_at: new Date().toISOString()
+                }]);
+
+            console.log(`✅ User ${userId} upgraded to Pro (${billingMode}) until ${expiryDate.toDateString()}`);
         }
 
         res.sendStatus(200);
 
     } catch (err) {
         console.error("Flutterwave webhook error:", err.message);
-        await saveFailedWebhook(req.body, 'flutterwave');
         res.sendStatus(500);
     }
 });
@@ -1610,52 +2243,151 @@ app.delete('/api/delete-account', requireAuth, async (req, res) => {
 // PRO EXPIRY CRON JOB (Runs every day at midnight)
 // ============================================
 
+// ============================================
+// SUBSCRIPTION MANAGEMENT - CLEAN VERSION
+// ============================================
+
+// Downgrade expired Pro users to Free
 async function expireProUsers() {
     try {
-        console.log('🕐 Running pro expiry check...');
+        console.log('🕐 Checking for expired Pro users...', new Date().toISOString());
 
-        const { data, error } = await supabaseAdmin
+        const { data: expiredUsers, error } = await supabaseAdmin
             .from('profiles')
-            .update({
-                plan: 'free',
-                pro_expires_at: null
-            })
+            .select('id, email, pro_expires_at')
             .eq('plan', 'pro')
             .lt('pro_expires_at', new Date().toISOString());
 
         if (error) {
-            console.error('❌ Expiry cron error:', error.message);
-        } else {
-            console.log(`✅ Expired pro users check completed`);
+            console.error('❌ Expiry check error:', error.message);
+            return;
         }
+
+        if (expiredUsers && expiredUsers.length > 0) {
+            console.log(`⏰ Found ${expiredUsers.length} expired Pro users to downgrade`);
+
+            for (const user of expiredUsers) {
+                await supabaseAdmin
+                    .from('profiles')
+                    .update({ plan: 'free', pro_expires_at: null })
+                    .eq('id', user.id);
+                console.log(`   Downgraded user ${user.email} - subscription expired on ${user.pro_expires_at}`);
+            }
+        } else {
+            console.log('✅ No expired Pro users found');
+        }
+
     } catch (err) {
-        console.error('❌ Cron job error:', err.message);
+        console.error('❌ Expiry cron error:', err.message);
     }
 }
 
-// Schedule: Run every day at midnight (server time)
+// Check for users expiring soon (send reminders)
+async function checkExpiringSoon() {
+    try {
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+
+        const { data: expiringSoon, error } = await supabaseAdmin
+            .from('profiles')
+            .select('id, email, pro_expires_at')
+            .eq('plan', 'pro')
+            .lt('pro_expires_at', threeDaysFromNow.toISOString())
+            .gt('pro_expires_at', new Date().toISOString());
+
+        if (error) {
+            console.error("Error checking expiring subscriptions:", error);
+            return;
+        }
+
+        if (expiringSoon && expiringSoon.length > 0) {
+            console.log(`📧 ${expiringSoon.length} users have subscriptions expiring in < 3 days`);
+            for (const user of expiringSoon) {
+                console.log(`   - ${user.email} expires on ${new Date(user.pro_expires_at).toDateString()}`);
+                // TODO: Send email reminder
+            }
+        }
+    } catch (err) {
+        console.error("Expiring soon check error:", err);
+    }
+}
+
+// Schedule: Run expiry check at midnight
 cron.schedule('0 0 * * *', () => {
     expireProUsers();
 });
-// Process failed webhooks every 10 minutes
-cron.schedule('*/10 * * * *', () => {
-    processFailedWebhooks();
+
+// Schedule: Check expiring soon at 9 AM daily
+cron.schedule('0 9 * * *', () => {
+    checkExpiringSoon();
 });
 
 // Run once on startup
 setTimeout(() => {
-    processFailedWebhooks();
-}, 10000);
-
-// Also run once on server startup to catch any missed expiries
-setTimeout(() => {
     expireProUsers();
+    checkExpiringSoon();
 }, 5000);
 
-// Catch-all route for 404 - add at the END of your routes
-app.use((req, res) => {
-    res.status(404).sendFile(__dirname + '/404.html');
+// ============================================
+// CHECK BILLING STATUS (for modals)
+// ============================================
+app.get('/api/check-billing-status', requireAuth, async (req, res) => {
+    try {
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, trial_used, trial_end_date, pro_expires_at')
+            .eq('id', req.user.id)
+            .single();
+
+        // Check if there's a pending billing result in session
+        // This would be set by webhook after auto-billing attempt
+        const { data: recentTransaction } = await supabaseAdmin
+            .from('transactions')
+            .select('status, type')
+            .eq('user_id', req.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        let showSuccessModal = false;
+        let showFailureModal = false;
+
+        // If user just upgraded and is now Pro, show success
+        if (profile?.plan === 'pro' && !profile?.trial_used) {
+            // Check if we haven't shown modal for this transaction
+            const modalShown = await supabaseAdmin
+                .from('profiles')
+                .select('modal_shown')
+                .eq('id', req.user.id)
+                .single();
+
+            if (!modalShown?.modal_shown) {
+                showSuccessModal = true;
+                await supabaseAdmin
+                    .from('profiles')
+                    .update({ modal_shown: true })
+                    .eq('id', req.user.id);
+            }
+        }
+
+        // If trial expired and billing failed, show failure
+        if (profile?.plan === 'free' && profile?.trial_used && new Date(profile.trial_end_date) < new Date()) {
+            showFailureModal = true;
+        }
+
+        res.json({
+            success: true,
+            show_success_modal: showSuccessModal,
+            show_failure_modal: showFailureModal
+        });
+
+    } catch (err) {
+        console.error("Billing status error:", err);
+        res.json({ success: true, show_success_modal: false, show_failure_modal: false });
+    }
 });
+
+
 
 // ============================================
 // HEALTH CHECK ENDPOINT - Add this anywhere in server.js
@@ -1666,6 +2398,13 @@ app.get('/api/health', (req, res) => {
         time: new Date().toISOString(),
         uptime: process.uptime()
     });
+});
+
+// ============================================
+// CATCH-ALL ROUTE (MUST BE LAST)
+// ============================================
+app.use((req, res) => {
+    res.status(404).sendFile(__dirname + '/404.html');
 });
 
 // ============================================

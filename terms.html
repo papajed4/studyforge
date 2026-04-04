@@ -31,6 +31,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://studyforge.site/terms.html">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,13 +49,15 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        html {
-            scroll-behavior: smooth;
         }
 
         .container-custom {
@@ -91,27 +99,18 @@
             color: #6366f1;
         }
 
-        .price-placeholder {
-            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.2s infinite;
-            border-radius: 6px;
-            display: inline-block;
-            width: 80px;
-            height: 24px;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
+        /* Mobile touch targets */
+        button,
+        [onclick],
+        .cursor-pointer,
+        a {
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
         }
     </style>
-        <script type="application/ld+json">
+
+    <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -131,13 +130,13 @@
       }
     }
     </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTT4Z32YH"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-KJTT4Z32YH');
     </script>
 </head>
@@ -150,18 +149,41 @@
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2 group">
                     <div
-                        class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
                         <i class="fa-solid fa-book-open text-indigo-600 text-sm"></i>
                     </div>
                     <span class="text-xl font-bold text-slate-900">Study<span
                             class="text-indigo-600">Forge</span></span>
                 </a>
 
-                <div class="flex items-center gap-6">
-                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Home
-                    </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition">Home</a>
+                    <a href="/features.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Features</a>
+                    <a href="/pricing.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">Pricing</a>
+                    <a href="/about.html" class="text-sm text-slate-500 hover:text-indigo-600 transition">About</a>
+                    <button onclick="handleDashboardClick()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer">
+                        Dashboard
+                    </button>
                 </div>
+
+                <button
+                    class="md:hidden text-slate-700 text-2xl w-12 h-12 flex items-center justify-center rounded-lg active:bg-slate-100"
+                    onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <a href="/" class="block text-slate-600 hover:text-indigo-600 py-2">Home</a>
+                <a href="/features.html" class="block text-slate-600 hover:text-indigo-600 py-2">Features</a>
+                <a href="/pricing.html" class="block text-slate-600 hover:text-indigo-600 py-2">Pricing</a>
+                <a href="/about.html" class="block text-slate-600 hover:text-indigo-600 py-2">About</a>
+                <button onclick="handleDashboardClick()"
+                    class="block bg-indigo-600 text-white px-4 py-3 rounded-xl text-center font-semibold w-full cursor-pointer">
+                    Dashboard
+                </button>
             </div>
         </div>
     </nav>
@@ -172,7 +194,7 @@
             <div
                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
                 <i class="fa-solid fa-scale-balanced text-indigo-500 text-xs"></i>
-                <span class="text-xs font-semibold text-indigo-700">Terms & Conditions for Students</span>
+                <span class="text-xs font-semibold text-indigo-700">Terms & Conditions</span>
             </div>
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
                 Terms of Service
@@ -180,8 +202,7 @@
             <p class="text-slate-500">
                 Last updated: <span class="font-medium">March 2026</span>
             </p>
-            <p class="text-sm text-slate-400 mt-2">Please read these terms carefully before using StudyForge AI study
-                tool.</p>
+            <p class="text-sm text-slate-400 mt-2">Please read these terms carefully before using StudyForge.</p>
         </div>
     </section>
 
@@ -189,7 +210,7 @@
     <div class="container-custom max-w-3xl mx-auto py-12">
 
         <!-- Section 1 -->
-        <div class="mb-10">
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-circle-check text-indigo-600 text-sm"></i>
@@ -197,49 +218,50 @@
                 <h2 class="text-2xl font-bold text-slate-800">1. Acceptance of Terms</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                By accessing or using StudyForge AI study tool, you agree to be bound by these Terms of Service. If you
-                do not agree to these terms, please do not use our AI study guide generator or any of our services.
+                By accessing or using StudyForge, you agree to be bound by these Terms of Service. If you do not agree
+                to these terms, please do not use our services.
             </p>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 2 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-microchip text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">2. Description of Our AI Study Tool Service</h2>
+                <h2 class="text-2xl font-bold text-slate-800">2. Description of Service</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
                 StudyForge provides an AI-powered platform that transforms lecture notes, PDFs, and video transcripts
                 into structured study materials including summaries, flashcards, practice questions, and exam-ready
-                revision sheets. Our AI study tool is designed to help students study smarter, not longer.
+                revision sheets.
             </p>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 3 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-user text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">3. Student Account Registration</h2>
+                <h2 class="text-2xl font-bold text-slate-800">3. Account Registration</h2>
             </div>
-            <p class="text-slate-600 mb-4">To use StudyForge AI study tool, you must create a student account. You are
-                responsible for:</p>
+            <p class="text-slate-600 mb-4">To use StudyForge, you must create an account. You are responsible for:</p>
             <ul class="custom-list text-slate-600 space-y-2">
-                <li>Maintaining the security and confidentiality of your account credentials</li>
-                <li>All activities that occur under your student account</li>
-                <li>Providing accurate, current, and complete information during registration</li>
-                <li>Notifying us immediately of any unauthorized use of your account</li>
+                <li>Maintaining the security of your account credentials</li>
+                <li>All activities that occur under your account</li>
+                <li>Providing accurate information during registration</li>
+                <li>Notifying us of any unauthorized use of your account</li>
             </ul>
         </div>
 
         <!-- Section 4 - Subscription Plans -->
-        <div class="mb-10">
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-credit-card text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">4. Student Subscription Plans</h2>
+                <h2 class="text-2xl font-bold text-slate-800">4. Subscription Plans</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
@@ -247,88 +269,75 @@
                 <div class="bg-white rounded-xl p-5 border border-slate-200 hover-card">
                     <div class="flex items-center gap-2 mb-3">
                         <i class="fa-regular fa-crown text-slate-400"></i>
-                        <h3 class="text-lg font-semibold text-slate-800">Free Student Plan</h3>
+                        <h3 class="text-lg font-semibold text-slate-800">Free Plan</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> 5 AI study guide
-                            generations per day</li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> Basic study features
-                            included</li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> No credit card required
-                            to start</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> 5 AI generations per day</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> Basic study features</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> No credit card required</li>
                     </ul>
                 </div>
 
                 <!-- Pro Plan Card -->
-                <div
-                    class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200 hover-card">
+                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200 hover-card">
                     <div class="flex items-center gap-2 mb-3">
                         <i class="fa-regular fa-gem text-indigo-600"></i>
-                        <h3 class="text-lg font-semibold text-slate-800">Pro Student Subscription</h3>
+                        <h3 class="text-lg font-semibold text-slate-800">Pro Plan</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-slate-600">
                         <li class="flex items-center gap-2">
                             <i class="fa-regular fa-check-circle text-green-500 text-xs"></i>
-                            <span><span id="proPriceDisplay"
-                                    class="font-semibold text-indigo-600">Loading...</span>/month</span>
+                            <span><span id="proPriceDisplay" class="font-semibold text-indigo-600">Loading...</span>/month</span>
                         </li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> Unlimited AI study guide
-                            generations</li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> Unlimited exam prediction
-                            mode</li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> Priority processing for
-                            faster results</li>
-                        <li class="flex items-center gap-2"><i
-                                class="fa-regular fa-check-circle text-green-500 text-xs"></i> Cancel anytime with no
-                            long-term commitment</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> Unlimited AI generations</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> Unlimited exam mode</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> Priority processing</li>
+                        <li class="flex items-center gap-2"><i class="fa-regular fa-check-circle text-green-500 text-xs"></i> Cancel anytime</li>
                     </ul>
                 </div>
             </div>
-            <p class="text-slate-500 text-sm mt-4">All payments are processed securely by Paystack and Flutterwave,
-                PCI-DSS compliant payment processors. Student subscriptions auto-renew monthly or yearly unless
-                cancelled before the renewal date.</p>
+            <p class="text-slate-500 text-sm mt-4">
+                All payments are processed securely by Flutterwave, a PCI-DSS compliant payment processor.
+                Subscriptions auto-renew monthly or yearly unless cancelled before the renewal date.
+            </p>
         </div>
 
         <!-- Section 5 - Acceptable Use -->
-        <div class="mb-10">
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-gavel text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">5. Acceptable Use Policy for AI Study Tool</h2>
+                <h2 class="text-2xl font-bold text-slate-800">5. Acceptable Use Policy</h2>
             </div>
             <p class="text-slate-600 mb-4">When using StudyForge, you agree NOT to:</p>
             <ul class="custom-list text-slate-600 space-y-2">
-                <li>Use StudyForge for any illegal purpose or unauthorized activities</li>
-                <li>Attempt to reverse engineer, decompile, or extract source code from our AI systems</li>
-                <li>Share your account credentials with others or allow unauthorized access</li>
-                <li>Upload malicious content, copyrighted material without permission, or harmful files</li>
-                <li>Use automated scripts, bots, or scrapers to access our study tool</li>
-                <li>Interfere with or disrupt the service or servers</li>
+                <li>Use StudyForge for any illegal purpose</li>
+                <li>Attempt to reverse engineer our AI systems</li>
+                <li>Share your account credentials with others</li>
+                <li>Upload malicious content or copyrighted material without permission</li>
+                <li>Use automated scripts or bots to access our service</li>
+                <li>Interfere with or disrupt the service</li>
             </ul>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 6 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-copyright text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">6. Intellectual Property Rights</h2>
+                <h2 class="text-2xl font-bold text-slate-800">6. Intellectual Property</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                StudyForge owns all rights to the platform, including software, design, branding, and AI technology. You
-                retain ownership of the content you upload to our study guide generator, but grant us a license to
-                process, store, and use it to provide and improve our services.
+                StudyForge owns all rights to the platform, including software, design, branding, and AI technology.
+                You retain ownership of the content you upload but grant us a license to process and store it to provide
+                our services.
             </p>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 7 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-rotate-left text-indigo-600 text-sm"></i>
@@ -336,14 +345,14 @@
                 <h2 class="text-2xl font-bold text-slate-800">7. Cancellation and Refund Policy</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                You can cancel your student subscription anytime from your account dashboard. Cancellations take effect
-                at the end of your current billing period. Refunds are handled on a case-by-case basis. For assistance,
-                contact <a href="mailto:support@studyforge.site"
-                    class="text-indigo-600 hover:text-indigo-700">support@studyforge.site</a>.
+                You can cancel your subscription anytime from your account dashboard. Cancellations take effect at the
+                end of your current billing period. Refunds are handled on a case-by-case basis. For assistance,
+                contact <a href="mailto:support@studyforge.site" class="text-indigo-600 hover:text-indigo-700">support@studyforge.site</a>.
             </p>
         </div>
 
-        <div class="mb-10 bg-amber-50 rounded-2xl p-6 border border-amber-100">
+        <!-- Section 8 - Limitation of Liability -->
+        <div class="mb-12 bg-amber-50 rounded-2xl p-6 border border-amber-100">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
@@ -351,27 +360,28 @@
                 <h2 class="text-2xl font-bold text-slate-800">8. Limitation of Liability</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                StudyForge is provided "as is" and "as available" without warranties of any kind. We are not liable for
-                any indirect, incidental, or consequential damages arising from use of our AI study tool, including lost
-                study time, exam performance, or academic results.
+                StudyForge is provided "as is" and "as available" without warranties. We are not liable for any indirect,
+                incidental, or consequential damages arising from use of our service.
             </p>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 9 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-solid fa-pen-to-square text-indigo-600 text-sm"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">9. Changes to Terms of Service</h2>
+                <h2 class="text-2xl font-bold text-slate-800">9. Changes to Terms</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                We may update these Terms of Service from time to time. Continued use of StudyForge after changes
-                constitutes acceptance of the new terms. We will notify users of significant changes via email or
-                through the platform.
+                We may update these Terms from time to time. Continued use of StudyForge after changes constitutes
+                acceptance of the new terms. We will notify users of significant changes via email or through the
+                platform.
             </p>
         </div>
 
-        <div class="mb-10">
+        <!-- Section 10 -->
+        <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                     <i class="fa-regular fa-envelope text-indigo-600 text-sm"></i>
@@ -379,18 +389,18 @@
                 <h2 class="text-2xl font-bold text-slate-800">10. Contact Information</h2>
             </div>
             <p class="text-slate-600 leading-relaxed">
-                For questions about these Terms of Service, contact us at <a href="mailto:legal@studyforge.site"
-                    class="text-indigo-600 hover:text-indigo-700">legal@studyforge.site</a>
+                For questions about these Terms, contact us at
+                <a href="mailto:legal@studyforge.site" class="text-indigo-600 hover:text-indigo-700">legal@studyforge.site</a>
             </p>
-            <p class="text-sm text-slate-500 mt-2">For general inquiries, reach out to <a
-                    href="mailto:support@studyforge.site"
-                    class="text-indigo-600 hover:text-indigo-700">support@studyforge.site</a></p>
+            <p class="text-sm text-slate-500 mt-2">
+                For general inquiries: <a href="mailto:support@studyforge.site" class="text-indigo-600 hover:text-indigo-700">support@studyforge.site</a>
+            </p>
         </div>
 
+        <!-- Last Updated Notice -->
         <div class="mt-12 pt-6 border-t border-slate-100 text-center">
             <p class="text-xs text-slate-400">
-                <i class="fa-regular fa-clock mr-1"></i> These Terms of Service are effective as of March 2026 and apply
-                to all users of StudyForge AI study tool.
+                <i class="fa-regular fa-clock mr-1"></i> These Terms are effective as of March 2026.
             </p>
         </div>
     </div>
@@ -404,20 +414,21 @@
                     <span class="text-sm text-slate-500">© 2026 StudyForge AI. Built for serious students.</span>
                 </div>
                 <div class="flex gap-6">
-                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy
-                        Policy</a>
-                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms of
-                        Service</a>
-                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact
-                        Support</a>
+                    <a href="/privacy.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Privacy</a>
+                    <a href="/terms.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Terms</a>
+                    <a href="/contact.html" class="text-xs text-slate-400 hover:text-indigo-600 transition">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Dynamic Pricing Script -->
     <script>
-        // Pricing table matching your main.js
+        // Initialize Supabase client
+        const supabaseUrl = "https://drkgygcoaisvjfppbuxx.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRya2d5Z2NvYWlzdmpmcHBidXh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODU4MzgsImV4cCI6MjA4NzM2MTgzOH0.SqJB7phpKkQLldT06Jqhd1fNOW4e3rllCKHTDtPjKtY";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Pricing table
         const pricingTable = {
             NG: { symbol: "₦", monthly: 3500 },
             US: { symbol: "$", monthly: 8.99 },
@@ -438,12 +449,11 @@
 
         async function getCountry() {
             let country = localStorage.getItem('userCountry');
-
             if (!country) {
                 try {
                     const lang = navigator.language || '';
-                    if (lang.includes('NG') || lang.includes('en-NG')) country = 'NG';
-                    else if (lang.includes('GB') || lang.includes('en-GB')) country = 'GB';
+                    if (lang.includes('NG')) country = 'NG';
+                    else if (lang.includes('GB')) country = 'GB';
                     else if (lang.includes('DE')) country = 'DE';
                     else if (lang.includes('FR')) country = 'FR';
                     else if (lang.includes('ES')) country = 'ES';
@@ -454,33 +464,70 @@
                     else if (lang.includes('AU')) country = 'AU';
                     else if (lang.includes('CA')) country = 'CA';
                     else country = 'US';
-
                     localStorage.setItem('userCountry', country);
                 } catch (e) {
                     country = 'US';
                 }
             }
-
             return country;
         }
 
         async function updatePricing() {
             const country = await getCountry();
-
             let pricing = pricingTable[country];
-            if (!pricing && euroCountries.includes(country)) {
-                pricing = euroPricing;
-            }
-            if (!pricing) {
-                pricing = pricingTable['US'];
-            }
-
+            if (!pricing && euroCountries.includes(country)) pricing = euroPricing;
+            if (!pricing) pricing = pricingTable['US'];
             const priceDisplay = `${pricing.symbol}${pricing.monthly}`;
             const priceElement = document.getElementById('proPriceDisplay');
             if (priceElement) priceElement.textContent = priceDisplay;
         }
 
+        // Handle dashboard click
+        async function handleDashboardClick() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 300);
+            } else {
+                window.location.href = '/?auth=true';
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Make functions globally available
+        window.handleDashboardClick = handleDashboardClick;
+        window.toggleMobileMenu = toggleMobileMenu;
+
+        // Initialize pricing
         updatePricing();
+
+        // Animate sections on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.mb-12, .bg-amber-50');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.5s ease';
+                observer.observe(section);
+            });
+        });
     </script>
 </body>
 
