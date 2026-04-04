@@ -2137,6 +2137,26 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
             const userId = data.meta?.user_id;
             const billingMode = data.meta?.billing_mode || 'monthly';
 
+            // Handle payment method update
+            if (data.meta?.type === 'update_payment_method') {
+                const cardToken = data.card?.token;
+
+                if (cardToken && userId) {
+                    await supabaseAdmin
+                        .from('profiles')
+                        .update({ flutterwave_token: cardToken })
+                        .eq('id', userId);
+
+                    await supabaseAdmin
+                        .from('transactions')
+                        .update({ status: 'success' })
+                        .eq('reference', txRef);
+
+                    console.log(`✅ Updated payment method for user ${userId}`);
+                }
+                return res.sendStatus(200);
+            }
+
             if (!userId) {
                 console.log("No user_id in webhook");
                 return res.sendStatus(200);
@@ -2164,7 +2184,7 @@ app.post('/api/flutterwave-webhook', async (req, res) => {
 
             // Get card token for recurring charges
             const cardToken = data.card?.token;
-            
+
             if (cardToken) {
                 console.log(`💳 Card token saved for user ${userId}`);
             } else {
@@ -2387,7 +2407,187 @@ app.get('/api/check-billing-status', requireAuth, async (req, res) => {
     }
 });
 
+// ============================================
+// BILLING ENDPOINTS (Payment Method Update Portal)
+// ============================================
 
+// Get billing info
+app.get('/api/billing-info', requireAuth, async (req, res) => {
+    try {
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('plan, pro_expires_at, flutterwave_token')
+            .eq('id', req.user.id)
+            .single();
+
+        let cardInfo = null;
+
+        if (profile?.flutterwave_token) {
+            try {
+                const response = await axios.get(
+                    `https://api.flutterwave.com/v3/tokens/${profile.flutterwave_token}`,
+                    { headers: { 'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` } }
+                );
+
+                if (response.data.status === 'success' && response.data.data) {
+                    cardInfo = {
+                        last4: response.data.data.card?.last4 || '****',
+                        brand: response.data.data.card?.brand || 'card',
+                        exp_month: response.data.data.card?.expiry_month || '**',
+                        exp_year: response.data.data.card?.expiry_year || '**'
+                    };
+                }
+            } catch (err) {
+                console.log("Could not fetch card details:", err.message);
+            }
+        }
+
+        res.json({
+            success: true,
+            plan: profile?.plan || 'free',
+            expires_at: profile?.pro_expires_at || null,
+            has_payment_method: !!cardInfo,
+            card: cardInfo
+        });
+
+    } catch (err) {
+        console.error("Billing info error:", err);
+        res.json({ success: true, plan: 'free', has_payment_method: false, card: null });
+    }
+});
+
+// Get billing history
+app.get('/api/billing-history', requireAuth, async (req, res) => {
+    try {
+        const { data: transactions } = await supabaseAdmin
+            .from('transactions')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .eq('status', 'success')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        const formatted = transactions?.map(t => ({
+            id: t.id,
+            amount: t.amount,
+            currency: t.currency,
+            status: t.status,
+            date: t.created_at,
+            description: t.billing_mode === 'yearly' ? 'Yearly Subscription' : 'Monthly Subscription'
+        })) || [];
+
+        res.json({ success: true, transactions: formatted });
+
+    } catch (err) {
+        console.error("Billing history error:", err);
+        res.json({ success: true, transactions: [] });
+    }
+});
+
+// Update payment method
+app.post('/api/update-payment-method', requireAuth, async (req, res) => {
+    try {
+        const txRef = `UPDATE-${Date.now()}-${req.user.id}`;
+
+        const payload = {
+            tx_ref: txRef,
+            amount: 0,
+            currency: 'USD',
+            redirect_url: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard.html?billing=success`,
+            payment_options: "card",
+            meta: {
+                user_id: req.user.id,
+                type: 'update_payment_method'
+            },
+            customer: {
+                email: req.user.email,
+                name: req.user.user_metadata?.full_name || req.user.email.split('@')[0]
+            },
+            customizations: {
+                title: "StudyForge - Update Payment Method",
+                description: "Update your card for subscription billing"
+            }
+        };
+
+        const response = await axios.post(
+            "https://api.flutterwave.com/v3/payments",
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 10000
+            }
+        );
+
+        if (response.data.status === "success") {
+            await supabaseAdmin
+                .from('transactions')
+                .insert([{
+                    user_id: req.user.id,
+                    reference: txRef,
+                    amount: 0,
+                    currency: 'USD',
+                    status: "pending",
+                    processor: "flutterwave",
+                    type: "payment_method_update",
+                    created_at: new Date().toISOString()
+                }]);
+
+            res.json({
+                success: true,
+                authorization_url: response.data.data.link
+            });
+        } else {
+            throw new Error(response.data.message || "Failed to initialize update");
+        }
+
+    } catch (err) {
+        console.error("Update payment method error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Cancel subscription
+app.post('/api/cancel-subscription', requireAuth, async (req, res) => {
+    try {
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('subscription_id')
+            .eq('id', req.user.id)
+            .single();
+
+        if (profile?.subscription_id) {
+            try {
+                await axios.put(
+                    `https://api.flutterwave.com/v3/subscriptions/${profile.subscription_id}/cancel`,
+                    {},
+                    { headers: { 'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` } }
+                );
+                console.log(`Cancelled Flutterwave subscription ${profile.subscription_id}`);
+            } catch (err) {
+                console.log("Could not cancel Flutterwave subscription:", err.message);
+            }
+        }
+
+        await supabaseAdmin
+            .from('profiles')
+            .update({
+                plan: 'free',
+                pro_expires_at: null,
+                subscription_id: null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', req.user.id);
+
+        res.json({ success: true, message: "Subscription cancelled successfully" });
+
+    } catch (err) {
+        console.error("Cancel subscription error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // ============================================
 // HEALTH CHECK ENDPOINT - Add this anywhere in server.js

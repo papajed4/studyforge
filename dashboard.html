@@ -16,8 +16,8 @@
     <link rel="apple-touch-icon" href="/icons/512.png">
 
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -128,6 +128,12 @@
                         class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
                         <i class="fa-solid fa-circle-user text-lg"></i>
                         <span>Account</span>
+                    </button>
+                    <!-- Billing -->
+                    <button id="navBilling" onclick="showSection('billing')"
+                        class="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-all">
+                        <i class="fa-regular fa-credit-card text-lg"></i>
+                        <span>Billing</span>
                     </button>
                 </nav>
             </div>
@@ -258,40 +264,40 @@
                             </span>
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
                             <!-- Lectures Saved -->
                             <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 text-center">
-                                <i class="fa-solid fa-book-open text-indigo-600 text-2xl mb-1 block"></i>
-                                <div class="text-xl font-bold text-slate-800" id="lecturesSaved">0</div>
+                                <i class="fa-solid fa-book-open text-indigo-600 text-xl mb-1 block"></i>
+                                <div class="text-lg md:text-xl font-bold text-slate-800" id="lecturesSaved">0</div>
                                 <div class="text-xs text-slate-500">Lectures</div>
                             </div>
 
                             <!-- Flashcards Reviewed -->
                             <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 text-center">
-                                <i class="fa-regular fa-rectangle-ad text-blue-600 text-2xl mb-1 block"></i>
-                                <div class="text-xl font-bold text-slate-800" id="flashcardsReviewed">0</div>
+                                <i class="fa-regular fa-rectangle-ad text-blue-600 text-xl mb-1 block"></i>
+                                <div class="text-lg md:text-xl font-bold text-slate-800" id="flashcardsReviewed">0</div>
                                 <div class="text-xs text-slate-500">Flashcards</div>
                             </div>
 
                             <!-- Questions Answered -->
                             <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 text-center">
-                                <i class="fa-regular fa-question-circle text-emerald-600 text-2xl mb-1 block"></i>
-                                <div class="text-xl font-bold text-slate-800" id="questionsAnswered">0</div>
+                                <i class="fa-regular fa-question-circle text-emerald-600 text-xl mb-1 block"></i>
+                                <div class="text-lg md:text-xl font-bold text-slate-800" id="questionsAnswered">0</div>
                                 <div class="text-xs text-slate-500">Questions</div>
                             </div>
 
                             <!-- Current Streak -->
                             <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 text-center">
-                                <i class="fa-solid fa-fire-flame-curved text-amber-600 text-2xl mb-1 block"></i>
-                                <div class="text-xl font-bold text-slate-800" id="currentStreak">0</div>
-                                <div class="text-xs text-slate-500">Day streak</div>
+                                <i class="fa-solid fa-fire-flame-curved text-amber-600 text-xl mb-1 block"></i>
+                                <div class="text-lg md:text-xl font-bold text-slate-800" id="currentStreak">0</div>
+                                <div class="text-xs text-slate-500">Streak</div>
                             </div>
 
                             <!-- Time Saved -->
                             <div
-                                class="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-3 text-center col-span-2 md:col-span-1">
-                                <i class="fa-regular fa-hourglass-half text-rose-600 text-2xl mb-1 block"></i>
-                                <div class="text-xl font-bold text-slate-800" id="timeSaved">0</div>
+                                class="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-3 text-center col-span-2 sm:col-span-3 md:col-span-1">
+                                <i class="fa-regular fa-hourglass-half text-rose-600 text-xl mb-1 block"></i>
+                                <div class="text-lg md:text-xl font-bold text-slate-800" id="timeSaved">0</div>
                                 <div class="text-xs text-slate-500">Hours saved</div>
                             </div>
                         </div>
@@ -337,78 +343,91 @@
                         </div>
                     </div>
 
-                    <!-- Study Timer - Enhanced Version -->
-                    <div id="studyTimer" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-hourglass-half text-indigo-600"></i>
-                                <span class="text-sm font-medium text-slate-700">Focus Timer</span>
-                                <span
-                                    class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Pomodoro</span>
-                                <span id="sessionCounter"
-                                    class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">Session
-                                    1/4</span>
+                    <!-- Study Timer - PREMIUM REDESIGN -->
+                    <div
+                        class="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-5 shadow-lg border border-slate-100 mb-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                                    <i class="fa-solid fa-hourglass-half text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Focus Timer</h3>
+                                    <p class="text-xs text-slate-400">Pomodoro technique</p>
+                                </div>
                             </div>
+                            <span id="sessionCounter"
+                                class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">Session
+                                1/4</span>
+                        </div>
 
-                            <div class="font-mono font-bold text-2xl text-slate-800" id="timerDisplay">25:00</div>
-
-                            <div class="flex gap-1">
-                                <button id="timerStartBtn" onclick="startTimer()"
-                                    class="w-8 h-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center justify-center">
-                                    <i class="fa-solid fa-play text-xs"></i>
-                                </button>
-                                <button id="timerPauseBtn" onclick="pauseTimer()"
-                                    class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center">
-                                    <i class="fa-solid fa-pause text-xs"></i>
-                                </button>
-                                <button onclick="resetTimer()"
-                                    class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center">
-                                    <i class="fa-solid fa-rotate-right text-xs"></i>
-                                </button>
+                        <div class="flex justify-center mb-5">
+                            <div class="relative">
+                                <div
+                                    class="w-40 h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-slate-100 to-white shadow-inner border border-slate-200 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <span id="timerDisplay"
+                                            class="text-4xl md:text-5xl font-bold font-mono text-slate-800 tracking-wider">25:00</span>
+                                        <p id="timerStatus" class="text-xs text-slate-400 mt-2">Ready to focus</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Custom Duration & Ambient Sounds Row -->
-                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                        <div class="flex justify-center gap-4 mb-5">
+                            <button id="timerStartBtn" onclick="startTimer()"
+                                class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center">
+                                <i class="fa-solid fa-play text-sm"></i>
+                            </button>
+                            <button id="timerPauseBtn" onclick="pauseTimer()"
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center">
+                                <i class="fa-solid fa-pause text-sm"></i>
+                            </button>
+                            <button onclick="resetTimer()"
+                                class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center">
+                                <i class="fa-solid fa-rotate-right text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div
+                            class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
                             <div class="flex gap-2">
                                 <button onclick="setCustomDuration(15)"
-                                    class="text-xs px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-100 transition">15</button>
+                                    class="duration-btn text-xs px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 transition">15</button>
                                 <button onclick="setCustomDuration(25)"
-                                    class="text-xs px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700 font-medium transition">25</button>
+                                    class="duration-btn text-xs px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-700 font-medium transition">25</button>
                                 <button onclick="setCustomDuration(45)"
-                                    class="text-xs px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-100 transition">45</button>
+                                    class="duration-btn text-xs px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 transition">45</button>
                             </div>
-
                             <div class="flex gap-2">
-                                <!-- 👇 AMBIENT SOUNDS SELECTOR GOES HERE 👇 -->
                                 <select id="ambientSelect" onchange="changeAmbientSound()"
-                                    class="text-xs px-2 py-1 rounded-lg bg-slate-100 border border-slate-200">
-                                    <option value="lofi">🎧 Lo-fi Beats</option>
-                                    <option value="rain">🌧️ Rain Sounds</option>
-                                    <option value="cafe">☕ Cafe Ambience</option>
-                                    <option value="nature">🌲 Forest Birds</option>
-                                    <option value="whiteNoise">🤍 White Noise</option>
-                                    <option value="brownNoise">🟤 Brown Noise</option>
+                                    class="text-xs px-2 py-1.5 rounded-lg bg-slate-100 border-0 focus:ring-2 focus:ring-indigo-500">
+                                    <option value="lofi">🎧 Lo-fi</option>
+                                    <option value="rain">🌧️ Rain</option>
+                                    <option value="cafe">☕ Cafe</option>
+                                    <option value="nature">🌲 Forest</option>
+                                    <option value="whiteNoise">🤍 White</option>
+                                    <option value="brownNoise">🟤 Brown</option>
                                     <option value="off">🔇 Off</option>
                                 </select>
                                 <button onclick="playAmbientSound()"
-                                    class="text-xs px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition">
-                                    <i class="fa-solid fa-play"></i> Play
+                                    class="text-xs px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition">
+                                    <i class="fa-solid fa-play"></i>
                                 </button>
-
                                 <button id="autoStartBtn" onclick="toggleAutoStart()"
-                                    class="text-xs px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-100 transition flex items-center gap-1">
+                                    class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 transition">
                                     <i class="fa-solid fa-arrow-rotate-right"></i> <span id="autoStartText">Auto</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
-                            <span id="timerStatus">Ready to focus 🎯</span>
-                            <div class="flex gap-3">
-                                <span>📊 <span id="todayFocus">0</span> min today</span>
-                                <span>🔥 <span id="focusStreak">0</span> day streak</span>
-                            </div>
+                        <div
+                            class="flex justify-between items-center mt-4 pt-3 text-xs text-slate-500 border-t border-slate-100">
+                            <span><i class="fa-regular fa-clock mr-1"></i> Today: <span id="todayFocus">0</span>
+                                min</span>
+                            <span><i class="fa-solid fa-fire-flame-curved mr-1"></i> Streak: <span
+                                    id="focusStreak">0</span> days</span>
                         </div>
                     </div>
 
@@ -958,6 +977,87 @@
                             </h3>
                             <div id="recommendations" class="space-y-2">
                                 <p class="text-slate-500 text-sm">Take a quiz to get personalized recommendations!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= BILLING SECTION ================= -->
+                <div id="billingSection" class="hidden">
+                    <div class="space-y-6">
+                        <!-- Header -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                                        <i class="fa-regular fa-credit-card text-indigo-600"></i>
+                                        Billing & Payment
+                                    </h2>
+                                    <p class="text-slate-500 mt-1">Manage your payment methods and view billing history
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Payment Method -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-regular fa-credit-card text-indigo-600"></i>
+                                Payment Method
+                            </h3>
+
+                            <div id="paymentMethodCard" class="border rounded-xl p-4 mb-4 bg-slate-50">
+                                <div class="flex items-center justify-between flex-wrap gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <div
+                                            class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                                            <i id="cardIcon"
+                                                class="fa-regular fa-credit-card text-indigo-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p id="cardDetails" class="font-medium text-slate-800">No payment method
+                                                saved</p>
+                                            <p id="cardExpiry" class="text-sm text-slate-500"></p>
+                                        </div>
+                                    </div>
+                                    <button onclick="updatePaymentMethod()"
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                                        <i class="fa-regular fa-pen-to-square"></i> Update Card
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                <i class="fa-regular fa-lock mr-1"></i> Secure payment processing by Flutterwave
+                            </p>
+                        </div>
+
+                        <!-- Current Subscription -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-regular fa-gem text-indigo-600"></i>
+                                Current Plan
+                            </h3>
+                            <div class="flex justify-between items-center flex-wrap gap-4">
+                                <div>
+                                    <p class="text-sm text-slate-500">Your Plan</p>
+                                    <p id="currentPlanDisplay" class="text-xl font-bold text-slate-900">Loading...</p>
+                                    <p id="expiryDisplay" class="text-sm text-slate-500 mt-1"></p>
+                                </div>
+                                <button onclick="cancelSubscription()" id="cancelSubBtn"
+                                    class="border border-red-300 text-red-600 hover:bg-red-50 px-5 py-2.5 rounded-xl text-sm font-semibold transition hidden">
+                                    Cancel Subscription
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Billing History -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-regular fa-clock text-indigo-600"></i>
+                                Billing History
+                            </h3>
+                            <div id="billingHistoryList" class="space-y-3">
+                                <div class="text-center py-8 text-slate-400">Loading...</div>
                             </div>
                         </div>
                     </div>
@@ -1523,47 +1623,55 @@
     </div>
 
 
-<!-- ============================================ -->
-<!-- TRIAL MODAL - FREE ONLY (NO PAYMENT) -->
-<!-- ============================================ -->
-<div id="trialModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[400] hidden transition-all duration-300">
-    <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95">
-        
-        <div class="text-center mb-5">
-            <div class="w-14 h-14 mx-auto bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
-                <i class="fa-regular fa-gem text-white text-xl"></i>
+    <!-- ============================================ -->
+    <!-- TRIAL MODAL - FREE ONLY (NO PAYMENT) -->
+    <!-- ============================================ -->
+    <div id="trialModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[400] hidden transition-all duration-300">
+        <div
+            class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95">
+
+            <div class="text-center mb-5">
+                <div
+                    class="w-14 h-14 mx-auto bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
+                    <i class="fa-regular fa-gem text-white text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">Start Your Free Trial</h2>
+                <p class="text-xs text-slate-400 mt-1">3 days of Pro - No credit card needed</p>
             </div>
-            <h2 class="text-xl font-bold text-slate-900">Start Your Free Trial</h2>
-            <p class="text-xs text-slate-400 mt-1">3 days of Pro - No credit card needed</p>
-        </div>
 
-        <div class="bg-indigo-50 rounded-xl p-4 mb-5">
-            <p class="text-sm font-semibold text-indigo-800 mb-2">✨ You get:</p>
-            <ul class="space-y-2 text-sm text-slate-600">
-                <li class="flex items-center gap-2"><i class="fa-regular fa-infinity text-indigo-500"></i> Unlimited AI generations</li>
-                <li class="flex items-center gap-2"><i class="fa-regular fa-star text-indigo-500"></i> Unlimited exam mode</li>
-                <li class="flex items-center gap-2"><i class="fa-regular fa-message text-indigo-500"></i> Unlimited AI chat</li>
-            </ul>
-        </div>
-
-        <button onclick="startFreeTrial()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all">
-            Start 3-Day Free Trial
-        </button>
-
-        <div class="relative my-4">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-slate-200"></div>
+            <div class="bg-indigo-50 rounded-xl p-4 mb-5">
+                <p class="text-sm font-semibold text-indigo-800 mb-2">✨ You get:</p>
+                <ul class="space-y-2 text-sm text-slate-600">
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-infinity text-indigo-500"></i> Unlimited
+                        AI generations</li>
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-star text-indigo-500"></i> Unlimited
+                        exam mode</li>
+                    <li class="flex items-center gap-2"><i class="fa-regular fa-message text-indigo-500"></i> Unlimited
+                        AI chat</li>
+                </ul>
             </div>
-            <div class="relative flex justify-center text-xs">
-                <span class="px-2 bg-white text-slate-400">OR</span>
-            </div>
-        </div>
 
-        <button onclick="closeTrialModal()" class="w-full text-center text-slate-500 hover:text-slate-700 text-sm py-2 transition-colors">
-            No thanks, continue with Free plan
-        </button>
+            <button onclick="startFreeTrial()"
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all">
+                Start 3-Day Free Trial
+            </button>
+
+            <div class="relative my-4">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-200"></div>
+                </div>
+                <div class="relative flex justify-center text-xs">
+                    <span class="px-2 bg-white text-slate-400">OR</span>
+                </div>
+            </div>
+
+            <button onclick="closeTrialModal()"
+                class="w-full text-center text-slate-500 hover:text-slate-700 text-sm py-2 transition-colors">
+                No thanks, continue with Free plan
+            </button>
+        </div>
     </div>
-</div>
 
     <!-- ============================================ -->
     <!-- BILLING RESULT MODAL (Success/Failure) -->

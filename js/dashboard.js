@@ -78,7 +78,8 @@ window.showSection = function (section) {
         generate: document.getElementById('generateSection'),
         saved: document.getElementById('savedSection'),
         account: document.getElementById('accountSection'),
-        analytics: document.getElementById('analyticsSection')
+        analytics: document.getElementById('analyticsSection'),
+        billing: document.getElementById('billingSection')
     };
 
     let currentSection = null;
@@ -113,7 +114,8 @@ window.showSection = function (section) {
         generate: document.getElementById('navGenerate'),
         saved: document.getElementById('navSaved'),
         account: document.getElementById('navAccount'),
-        analytics: document.getElementById('navAnalytics')
+        analytics: document.getElementById('navAnalytics'),
+        billing: document.getElementById('navBilling')
     };
 
     for (let key in navButtons) {
@@ -3536,5 +3538,211 @@ async function checkBillingStatus() {
 setTimeout(() => {
     checkBillingStatus();
 }, 2000);
+
+// ============================================
+// BILLING FUNCTIONS
+// ============================================
+
+// Load billing info
+async function loadBillingInfo() {
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/billing-info', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        const planDisplay = document.getElementById('currentPlanDisplay');
+        const expiryDisplay = document.getElementById('expiryDisplay');
+
+        if (planDisplay) {
+            planDisplay.textContent = data.plan === 'pro' ? 'Pro Plan' : 'Free Plan';
+        }
+
+        if (expiryDisplay && data.expires_at) {
+            const expiryDate = new Date(data.expires_at).toLocaleDateString();
+            expiryDisplay.textContent = `Expires: ${expiryDate}`;
+        } else if (expiryDisplay) {
+            expiryDisplay.textContent = 'No active subscription';
+        }
+
+        const cardDetails = document.getElementById('cardDetails');
+        const cardExpiry = document.getElementById('cardExpiry');
+        const cardIcon = document.getElementById('cardIcon');
+
+        if (data.has_payment_method && data.card) {
+            if (cardDetails) {
+                let brandName = data.card.brand || 'Card';
+                // Capitalize first letter
+                brandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+                cardDetails.innerHTML = `${brandName} ending in ${data.card.last4}`;
+            }
+            if (cardExpiry) {
+                cardExpiry.textContent = `Expires: ${data.card.exp_month}/${data.card.exp_year}`;
+            }
+        } else {
+            if (cardDetails) cardDetails.textContent = 'No payment method saved';
+            if (cardExpiry) cardExpiry.textContent = 'Add a card to subscribe';
+        }
+
+        const cancelBtn = document.getElementById('cancelSubBtn');
+        if (cancelBtn) {
+            if (data.plan === 'pro') {
+                cancelBtn.classList.remove('hidden');
+            } else {
+                cancelBtn.classList.add('hidden');
+            }
+        }
+
+    } catch (err) {
+        console.error("Load billing info error:", err);
+    }
+}
+
+// Load billing history
+async function loadBillingHistory() {
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/billing-history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        const container = document.getElementById('billingHistoryList');
+        if (!container) return;
+
+        if (!data.transactions || data.transactions.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-slate-400">No billing history yet</div>';
+            return;
+        }
+
+        let html = '';
+        for (const tx of data.transactions) {
+            const date = new Date(tx.date).toLocaleDateString();
+
+            // Fix NGN amount (divide by 100 if it's in kobo)
+            let displayAmount = tx.amount;
+            if (tx.currency === 'NGN' && tx.amount > 10000) {
+                displayAmount = tx.amount / 100;
+            }
+
+            let amountText = '';
+            if (tx.currency === 'NGN') {
+                amountText = `₦${displayAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+                amountText = `$${displayAmount.toFixed(2)}`;
+            }
+
+            html += `
+                <div class="flex justify-between items-center p-4 border border-slate-100 rounded-xl">
+                    <div>
+                        <p class="font-medium text-slate-800">${tx.description}</p>
+                        <p class="text-xs text-slate-400">${date}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-slate-900">${amountText}</p>
+                        <p class="text-xs text-green-600">${tx.status}</p>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+
+    } catch (err) {
+        console.error("Load billing history error:", err);
+        const container = document.getElementById('billingHistoryList');
+        if (container) {
+            container.innerHTML = '<div class="text-center py-8 text-slate-400">Error loading billing history</div>';
+        }
+    }
+}
+
+// Update payment method
+async function updatePaymentMethod() {
+    const token = await window.getAuthToken?.();
+    if (!token) {
+        window.showToast?.("Please sign in first", "error");
+        return;
+    }
+
+    window.showToast?.("Redirecting to update payment method...", "success");
+
+    try {
+        const response = await fetch('/api/update-payment-method', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setTimeout(() => {
+                window.location.href = data.authorization_url;
+            }, 1000);
+        } else {
+            window.showToast?.(data.error || "Failed to initialize update", "error");
+        }
+    } catch (err) {
+        console.error("Update payment method error:", err);
+        window.showToast?.("Error updating payment method", "error");
+    }
+}
+
+// Cancel subscription
+async function cancelSubscription() {
+    if (!confirm("Are you sure you want to cancel your subscription? You will lose Pro access immediately.")) {
+        return;
+    }
+
+    const token = await window.getAuthToken?.();
+    if (!token) return;
+
+    window.showToast?.("Cancelling subscription...", "success");
+
+    try {
+        const response = await fetch('/api/cancel-subscription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            window.showToast?.("Subscription cancelled successfully", "success");
+            loadBillingInfo();
+            loadBillingHistory();
+            if (window.loadAccountInfo) window.loadAccountInfo();
+        } else {
+            window.showToast?.(data.error || "Failed to cancel subscription", "error");
+        }
+    } catch (err) {
+        console.error("Cancel subscription error:", err);
+        window.showToast?.("Error cancelling subscription", "error");
+    }
+}
+
+// Override showSection to load billing data
+const originalShowSection = window.showSection;
+window.showSection = function (section) {
+    if (section === 'billing') {
+        loadBillingInfo();
+        loadBillingHistory();
+    }
+    originalShowSection(section);
+};
+
+// Make functions global
+window.updatePaymentMethod = updatePaymentMethod;
+window.cancelSubscription = cancelSubscription;
 
 console.log("✅ Dashboard JS fully loaded with all features!");
