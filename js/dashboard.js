@@ -37,6 +37,102 @@ function getSupabase() {
 }
 
 // ============================================
+// YOUTUBE CAPTIONS CHECKER
+// ============================================
+
+async function checkYouTubeCaptions(url) {
+    try {
+        const ytInput = document.getElementById('youtubeInput');
+        const originalPlaceholder = ytInput?.placeholder;
+
+        if (ytInput) {
+            ytInput.placeholder = "🔍 Checking if video has captions...";
+            ytInput.style.borderColor = "#6366f1";
+        }
+
+        const response = await fetch('/api/youtube-transcript', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url, checkOnly: true })
+        });
+
+        const data = await response.json();
+
+        if (ytInput) {
+            ytInput.placeholder = originalPlaceholder;
+        }
+
+        if (data.has_captions) {
+            showYouTubeStatus(true, "✓ Captions available! Ready to extract.");
+            return true;
+        } else {
+            showYouTubeStatus(false, data.message || "⚠️ No captions found. Try a different video or paste text manually.");
+            return false;
+        }
+
+    } catch (err) {
+        console.error("Caption check error:", err);
+        showYouTubeStatus(false, "⚠️ Could not verify captions. Try pasting text manually.");
+        return false;
+    }
+}
+
+function showYouTubeStatus(isSuccess, message) {
+    const existingStatus = document.getElementById('youtubeStatus');
+    if (existingStatus) existingStatus.remove();
+
+    const ytInput = document.getElementById('youtubeInput');
+    if (!ytInput) return;
+
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'youtubeStatus';
+    statusDiv.className = `text-xs mt-1 flex items-center gap-1 ${isSuccess ? 'text-green-600' : 'text-amber-600'}`;
+    statusDiv.innerHTML = `<i class="fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${message}`;
+
+    ytInput.parentNode.insertBefore(statusDiv, ytInput.nextSibling);
+
+    if (isSuccess) {
+        setTimeout(() => {
+            if (statusDiv) statusDiv.style.opacity = '0';
+            setTimeout(() => {
+                if (statusDiv) statusDiv.remove();
+            }, 500);
+        }, 5000);
+    }
+}
+
+function initYouTubeChecker() {
+    const ytInput = document.getElementById('youtubeInput');
+    if (!ytInput) return;
+
+    let debounceTimer;
+
+    ytInput.addEventListener('input', function (e) {
+        const url = e.target.value.trim();
+
+        if (debounceTimer) clearTimeout(debounceTimer);
+
+        const oldStatus = document.getElementById('youtubeStatus');
+        if (oldStatus) oldStatus.remove();
+
+        const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+
+        if (isYouTube && url.length > 10) {
+            ytInput.style.borderColor = '';
+            debounceTimer = setTimeout(() => {
+                checkYouTubeCaptions(url);
+            }, 1000);
+        } else if (url.length > 0 && !isYouTube) {
+            showYouTubeStatus(false, "📝 Paste a YouTube URL to extract transcript");
+            setTimeout(() => {
+                const status = document.getElementById('youtubeStatus');
+                if (status) status.remove();
+            }, 3000);
+        }
+    });
+}
+
+// ============================================
 // GOOGLE ANALYTICS EVENT TRACKING
 // ============================================
 
@@ -213,20 +309,26 @@ window.initiateCondense = async function () {
 
         if (ytInput && !input) {
             try {
+                window.showToast?.("Fetching YouTube transcript...", "success");
+
                 const ytResponse = await fetch("/api/youtube-transcript", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ url: ytInput })
                 });
+
                 const ytData = await ytResponse.json();
+
                 if (ytData.success) {
                     contentToSend = ytData.text;
                     document.getElementById('courseInput').value = ytData.text;
+                    window.showToast?.(`✅ Transcript loaded: ${ytData.text.length} characters`, "success");
                 } else {
                     throw new Error(ytData.error || "Failed to get transcript");
                 }
             } catch (ytErr) {
-                window.showToast?.("YouTube transcript failed: " + ytErr.message);
+                console.error("YouTube error:", ytErr);
+                window.showToast?.("YouTube transcript failed: " + ytErr.message, "error");
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 loading.classList.add('hidden');
@@ -2862,6 +2964,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
 
     initFileUpload();
+    initYouTubeChecker();
 
     let sessionCheckAttempts = 0;
     const MAX_SESSION_CHECKS = 5;
